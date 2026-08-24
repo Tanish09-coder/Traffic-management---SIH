@@ -10,8 +10,8 @@ To keep the `main` branch stable, **direct pushing to `main` is disabled / stric
 
 ### 1. Clone the Repository
 ```bash
-git clone <YOUR_REPO_URL>
-cd <REPO_NAME>
+git clone https://github.com/Tanish09-coder/Traffic-management---SIH.git
+cd Traffic-management---SIH
 ```
 
 ### 2. Create and Switch to a New Feature Branch
