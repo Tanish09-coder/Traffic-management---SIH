@@ -77,6 +77,16 @@ export class SignalManager {
     }
   }
 
+  manualOverride(direction, duration = 45) {
+    this.emergencyActive = false;
+    this.emergencyDirection = null;
+    this.currentSignal = direction;
+    this.signalTimer = 0;
+    this.signalDuration = duration;
+    this.overrideActive = true;
+    this.overrideDirection = direction;
+  }
+
   reset() {
     this.currentSignal = 'N';
     this.signalTimer = 0;
@@ -84,6 +94,8 @@ export class SignalManager {
     this.currentSignalIndex = 0;
     this.emergencyActive = false;
     this.emergencyDirection = null;
+    this.overrideActive = false;
+    this.overrideDirection = null;
   }
 
   getState() {
@@ -92,7 +104,9 @@ export class SignalManager {
       timer: this.signalTimer,
       duration: this.signalDuration,
       emergency_active: this.emergencyActive,
-      emergency_direction: this.emergencyDirection
+      emergency_direction: this.emergencyDirection,
+      override_active: this.overrideActive,
+      override_direction: this.overrideDirection
     };
   }
 }

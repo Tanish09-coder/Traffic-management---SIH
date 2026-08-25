@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base URL for the backend API
 // Change this to your backend URL when ready to connect to real backend
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://localhost:5000';
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -16,7 +16,7 @@ const api = axios.create({
 // API endpoints
 export const getState = async () => {
   try {
-    const response = await api.get('/state');
+    const response = await api.get('/api/simulation/state');
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch state: ${error.message}`);
@@ -25,19 +25,37 @@ export const getState = async () => {
 
 export const getMetrics = async () => {
   try {
-    const response = await api.get('/metrics');
+    const response = await api.get('/api/simulation/metrics');
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch metrics: ${error.message}`);
   }
 };
 
-export const postAction = async (action) => {
+export const startSimulation = async () => {
   try {
-    const response = await api.post('/action', action);
+    const response = await api.post('/api/simulation/start');
     return response.data;
   } catch (error) {
-    throw new Error(`Failed to post action: ${error.message}`);
+    throw new Error(`Failed to start simulation: ${error.message}`);
+  }
+};
+
+export const setSimulationSpeed = async (speed) => {
+  try {
+    const response = await api.post('/api/simulation/speed', { speed });
+    return response.data;
+  } catch (error) {
+    throw new Error(`Failed to set speed: ${error.message}`);
+  }
+};
+
+export const resetBackendSimulation = async () => {
+  try {
+    const response = await api.post('/api/simulation/reset');
+    return response.data;
+  } catch (error) {
+    throw new Error(`Failed to reset simulation: ${error.message}`);
   }
 };
 

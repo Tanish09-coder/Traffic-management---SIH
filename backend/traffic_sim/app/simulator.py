@@ -1,5 +1,10 @@
-from .models import Vehicle, Direction, TrafficSignal
-from .config import Config
+try:
+    from .models import Vehicle, Direction, TrafficSignal
+    from .config import Config
+except ImportError:
+    from models import Vehicle, Direction, TrafficSignal
+    from config import Config
+
 import random
 import time
 
@@ -23,9 +28,6 @@ class TrafficSimulator:
         
         # Move vehicles
         self._update_vehicles()
-        
-        # Update statistics
-        self._update_stats()
         
     def _generate_vehicles(self):
         for direction in Direction:
@@ -64,7 +66,7 @@ class TrafficSimulator:
         self.vehicles = updated_vehicles
     
     def _get_queue_lengths(self):
-        return {d: len([v for v in self.vehicles if v.direction == d]) 
+        return {d.value: len([v for v in self.vehicles if v.direction == d]) 
                 for d in Direction}
     
     def handle_command(self, command):

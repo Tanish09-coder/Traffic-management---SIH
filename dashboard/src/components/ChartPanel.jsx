@@ -15,10 +15,10 @@ const ChartPanel = ({ metrics }) => {
   const waitTimeData = metrics.wait_time_history || [];
   
   // Prepare queue data for bar chart
-  const queueData = metrics.queue_history?.slice(-1)[0]?.queues || { N: 0, S: 0, E: 0, W: 0 };
+  const queueData = metrics.queue_history?.slice(-1)[0]?.queues || metrics.historical_queues || { N: 0, S: 0, E: 0, W: 0 };
   const queueChartData = Object.entries(queueData).map(([lane, count]) => ({
-    lane,
-    count,
+    lane: `Lane ${lane}`,
+    count: count || 0,
     color: lane === 'N' ? '#3B82F6' : lane === 'S' ? '#10B981' : lane === 'E' ? '#F59E0B' : '#EF4444'
   }));
 
@@ -46,7 +46,7 @@ const ChartPanel = ({ metrics }) => {
                 border: '1px solid #ddd',
                 borderRadius: '6px'
               }}
-              formatter={(value) => [`${value.toFixed(1)}s`, 'Wait Time']}
+              formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : (value || 0)}s`, 'Wait Time']}
             />
             <Line 
               type="monotone" 

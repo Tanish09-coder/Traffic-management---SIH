@@ -19,7 +19,9 @@ const Dashboard = () => {
     switchToMock, 
     switchToBackend, 
     setSpeed, 
-    resetSimulation 
+    resetSimulation,
+    manualOverride,
+    triggerEmergency
   } = useTrafficData();
 
   // Control panel state
@@ -431,17 +433,29 @@ const Dashboard = () => {
                 {/* Actions */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-gray-700">
-                    Actions
+                    Interactive Controls
                   </label>
-                  <div className="space-x-2">
+                  <div className="flex flex-wrap gap-2">
                     {useMock && (
                       <button
                         onClick={resetSimulation}
-                        className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600"
+                        className="px-3 py-2 text-xs font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700 shadow-sm"
                       >
-                        Reset
+                        🔄 Reset
                       </button>
                     )}
+                    <button
+                      onClick={() => triggerEmergency && triggerEmergency('N')}
+                      className="px-3 py-2 text-xs font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-sm animate-pulse"
+                    >
+                      🚨 Trigger Emergency (North)
+                    </button>
+                    <button
+                      onClick={() => manualOverride && manualOverride('E', 'Hackathon Demo')}
+                      className="px-3 py-2 text-xs font-semibold text-white bg-amber-600 rounded-lg hover:bg-amber-700 shadow-sm"
+                    >
+                      ⚡ Override Signal (East)
+                    </button>
                   </div>
                 </div>
               </div>

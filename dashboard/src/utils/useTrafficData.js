@@ -909,7 +909,20 @@ export function useTrafficData(pollInterval = 1000) {
     signalManager.updateSignal(vehicleManager.getQueueLengths());
     vehicleManager.updateVehicles(signalManager.currentSignal);
     
-    setState(vehicleManager.getState());
+    const vState = vehicleManager.getState();
+    const sState = signalManager.getState();
+
+    setState({
+      ...vState,
+      signal: sState.current_signal,
+      signal_timer: sState.timer,
+      signal_duration: sState.duration,
+      emergencyActive: sState.emergency_active || vState.emergencyActive,
+      emergencyDirection: sState.emergency_direction,
+      overrideActive: sState.override_active,
+      overrideDirection: sState.override_direction
+    });
+
     setMetrics(vehicleManager.getMetrics());
   }, [vehicleManager, signalManager]);
 
@@ -941,7 +954,62 @@ export function useTrafficData(pollInterval = 1000) {
         setLoading(false);
       }
     }
-  }, [useMock, simulationSpeed]);
+  }, [useMock, simulationSpeed, simulationTick, vehicleManager]);
+
+  useEffect(() => {
+    if (!useMock) {
+      setLoading(true);
+      let isSubscribed = true;
+
+      const fetchBackendData = async () => {
+        try {
+          const [backendState, backendMetrics] = await Promise.all([
+            getState(),
+            getMetrics()
+          ]);
+
+          if (isSubscribed) {
+            setState({
+              cars: backendState.cars || backendState.vehicles || { N: [], S: [], E: [], W: [] },
+              signal: backendState.signal?.current || backendState.signal || 'N',
+              signal_timer: backendState.signal?.timer || 0,
+              signal_duration: backendState.signal?.duration || 30,
+              cars_passed: backendState.cars_passed || backendState.total_vehicles || 0,
+              avg_wait_time: backendState.avg_wait_time || 0,
+              queues: backendState.queues || { N: 0, S: 0, E: 0, W: 0 },
+              emergencyActive: backendState.emergencyActive || false,
+              emergencyDirection: backendState.emergencyDirection || null
+            });
+
+            setMetrics({
+              throughput: backendMetrics.throughput || 12,
+              emergency_count: backendMetrics.emergency_count || 0,
+              total_cars: backendMetrics.total_vehicles || backendMetrics.total_cars || 0,
+              avg_trip_time: backendMetrics.avg_wait_time ? Number((backendMetrics.avg_wait_time * 1.5).toFixed(1)) : 15,
+              wait_time_history: backendMetrics.wait_time_history || [],
+              queue_history: backendMetrics.queue_history || []
+            });
+
+            setError(null);
+            setLoading(false);
+          }
+        } catch (err) {
+          if (isSubscribed) {
+            setError(`Live Backend unavailable: ${err.message}. Showing simulated data or start backend server.`);
+            setLoading(false);
+          }
+        }
+      };
+
+      fetchBackendData();
+      intervalRef.current = setInterval(fetchBackendData, pollInterval);
+
+      return () => {
+        isSubscribed = false;
+        if (intervalRef.current) clearInterval(intervalRef.current);
+      };
+    }
+  }, [useMock, pollInterval]);
 
   const switchToMock = () => {
     setUseMock(true);
@@ -960,8 +1028,31 @@ export function useTrafficData(pollInterval = 1000) {
     if (useMock) {
       vehicleManager.reset();
       signalManager.reset();
+      simulationTick();
     }
   };
+
+  const manualOverride = useCallback((direction, reason = 'Manual Officer Override') => {
+    signalManager.manualOverride(direction, 45);
+    const vState = vehicleManager.getState();
+    const sState = signalManager.getState();
+    setState({
+      ...vState,
+      signal: sState.current_signal,
+      signal_timer: sState.timer,
+      signal_duration: sState.duration,
+      emergencyActive: false,
+      emergencyDirection: null,
+      overrideActive: true,
+      overrideDirection: direction
+    });
+  }, [signalManager, vehicleManager]);
+
+  const triggerEmergency = useCallback((direction = 'N') => {
+    const res = vehicleManager.triggerEmergency(direction);
+    signalManager.handleEmergencyVehicle(res);
+    simulationTick();
+  }, [vehicleManager, signalManager, simulationTick]);
 
   return {
     state,
@@ -974,6 +1065,7 @@ export function useTrafficData(pollInterval = 1000) {
     switchToBackend,
     setSpeed,
     resetSimulation,
-    manualOverride: useMock ? mockSimulator.manualOverride.bind(mockSimulator) : null
+    manualOverride,
+    triggerEmergency
   };
 }
