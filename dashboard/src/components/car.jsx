@@ -397,17 +397,17 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
   const isBike = vehicle.kind === 'bike';
 
   // Calculate position and rotation based on lane
-  // Normal: 11-12px width, 19-21px height (bikes 8x16px)
-  // Fullscreen: scaled for visible detail (bikes 16x32px)
+  // Normal: Cars 11x19px, Bikes 9.5x17.5px (just smaller than cars)
+  // Fullscreen: Cars 22x38px, Bikes 19x35px (scaled for rich detail)
   const getStyles = () => {
     const baseStyles = {
       position: 'absolute',
       width: isFullscreen
-        ? (isLarge ? '24px' : isBike ? '16px' : '22px')
-        : (isLarge ? '12px' : isBike ? '8px' : '11px'),
+        ? (isLarge ? '24px' : isBike ? '19px' : '22px')
+        : (isLarge ? '12px' : isBike ? '9.5px' : '11px'),
       height: isFullscreen
-        ? (isLarge ? '42px' : isBike ? '32px' : '38px')
-        : (isLarge ? '21px' : isBike ? '16px' : '19px'),
+        ? (isLarge ? '42px' : isBike ? '35px' : '38px')
+        : (isLarge ? '21px' : isBike ? '17.5px' : '19px'),
     };
 
     // In fullscreen, the container is huge but roads have a fixed pixel width.
