@@ -372,45 +372,56 @@ const resolveVehicle = (id, type) => {
   return { kind: 'car', colorIndex: hash };
 };
 
-const Car = ({ id, lane, position, type }) => {
+const Car = ({ id, lane, position, type, isFullscreen = false }) => {
   const vehicle = resolveVehicle(id, type);
   const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus';
 
   // Calculate position and rotation based on lane
-  // Sized conservatively (11-12px width, 19-21px height) to maintain a visible gap between queued vehicles
+  // Normal: 11-12px width, 19-21px height
+  // Fullscreen: doubled to 22-24px width, 38-42px height for visible detail
   const getStyles = () => {
     const baseStyles = {
       position: 'absolute',
-      width: isLarge ? '12px' : '11px',
-      height: isLarge ? '21px' : '19px',
+      width: isFullscreen
+        ? (isLarge ? '24px' : '22px')
+        : (isLarge ? '12px' : '11px'),
+      height: isFullscreen
+        ? (isLarge ? '42px' : '38px')
+        : (isLarge ? '21px' : '19px'),
     };
+
+    // In fullscreen, the container is huge but roads have a fixed pixel width.
+    // Percentage offsets (53%/47%) would put cars outside the road.
+    // Use calc(50% ± fixed offset) to keep cars in their lane.
+    const laneOffsetPos = isFullscreen ? 'calc(50% + 25px)' : '53%';
+    const laneOffsetNeg = isFullscreen ? 'calc(50% - 25px)' : '47%';
 
     switch (lane) {
       case 'N':
         return {
           ...baseStyles,
-          left: '53%',
+          left: laneOffsetPos,
           top: `${position}%`,
           transform: 'translateX(-50%)',
         };
       case 'S':
         return {
           ...baseStyles,
-          left: '47%',
+          left: laneOffsetNeg,
           bottom: `${position}%`,
           transform: 'translateX(-50%) rotate(180deg)',
         };
       case 'E':
         return {
           ...baseStyles,
-          top: '53%',
+          top: laneOffsetPos,
           right: `${position}%`,
           transform: 'translateY(-50%) rotate(90deg)',
         };
       case 'W':
         return {
           ...baseStyles,
-          top: '47%',
+          top: laneOffsetNeg,
           left: `${position}%`,
           transform: 'translateY(-50%) rotate(-90deg)',
         };

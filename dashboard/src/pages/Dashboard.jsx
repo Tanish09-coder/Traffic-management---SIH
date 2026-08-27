@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Maximize, Minimize } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
@@ -24,6 +25,31 @@ const Dashboard = () => {
 
   // Control panel state
   const [showControls, setShowControls] = useState(true);
+
+  // Fullscreen state
+  const intersectionRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!intersectionRef.current) return;
+    if (!document.fullscreenElement) {
+      intersectionRef.current.requestFullscreen().catch((err) => {
+        console.error('Failed to enter fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
 
   // Sustainability & Economic Savings
   const [savingsStats, setSavingsStats] = useState({
@@ -279,32 +305,42 @@ const Dashboard = () => {
                   }`}>
                     West: {state?.signal === 'W' ? 'OPEN' : 'CLOSED'}
                   </div>
+                  <button
+                    onClick={toggleFullscreen}
+                    className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                    title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  >
+                    {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                  </button>
                 </div>
               </div>
 
               {/* Intersection Container */}
-              <div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden border-2">
+              <div
+                ref={intersectionRef}
+                className={`relative w-full bg-gray-200 rounded-lg overflow-hidden border-2 ${isFullscreen ? 'h-full' : 'h-96'}`}
+              >
                 
                 {/* Road lanes with improved styling */}
                 <div className="absolute inset-0">
                   {/* Horizontal road */}
-                  <div className="absolute top-1/2 left-0 w-full h-20 bg-gray-700 transform -translate-y-1/2 shadow-inner">
+                  <div className={`absolute top-1/2 left-0 w-full bg-gray-700 transform -translate-y-1/2 shadow-inner ${isFullscreen ? 'h-40' : 'h-20'}`}>
                     {/* Lane dividers */}
-                    <div className="absolute top-6 left-0 w-full h-0.5 bg-yellow-300"></div>
-                    <div className="absolute bottom-6 left-0 w-full h-0.5 bg-yellow-300"></div>
+                    <div className={`absolute left-0 w-full h-0.5 bg-yellow-300 ${isFullscreen ? 'top-12' : 'top-6'}`}></div>
+                    <div className={`absolute left-0 w-full h-0.5 bg-yellow-300 ${isFullscreen ? 'bottom-12' : 'bottom-6'}`}></div>
                     <div className="absolute top-1/2 left-0 w-full h-1 bg-yellow-400 transform -translate-y-1/2 opacity-80"></div>
                   </div>
                   
                   {/* Vertical road */}
-                  <div className="absolute left-1/2 top-0 w-20 h-full bg-gray-700 transform -translate-x-1/2 shadow-inner">
+                  <div className={`absolute left-1/2 top-0 h-full bg-gray-700 transform -translate-x-1/2 shadow-inner ${isFullscreen ? 'w-40' : 'w-20'}`}>
                     {/* Lane dividers */}
-                    <div className="absolute left-6 top-0 w-0.5 h-full bg-yellow-300"></div>
-                    <div className="absolute right-6 top-0 w-0.5 h-full bg-yellow-300"></div>
+                    <div className={`absolute top-0 w-0.5 h-full bg-yellow-300 ${isFullscreen ? 'left-12' : 'left-6'}`}></div>
+                    <div className={`absolute top-0 w-0.5 h-full bg-yellow-300 ${isFullscreen ? 'right-12' : 'right-6'}`}></div>
                     <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 transform -translate-x-1/2 opacity-80"></div>
                   </div>
                   
                   {/* Intersection center */}
-                  <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gray-800 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+                  <div className={`absolute top-1/2 left-1/2 bg-gray-800 transform -translate-x-1/2 -translate-y-1/2 shadow-lg ${isFullscreen ? 'w-40 h-40' : 'w-20 h-20'}`}>
                     {/* Crosswalk patterns */}
                     <div className="absolute inset-1 bg-white opacity-20 rounded-sm"></div>
                   </div>
@@ -315,21 +351,25 @@ const Dashboard = () => {
                   direction="N" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'N'}
+                  isFullscreen={isFullscreen}
                 />
                 <TrafficLight 
                   direction="S" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'S'}
+                  isFullscreen={isFullscreen}
                 />
                 <TrafficLight 
                   direction="E" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'E'}
+                  isFullscreen={isFullscreen}
                 />
                 <TrafficLight 
                   direction="W" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'W'}
+                  isFullscreen={isFullscreen}
                 />
 
                 {/* Cars */}
@@ -343,6 +383,7 @@ const Dashboard = () => {
                         position={car.position}
                         speed={car.speed}
                         type={car.type}
+                        isFullscreen={isFullscreen}
                       />
                     ))
                   )}

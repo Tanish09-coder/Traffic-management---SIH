@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-const TrafficLight = ({ direction, signal, emergencyActive = false }) => {
+const TrafficLight = ({ direction, signal, emergencyActive = false, isFullscreen = false }) => {
   const positions = {
     N: { top: '15%', left: '46%' },
     S: { bottom: '15%', right: '46%' },
@@ -18,11 +18,13 @@ const TrafficLight = ({ direction, signal, emergencyActive = false }) => {
       className="absolute z-20"
       style={position}
     >
-      <div className="bg-gray-900 rounded-lg p-1.5 shadow-lg border border-gray-700">
-        <div className="flex flex-col space-y-1">
+      <div className={`bg-gray-900 rounded-lg shadow-lg border border-gray-700 ${isFullscreen ? 'p-2.5' : 'p-1.5'}`}>
+        <div className={`flex flex-col ${isFullscreen ? 'space-y-1.5' : 'space-y-1'}`}>
           {/* Red light */}
           <motion.div
-            className={`w-3 h-3 rounded-full ${
+            className={`rounded-full ${
+              isFullscreen ? 'w-5 h-5' : 'w-3 h-3'
+            } ${
               !isGreen ? 'bg-red-500 shadow-red-400' : 'bg-red-900'
             }`}
             animate={{
@@ -32,13 +34,17 @@ const TrafficLight = ({ direction, signal, emergencyActive = false }) => {
           />
           
           {/* Yellow light */}
-          <div className={`w-3 h-3 rounded-full ${
+          <div className={`rounded-full ${
+            isFullscreen ? 'w-5 h-5' : 'w-3 h-3'
+          } ${
             emergencyActive ? 'bg-yellow-500 animate-pulse' : 'bg-yellow-900'
           }`} />
           
           {/* Green light */}
           <motion.div
-            className={`w-3 h-3 rounded-full ${
+            className={`rounded-full ${
+              isFullscreen ? 'w-5 h-5' : 'w-3 h-3'
+            } ${
               isGreen ? 'bg-green-500 shadow-green-400' : 'bg-green-900'
             }`}
             animate={{
@@ -50,7 +56,7 @@ const TrafficLight = ({ direction, signal, emergencyActive = false }) => {
       </div>
       
       {/* Direction label */}
-      <div className="text-xs text-center mt-1 text-gray-700 font-bold bg-white px-1 rounded">
+      <div className={`text-center mt-1 font-bold bg-white px-1 rounded ${isFullscreen ? 'text-sm text-gray-800' : 'text-xs text-gray-700'}`}>
         {direction}
       </div>
       
