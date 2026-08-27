@@ -351,21 +351,25 @@ const Dashboard = () => {
                   direction="N" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'N'}
+                  isFullscreen={isFullscreen}
                 />
                 <TrafficLight 
                   direction="S" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'S'}
+                  isFullscreen={isFullscreen}
                 />
                 <TrafficLight 
                   direction="E" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'E'}
+                  isFullscreen={isFullscreen}
                 />
                 <TrafficLight 
                   direction="W" 
                   signal={state?.signal}
                   emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'W'}
+                  isFullscreen={isFullscreen}
                 />
 
                 {/* Cars */}
@@ -379,6 +383,7 @@ const Dashboard = () => {
                         position={car.position}
                         speed={car.speed}
                         type={car.type}
+                        isFullscreen={isFullscreen}
                       />
                     ))
                   )}
