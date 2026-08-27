@@ -13,17 +13,17 @@ import React from 'react';
 const Bike = ({
   color = '#0284C7',
   helmetColor = '#F8FAFC',
-  width = 14,
-  height = 28,
+  width,
+  height,
   className = '',
   ...props
 }) => {
   return (
     <svg
       viewBox="0 0 100 200"
-      width={width}
-      height={height}
-      className={`select-none drop-shadow-sm ${className}`}
+      {...(width ? { width } : {})}
+      {...(height ? { height } : {})}
+      className={`w-full h-full select-none drop-shadow-sm ${className}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       {...props}

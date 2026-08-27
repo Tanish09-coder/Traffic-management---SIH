@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import Bike from './Bike';
 
 // Deterministic hash helper from id string
 const getDeterministicHash = (str = '') => {
@@ -18,6 +19,16 @@ const SEDAN_PALETTES = [
   { body: '#16A34A', roof: '#15803D', window: '#BBF7D0' }, // Green
   { body: '#D97706', roof: '#B45309', window: '#FDE68A' }, // Amber
   { body: '#475569', roof: '#334155', window: '#CBD5E1' }, // Slate Grey
+];
+
+// Motorcycle color variations
+const BIKE_PALETTES = [
+  { color: '#0284C7', helmet: '#F8FAFC' }, // Blue / White helmet
+  { color: '#DC2626', helmet: '#1E293B' }, // Red / Dark helmet
+  { color: '#16A34A', helmet: '#FEF08A' }, // Green / Yellow helmet
+  { color: '#EA580C', helmet: '#F8FAFC' }, // Orange / White helmet
+  { color: '#9333EA', helmet: '#FDE047' }, // Purple / Hi-Vis helmet
+  { color: '#0F172A', helmet: '#EF4444' }, // Black / Red helmet
 ];
 
 // 1. Regular Sedan Car SVG
@@ -346,6 +357,10 @@ const PoliceSVG = () => {
 // Shape Selector / Lookup
 const VEHICLE_RENDERERS = {
   car: ({ colorIndex }) => <SedanSVG colorIndex={colorIndex} />,
+  bike: ({ colorIndex }) => {
+    const palette = BIKE_PALETTES[colorIndex % BIKE_PALETTES.length];
+    return <Bike color={palette.color} helmetColor={palette.helmet} />;
+  },
   bus: () => <BusSVG />,
   ambulance: () => <AmbulanceSVG />,
   firetruck: () => <FireTruckSVG />,
@@ -355,7 +370,7 @@ const VEHICLE_RENDERERS = {
 const resolveVehicle = (id, type) => {
   const hash = getDeterministicHash(String(id || ''));
 
-  if (['ambulance', 'firetruck', 'police', 'bus', 'car'].includes(type)) {
+  if (['ambulance', 'firetruck', 'police', 'bus', 'bike', 'car'].includes(type)) {
     return { kind: type, colorIndex: hash };
   }
 
@@ -364,9 +379,13 @@ const resolveVehicle = (id, type) => {
     return { kind: emergencyKinds[hash % emergencyKinds.length], colorIndex: hash };
   }
 
-  // Normal traffic: 80% sedans, 20% bus/larger vehicles
-  if (hash % 5 === 0) {
+  // Normal traffic distribution: 20% bus, 30% motorcycle, 50% sedan
+  const mod = hash % 10;
+  if (mod === 0 || mod === 5) {
     return { kind: 'bus', colorIndex: hash };
+  }
+  if (mod === 1 || mod === 2 || mod === 6) {
+    return { kind: 'bike', colorIndex: hash };
   }
 
   return { kind: 'car', colorIndex: hash };
@@ -375,19 +394,20 @@ const resolveVehicle = (id, type) => {
 const Car = ({ id, lane, position, type, isFullscreen = false }) => {
   const vehicle = resolveVehicle(id, type);
   const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus';
+  const isBike = vehicle.kind === 'bike';
 
   // Calculate position and rotation based on lane
-  // Normal: 11-12px width, 19-21px height
-  // Fullscreen: doubled to 22-24px width, 38-42px height for visible detail
+  // Normal: 11-12px width, 19-21px height (bikes 8x16px)
+  // Fullscreen: scaled for visible detail (bikes 16x32px)
   const getStyles = () => {
     const baseStyles = {
       position: 'absolute',
       width: isFullscreen
-        ? (isLarge ? '24px' : '22px')
-        : (isLarge ? '12px' : '11px'),
+        ? (isLarge ? '24px' : isBike ? '16px' : '22px')
+        : (isLarge ? '12px' : isBike ? '8px' : '11px'),
       height: isFullscreen
-        ? (isLarge ? '42px' : '38px')
-        : (isLarge ? '21px' : '19px'),
+        ? (isLarge ? '42px' : isBike ? '32px' : '38px')
+        : (isLarge ? '21px' : isBike ? '16px' : '19px'),
     };
 
     // In fullscreen, the container is huge but roads have a fixed pixel width.
