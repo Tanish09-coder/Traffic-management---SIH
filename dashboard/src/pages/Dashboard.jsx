@@ -324,23 +324,23 @@ const Dashboard = () => {
                 {/* Road lanes with improved styling */}
                 <div className="absolute inset-0">
                   {/* Horizontal road */}
-                  <div className="absolute top-1/2 left-0 w-full h-20 bg-gray-700 transform -translate-y-1/2 shadow-inner">
+                  <div className={`absolute top-1/2 left-0 w-full bg-gray-700 transform -translate-y-1/2 shadow-inner ${isFullscreen ? 'h-40' : 'h-20'}`}>
                     {/* Lane dividers */}
-                    <div className="absolute top-6 left-0 w-full h-0.5 bg-yellow-300"></div>
-                    <div className="absolute bottom-6 left-0 w-full h-0.5 bg-yellow-300"></div>
+                    <div className={`absolute left-0 w-full h-0.5 bg-yellow-300 ${isFullscreen ? 'top-12' : 'top-6'}`}></div>
+                    <div className={`absolute left-0 w-full h-0.5 bg-yellow-300 ${isFullscreen ? 'bottom-12' : 'bottom-6'}`}></div>
                     <div className="absolute top-1/2 left-0 w-full h-1 bg-yellow-400 transform -translate-y-1/2 opacity-80"></div>
                   </div>
                   
                   {/* Vertical road */}
-                  <div className="absolute left-1/2 top-0 w-20 h-full bg-gray-700 transform -translate-x-1/2 shadow-inner">
+                  <div className={`absolute left-1/2 top-0 h-full bg-gray-700 transform -translate-x-1/2 shadow-inner ${isFullscreen ? 'w-40' : 'w-20'}`}>
                     {/* Lane dividers */}
-                    <div className="absolute left-6 top-0 w-0.5 h-full bg-yellow-300"></div>
-                    <div className="absolute right-6 top-0 w-0.5 h-full bg-yellow-300"></div>
+                    <div className={`absolute top-0 w-0.5 h-full bg-yellow-300 ${isFullscreen ? 'left-12' : 'left-6'}`}></div>
+                    <div className={`absolute top-0 w-0.5 h-full bg-yellow-300 ${isFullscreen ? 'right-12' : 'right-6'}`}></div>
                     <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 transform -translate-x-1/2 opacity-80"></div>
                   </div>
                   
                   {/* Intersection center */}
-                  <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-gray-800 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+                  <div className={`absolute top-1/2 left-1/2 bg-gray-800 transform -translate-x-1/2 -translate-y-1/2 shadow-lg ${isFullscreen ? 'w-40 h-40' : 'w-20 h-20'}`}>
                     {/* Crosswalk patterns */}
                     <div className="absolute inset-1 bg-white opacity-20 rounded-sm"></div>
                   </div>
