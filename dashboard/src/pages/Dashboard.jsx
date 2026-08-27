@@ -235,45 +235,6 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Sustainability & Economic Impact Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-              <span>Fuel Saved</span>
-              <span>⛽</span>
-            </div>
-            <div className="text-xl font-bold text-emerald-600">{savingsStats.fuelSavedLiters.toFixed(1)} L/hr</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">₹{(savingsStats.fuelSavedLiters * 105).toFixed(0)} saved / hr</div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-              <span>Time Saved</span>
-              <span>⏰</span>
-            </div>
-            <div className="text-xl font-bold text-blue-600">{savingsStats.timeSavedMinutes.toFixed(0)} min/hr</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Commuter idle reduction</div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-teal-500">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-              <span>CO₂ Reduced</span>
-              <span>🌱</span>
-            </div>
-            <div className="text-xl font-bold text-teal-600">{savingsStats.co2ReducedKg.toFixed(1)} kg/hr</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Emission abatement</div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-              <span>Economic Benefit</span>
-              <span>💰</span>
-            </div>
-            <div className="text-xl font-bold text-amber-600">₹{savingsStats.totalSavingsRupees.toFixed(0)}/hr</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Direct urban savings</div>
-          </div>
-        </div>
-
         {/* Main Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
