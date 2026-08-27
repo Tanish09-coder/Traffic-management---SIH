@@ -1,5 +1,23 @@
 import { TRAFFIC_CONSTANTS } from './constants';
 
+// Position threshold (0–100 scale) at which a car is considered to have
+// entered the intersection and must be allowed to finish crossing.
+// Cars at or beyond this point continue moving regardless of signal state —
+// stopping them mid-intersection would look broken and be a collision risk.
+// Cars below this point are still at the stop line and obey the signal normally.
+const INTERSECTION_ENTRY_THRESHOLD = 42;
+
+// Minimum position gap (in the 0–100 scale) that must exist between the
+// position values of any two consecutive cars in the same lane.
+// Increase this if SVG vehicle shapes are larger and need more visual breathing room.
+// Arnav is halving shape sizes in parallel; together both changes close the overlap gap.
+const MIN_VEHICLE_GAP = 8;
+
+// Maximum position a queued (red-light) car may reach before the stop line.
+// This is set deliberately below INTERSECTION_ENTRY_THRESHOLD so no stopped
+// car ever drifts into the visual intersection box while waiting.
+const STOP_LINE_POSITION = INTERSECTION_ENTRY_THRESHOLD - MIN_VEHICLE_GAP; // = 34
+
 export class VehicleManager {
   constructor() {
     this.cars = { N: [], S: [], E: [], W: [] };
@@ -19,25 +37,62 @@ export class VehicleManager {
   updateVehicles(currentSignal) {
     Object.keys(this.cars).forEach(direction => {
       const updatedCars = this.cars[direction].filter(car => {
-        // Update car position
-        if (direction === currentSignal || car.type === 'emergency') {
+
+        // --- Intersection-entry check (Bug 1 fix) ---
+        // Once a car crosses INTERSECTION_ENTRY_THRESHOLD it is committed to
+        // the crossing. Flag it so the check survives future ticks even if
+        // the signal switches away from this direction mid-crossing.
+        if (car.position >= INTERSECTION_ENTRY_THRESHOLD && !car.inIntersection) {
+          car.inIntersection = true;
+        }
+
+        // A car should move if ANY of the following is true:
+        //   1. It is an emergency vehicle (always has priority).
+        //   2. Its direction currently has the green light.
+        //   3. It has already entered the intersection and must clear through
+        //      — regardless of the current signal — to avoid freezing mid-cross.
+        const hasGreen = direction === currentSignal;
+        const mustClear = car.inIntersection; // committed to crossing
+
+        if (hasGreen || mustClear || car.type === 'emergency') {
           car.position += car.speed;
-          
-          // Check if car has passed intersection
+
+          // --- Following-distance clamp ---
+          // Find the car directly ahead of this one in the lane array.
+          // Lane array is ordered front-to-back: index 0 is furthest ahead.
+          // The current car's index inside updatedCars is not yet known at
+          // filter time, so we look it up in the still-mutating this.cars array.
+          const laneArr = this.cars[direction];
+          const myIndex = laneArr.indexOf(car);
+          if (myIndex > 0) {
+            const carAhead = laneArr[myIndex - 1];
+            if (carAhead && car.position > carAhead.position - MIN_VEHICLE_GAP) {
+              // Clamp: stay at least MIN_VEHICLE_GAP behind the car ahead.
+              car.position = carAhead.position - MIN_VEHICLE_GAP;
+            }
+          }
+
+          // Check if car has fully passed the intersection
           if (car.position >= 100) {
             this.carsPassed++;
-            // Record wait time for this car
+            // Record wait time only if the car genuinely waited (stopped cars only)
             if ((car.waitTime || 0) > 0) {
               this._waitTimeHistory.push(car.waitTime);
               if (this._waitTimeHistory.length > 100) {
                 this._waitTimeHistory.shift();
               }
             }
-            return false;
+            return false; // Remove from lane
           }
         } else {
-          // Increment wait time for stopped cars
+          // Car is before the intersection stop line and its signal is red.
+          // Accumulate wait time — this is the only place waitTime grows.
+          // Also clamp to STOP_LINE_POSITION so queued cars never push into
+          // the intersection box while waiting (visual + logic correctness).
           car.waitTime = (car.waitTime || 0) + 1;
+          if (car.position > STOP_LINE_POSITION) {
+            car.position = STOP_LINE_POSITION;
+          }
         }
         return true;
       });
@@ -111,6 +166,20 @@ export class VehicleManager {
     const isEmergency = this.emergencyCooldown === 0 && Math.random() < 0.02;
 
     if (this.cars[direction].length < 25) {
+      // --- Spawn-gap guard ---
+      // Only place a new car at position 0 if the last car in the queue has
+      // already moved at least MIN_VEHICLE_GAP units ahead. Without this check,
+      // back-to-back spawns land at nearly the same position and visually overlap,
+      // especially with larger SVG vehicle shapes.
+      const lane = this.cars[direction];
+      if (lane.length > 0) {
+        const rearCar = lane[lane.length - 1]; // last car = furthest back in queue
+        if (rearCar.position < MIN_VEHICLE_GAP) {
+          // Not enough space yet — skip this spawn tick.
+          return null;
+        }
+      }
+
       const newCar = {
         id: `${direction}-${this.carIdCounter++}`,
         position: 0,
