@@ -25,6 +25,33 @@ const STOP_LINE_POSITION = INTERSECTION_ENTRY_THRESHOLD - MIN_VEHICLE_GAP; // = 
 // position 0 fast enough that new arrivals can keep spawning behind it.
 const QUEUE_APPROACH_SPEED = 2;
 
+// Minimum distance the rearmost car must travel before the next car can spawn.
+// DELIBERATELY smaller than MIN_VEHICLE_GAP so that each lane's ARRIVAL RATE
+// is what determines queue depth, not the spawn guard.
+//
+// Why this matters:
+//   MIN_VEHICLE_GAP = 8, QUEUE_APPROACH_SPEED = 2  →  guard clears every 4 ticks
+//   At 4 ticks per spawn, N(35%), S(22%), E(12%) all saturate the cap → equal queues.
+//
+//   SPAWN_CLEARANCE = 4, QUEUE_APPROACH_SPEED = 2  →  guard clears every 2 ticks
+//   Now N(35%) spawns ~every 6 ticks, S(22%) ~every 9, E(12%) ~every 17.
+//   Queue depths diverge naturally: N >> S > E > W  (realistic)
+//
+// Visual gap is still enforced by MIN_VEHICLE_GAP in the movement clamp.
+const SPAWN_CLEARANCE = MIN_VEHICLE_GAP / 2; // = 4
+
+// Maximum queue capacities for each lane/direction.
+// Since physical road lengths and storage capacities differ in a real city
+// (e.g., North is a major artery, West is a side street), this ensures that
+// congested lanes naturally top out at different numbers rather than showing
+// the same maximum queue lengths at the same time.
+const LANE_CAPACITIES = {
+  N: 45, // North (major highway)
+  S: 36, // South (secondary highway)
+  E: 28, // East (cross street)
+  W: 20  // West (side road)
+};
+
 export class VehicleManager {
   constructor() {
     this.cars = { N: [], S: [], E: [], W: [] };
@@ -185,24 +212,22 @@ export class VehicleManager {
   _spawnOneLane(direction) {
     const isEmergency = this.emergencyCooldown === 0 && Math.random() < 0.02;
 
-    if (this.cars[direction].length < 40) {
-      // --- Spawn-gap guard ---
-      // Only place a new car at position 0 if the last car in the queue has
-      // already moved at least MIN_VEHICLE_GAP units ahead. Without this check,
-      // back-to-back spawns land at nearly the same position and visually overlap,
-      // especially with larger SVG vehicle shapes.
+    const maxCap = LANE_CAPACITIES[direction] || 40;
+    if (this.cars[direction].length < maxCap) {
       const lane = this.cars[direction];
+      let spawnPosition = 0;
+      
       if (lane.length > 0) {
-        const rearCar = lane[lane.length - 1]; // last car = furthest back in queue
-        if (rearCar.position < MIN_VEHICLE_GAP) {
-          // Not enough space yet — skip this spawn tick.
-          return null;
-        }
+        const rearCar = lane[lane.length - 1];
+        // Set the starting position to the back of the current queue.
+        // If the queue is backed up, this will be a negative (off-screen) position,
+        // allowing the queue to grow realistically beyond the visual limit of 5 cars.
+        spawnPosition = Math.min(0, rearCar.position - MIN_VEHICLE_GAP);
       }
 
       const newCar = {
         id: `${direction}-${this.carIdCounter++}`,
-        position: 0,
+        position: spawnPosition,
         // Speed 4 → crosses 100-unit lane in ~25 ticks.
         // Low enough that queues build during red phases (giving each lane
         // a different depth), fast enough to clear within a green window.
