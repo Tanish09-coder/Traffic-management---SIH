@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Maximize, Minimize } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
@@ -24,6 +25,31 @@ const Dashboard = () => {
 
   // Control panel state
   const [showControls, setShowControls] = useState(true);
+
+  // Fullscreen state
+  const intersectionRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!intersectionRef.current) return;
+    if (!document.fullscreenElement) {
+      intersectionRef.current.requestFullscreen().catch((err) => {
+        console.error('Failed to enter fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
 
   // Sustainability & Economic Savings
   const [savingsStats, setSavingsStats] = useState({
@@ -279,11 +305,21 @@ const Dashboard = () => {
                   }`}>
                     West: {state?.signal === 'W' ? 'OPEN' : 'CLOSED'}
                   </div>
+                  <button
+                    onClick={toggleFullscreen}
+                    className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                    title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                  >
+                    {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                  </button>
                 </div>
               </div>
 
               {/* Intersection Container */}
-              <div className="relative w-full h-96 bg-gray-200 rounded-lg overflow-hidden border-2">
+              <div
+                ref={intersectionRef}
+                className={`relative w-full bg-gray-200 rounded-lg overflow-hidden border-2 ${isFullscreen ? 'h-full' : 'h-96'}`}
+              >
                 
                 {/* Road lanes with improved styling */}
                 <div className="absolute inset-0">
