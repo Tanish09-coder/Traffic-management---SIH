@@ -263,8 +263,9 @@ export class VehicleManager {
     const existing = this.getActiveEmergencyVehicle();
     if (existing) return existing;
 
-    // Pick target direction (defaults to South or lane with vehicles)
-    const direction = targetDirection || 'S';
+    // Pick target direction (randomly from N, S, E, W if not specified)
+    const directions = ['N', 'S', 'E', 'W'];
+    const direction = targetDirection || directions[Math.floor(Math.random() * directions.length)];
     const emergencyType = targetType || (Math.random() > 0.5 ? 'ambulance' : 'firetruck');
 
     const newCar = {
