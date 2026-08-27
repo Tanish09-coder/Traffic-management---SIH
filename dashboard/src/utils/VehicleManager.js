@@ -224,6 +224,40 @@ export class VehicleManager {
     return null;
   }
 
+  getActiveEmergencyVehicle() {
+    for (const [dir, cars] of Object.entries(this.cars)) {
+      const emg = cars.find(c => (c.type === 'emergency' || c.type === 'ambulance' || c.type === 'firetruck') && c.position < 100);
+      if (emg) {
+        return { ...emg, direction: dir };
+      }
+    }
+    return null;
+  }
+
+  triggerEmergency(targetDirection = null, targetType = null) {
+    const existing = this.getActiveEmergencyVehicle();
+    if (existing) return existing;
+
+    // Pick target direction (defaults to South or lane with vehicles)
+    const direction = targetDirection || 'S';
+    const emergencyType = targetType || (Math.random() > 0.5 ? 'ambulance' : 'firetruck');
+
+    const newCar = {
+      id: `${direction}-emg-${this.carIdCounter++}`,
+      position: 0,
+      speed: 8,
+      type: emergencyType,
+      waitTime: 0,
+      direction
+    };
+
+    this.cars[direction].unshift(newCar);
+    this.emergencyVehicleCount++;
+    this.emergencyCooldown = 300;
+
+    return { direction, type: emergencyType, id: newCar.id };
+  }
+
   // Legacy single-spawn method kept for SignalManager emergency compatibility
   spawnCar(currentSignal) {
     return this._spawnOneLane(this._getRandomDirection());

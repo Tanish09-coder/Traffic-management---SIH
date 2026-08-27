@@ -916,6 +916,12 @@ export function useTrafficData(pollInterval = 1000) {
     signalManager.updateSignal(vehicleManager.getQueueLengths());
     vehicleManager.updateVehicles(signalManager.currentSignal);
 
+    // Continuous tracking: Check if emergency vehicle has cleared the intersection
+    if (signalManager.emergencyActive && signalManager.emergencyDirection) {
+      const emergencyLaneCars = vehicleManager.cars[signalManager.emergencyDirection] || [];
+      signalManager.checkEmergencyCleared(emergencyLaneCars);
+    }
+
     // Merge SignalManager state so all UI fields are present
     const vmState = vehicleManager.getState();
     const smState = signalManager.getState();
@@ -1169,6 +1175,14 @@ export function useTrafficData(pollInterval = 1000) {
     }
   };
 
+  const triggerEmergencyVehicle = useCallback((direction = null, type = null) => {
+    const emg = vehicleManager.triggerEmergency(direction, type);
+    if (emg) {
+      signalManager.handleEmergencyVehicle(emg);
+    }
+    return emg;
+  }, [vehicleManager, signalManager]);
+
   return {
     state,
     metrics,
@@ -1180,6 +1194,7 @@ export function useTrafficData(pollInterval = 1000) {
     switchToBackend,
     setSpeed,
     resetSimulation,
-    manualOverride: useMock ? mockSimulator.manualOverride.bind(mockSimulator) : null
+    manualOverride: useMock ? mockSimulator.manualOverride.bind(mockSimulator) : null,
+    triggerEmergencyVehicle
   };
 }
