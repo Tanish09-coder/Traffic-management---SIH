@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
 
 const StatCard = ({ title, value, unit, icon, color }) => {
-  // Format the value to handle NaN and decimals
-  const formattedValue = isNaN(value) 
-    ? '0' 
-    : Number.isInteger(value) 
-      ? value.toString()
-      : value.toFixed(2);
+  // Format the value to handle NaN, strings, and decimals
+  const numValue = Number(value);
+  const formattedValue = isNaN(numValue)
+    ? '0'
+    : Number.isInteger(numValue)
+      ? numValue.toString()
+      : numValue.toFixed(2);
 
   return (
     <motion.div
