@@ -355,7 +355,7 @@ const Dashboard = () => {
                 )}
               </div>
               
-              <ChartPanel metrics={metrics} />
+              <ChartPanel metrics={metrics} state={state} />
             </div>
           </div>
         </div>

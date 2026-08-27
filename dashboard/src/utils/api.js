@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Base URL for the backend API
 // Change this to your backend URL when ready to connect to real backend
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://localhost:5000/api/simulation';
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -32,12 +32,39 @@ export const getMetrics = async () => {
   }
 };
 
-export const postAction = async (action) => {
+export const startSimulation = async () => {
   try {
-    const response = await api.post('/action', action);
+    const response = await api.post('/start');
     return response.data;
   } catch (error) {
-    throw new Error(`Failed to post action: ${error.message}`);
+    throw new Error(`Failed to start simulation: ${error.message}`);
+  }
+};
+
+export const stopSimulation = async () => {
+  try {
+    const response = await api.post('/stop');
+    return response.data;
+  } catch (error) {
+    throw new Error(`Failed to stop simulation: ${error.message}`);
+  }
+};
+
+export const setSimulationSpeed = async (speed) => {
+  try {
+    const response = await api.post('/speed', { speed });
+    return response.data;
+  } catch (error) {
+    throw new Error(`Failed to set simulation speed: ${error.message}`);
+  }
+};
+
+export const resetBackendSimulation = async () => {
+  try {
+    const response = await api.post('/reset');
+    return response.data;
+  } catch (error) {
+    throw new Error(`Failed to reset simulation: ${error.message}`);
   }
 };
 

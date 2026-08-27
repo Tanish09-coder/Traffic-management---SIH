@@ -70,13 +70,19 @@ class TrafficSimulator:
     def handle_command(self, command):
         if command == 'get_state':
             return {
-                'vehicles': [vars(v) for v in self.vehicles],
+                'vehicles': [{
+                    'id': v.id,
+                    'direction': v.direction.value,
+                    'arrival_time': v.arrival_time,
+                    'is_emergency': v.is_emergency,
+                    'position': v.position
+                } for v in self.vehicles],
                 'signal': {
                     'current': self.signal.current_direction.value,
                     'timer': self.signal.timer,
                     'duration': self.signal.duration
                 },
-                'queues': self._get_queue_lengths()
+                'queues': {d.value: len([v for v in self.vehicles if v.direction == d]) for d in Direction}
             }
         elif command == 'get_metrics':
             return self.stats

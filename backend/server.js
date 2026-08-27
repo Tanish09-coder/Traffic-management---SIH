@@ -17,7 +17,7 @@ let pyshell = null;
 // Start simulation
 app.post('/api/simulation/start', (req, res) => {
   if (!pyshell) {
-    pyshell = new PythonShell('traffic_sim/app/main.py');
+    pyshell = new PythonShell('traffic_sim.app.main', { pythonOptions: ['-m'] });
     pyshell.on('message', (message) => {
       console.log('Python:', message);
     });

@@ -1,6 +1,6 @@
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const ChartPanel = ({ metrics }) => {
+const ChartPanel = ({ metrics, state }) => {
   if (!metrics) {
     return (
       <div className="space-y-6">
@@ -14,13 +14,28 @@ const ChartPanel = ({ metrics }) => {
   // Prepare wait time history data
   const waitTimeData = metrics.wait_time_history || [];
   
-  // Prepare queue data for bar chart
-  const queueData = metrics.queue_history?.slice(-1)[0]?.queues || { N: 0, S: 0, E: 0, W: 0 };
+  // Prepare queue data for bar chart.
+  // Priority order:
+  //   1. Last snapshot in queue_history — shape { queues: {N,S,E,W} } (new format)
+  //   2. Last snapshot flat keys N/S/E/W (old format without nested .queues)
+  //   3. state.queues passed directly from the parent
+  //   4. All-zero fallback
+  const lastSnapshot = metrics.queue_history?.slice(-1)[0];
+  const queueData =
+    lastSnapshot?.queues ||                        // new nested shape
+    (lastSnapshot                                  // old flat shape
+      ? { N: lastSnapshot.N ?? 0, S: lastSnapshot.S ?? 0,
+          E: lastSnapshot.E ?? 0, W: lastSnapshot.W ?? 0 }
+      : null) ||
+    state?.queues ||                               // live state fallback
+    { N: 0, S: 0, E: 0, W: 0 };
+
   const queueChartData = Object.entries(queueData).map(([lane, count]) => ({
     lane,
     count,
     color: lane === 'N' ? '#3B82F6' : lane === 'S' ? '#10B981' : lane === 'E' ? '#F59E0B' : '#EF4444'
   }));
+
 
   return (
     <div className="space-y-6">
