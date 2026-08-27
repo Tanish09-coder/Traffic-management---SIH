@@ -18,6 +18,13 @@ const MIN_VEHICLE_GAP = 8;
 // car ever drifts into the visual intersection box while waiting.
 const STOP_LINE_POSITION = INTERSECTION_ENTRY_THRESHOLD - MIN_VEHICLE_GAP; // = 34
 
+// Speed at which a red-light car rolls forward to reach its queue slot.
+// Slower than the normal crossing speed so the approach looks like a gentle
+// deceleration/roll-up rather than a full-speed drive into the stopped car ahead.
+// This also keeps the spawn-gap guard working: the rearmost car moves away from
+// position 0 fast enough that new arrivals can keep spawning behind it.
+const QUEUE_APPROACH_SPEED = 2;
+
 export class VehicleManager {
   constructor() {
     this.cars = { N: [], S: [], E: [], W: [] };
@@ -36,7 +43,10 @@ export class VehicleManager {
 
   updateVehicles(currentSignal) {
     Object.keys(this.cars).forEach(direction => {
-      const updatedCars = this.cars[direction].filter(car => {
+      const isGreen = direction === currentSignal;
+      const laneArr = this.cars[direction]; // keep a stable reference for index lookups
+
+      const updatedCars = laneArr.filter(car => {
 
         // --- Intersection-entry check (Bug 1 fix) ---
         // Once a car crosses INTERSECTION_ENTRY_THRESHOLD it is committed to
@@ -46,52 +56,62 @@ export class VehicleManager {
           car.inIntersection = true;
         }
 
-        // A car should move if ANY of the following is true:
-        //   1. It is an emergency vehicle (always has priority).
-        //   2. Its direction currently has the green light.
-        //   3. It has already entered the intersection and must clear through
-        //      — regardless of the current signal — to avoid freezing mid-cross.
-        const hasGreen = direction === currentSignal;
-        const mustClear = car.inIntersection; // committed to crossing
+        // A car should actively move if ANY of the following is true:
+        //   1. Its direction currently has the green light.
+        //   2. It has already entered the intersection and must clear through.
+        //   3. It is an emergency vehicle (always has priority).
+        const mustClear = car.inIntersection;
 
-        if (hasGreen || mustClear || car.type === 'emergency') {
+        // Index within the original lane array (used for both branches below).
+        const myIndex = laneArr.indexOf(car);
+        const carAhead = myIndex > 0 ? laneArr[myIndex - 1] : null;
+
+        if (isGreen || mustClear || car.type === 'emergency') {
+          // ── ACTIVE MOVEMENT: green light / committed crossing / emergency ──
           car.position += car.speed;
 
-          // --- Following-distance clamp ---
-          // Find the car directly ahead of this one in the lane array.
-          // Lane array is ordered front-to-back: index 0 is furthest ahead.
-          // The current car's index inside updatedCars is not yet known at
-          // filter time, so we look it up in the still-mutating this.cars array.
-          const laneArr = this.cars[direction];
-          const myIndex = laneArr.indexOf(car);
-          if (myIndex > 0) {
-            const carAhead = laneArr[myIndex - 1];
-            if (carAhead && car.position > carAhead.position - MIN_VEHICLE_GAP) {
-              // Clamp: stay at least MIN_VEHICLE_GAP behind the car ahead.
-              car.position = carAhead.position - MIN_VEHICLE_GAP;
-            }
+          // Following-distance clamp: stay at least MIN_VEHICLE_GAP behind
+          // the car directly ahead while moving.
+          if (carAhead && car.position > carAhead.position - MIN_VEHICLE_GAP) {
+            car.position = carAhead.position - MIN_VEHICLE_GAP;
           }
 
-          // Check if car has fully passed the intersection
+          // Exit: car has fully cleared the intersection.
           if (car.position >= 100) {
             this.carsPassed++;
-            // Record wait time only if the car genuinely waited (stopped cars only)
+            // Record wait time only for cars that genuinely stopped.
             if ((car.waitTime || 0) > 0) {
               this._waitTimeHistory.push(car.waitTime);
               if (this._waitTimeHistory.length > 100) {
                 this._waitTimeHistory.shift();
               }
             }
-            return false; // Remove from lane
+            return false; // Remove from lane.
           }
         } else {
-          // Car is before the intersection stop line and its signal is red.
-          // Accumulate wait time — this is the only place waitTime grows.
-          // Also clamp to STOP_LINE_POSITION so queued cars never push into
-          // the intersection box while waiting (visual + logic correctness).
-          car.waitTime = (car.waitTime || 0) + 1;
-          if (car.position > STOP_LINE_POSITION) {
-            car.position = STOP_LINE_POSITION;
+          // ── RED LIGHT: approach queue slot, then stop and wait ──
+          //
+          // Realistic behaviour: a newly arrived car doesn't freeze at its
+          // spawn position. It rolls forward at QUEUE_APPROACH_SPEED until it
+          // reaches its "natural slot" — the position MIN_VEHICLE_GAP behind
+          // the car ahead, or STOP_LINE_POSITION for the first car in line.
+          // Only once it reaches that slot does wait time start accumulating.
+          //
+          // Side-effect: the rearmost car now always moves away from position 0,
+          // which unblocks the spawn-gap guard and lets new arrivals keep joining
+          // the back of the queue continuously while the signal is red.
+
+          const naturalSlot = carAhead
+            ? Math.min(STOP_LINE_POSITION, carAhead.position - MIN_VEHICLE_GAP)
+            : STOP_LINE_POSITION;
+
+          if (car.position < naturalSlot) {
+            // Still approaching — roll forward, don't count wait time yet.
+            car.position = Math.min(naturalSlot, car.position + QUEUE_APPROACH_SPEED);
+          } else {
+            // Reached queue slot — stopped and waiting.
+            car.position = Math.min(car.position, naturalSlot); // hard-clamp
+            car.waitTime = (car.waitTime || 0) + 1;
           }
         }
         return true;
@@ -138,22 +158,22 @@ export class VehicleManager {
   /**
    * Spawn vehicles independently for each lane every tick.
    *
-   * Rates are set LOW and VARIED so lanes reach completely different
-   * steady-state queue depths — they never all hit the cap together:
+   * Rates are set to simulate a busy city road (medium-density boost).
+   * Steady-state queue depths with these rates at speed 4:
    *
-   *   N (main artery) : ~18% chance/tick  → builds to ~8-14 cars
-   *   S (secondary)   : ~10% chance/tick  → builds to ~4-8  cars
-   *   E (cross street) :  ~5% chance/tick  → builds to ~1-4  cars
-   *   W (side road)   :  ~2% chance/tick  → builds to ~0-2  cars
+   *   N (main artery)  : ~35% chance/tick  → builds to ~16-24 cars
+   *   S (secondary)    : ~22% chance/tick  → builds to ~10-16 cars
+   *   E (cross street) : ~12% chance/tick  → builds to ~4-8   cars
+   *   W (side road)    :  ~6% chance/tick  → builds to ~1-4   cars
    *
-   * A small ±0.04 jitter gives natural moment-to-moment variation
-   * without ever spiking so high that lanes equalize at the cap.
+   * A ±0.06 jitter gives natural moment-to-moment variation.
+   * To increase density further raise the rates; to reduce it lower them.
    */
   _spawnVehiclesForAllLanes() {
-    const arrivalRates = { N: 0.18, S: 0.10, E: 0.05, W: 0.02 };
+    const arrivalRates = { N: 0.35, S: 0.22, E: 0.12, W: 0.06 };
 
     for (const [direction, baseRate] of Object.entries(arrivalRates)) {
-      const jitter = (Math.random() - 0.5) * 0.08; // ±0.04
+      const jitter = (Math.random() - 0.5) * 0.12; // ±0.06
       const rate = Math.max(0, baseRate + jitter);
 
       if (Math.random() < rate) {
@@ -165,7 +185,7 @@ export class VehicleManager {
   _spawnOneLane(direction) {
     const isEmergency = this.emergencyCooldown === 0 && Math.random() < 0.02;
 
-    if (this.cars[direction].length < 25) {
+    if (this.cars[direction].length < 40) {
       // --- Spawn-gap guard ---
       // Only place a new car at position 0 if the last car in the queue has
       // already moved at least MIN_VEHICLE_GAP units ahead. Without this check,
