@@ -16,6 +16,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const navItems = [
     { id: 'dashboard', label: '📊 Dashboard', desc: 'System Overview & Analytics' },
     { id: 'live-intersection', label: '🚦 Live Intersection', desc: 'Real-time Simulation & Overrides' },
+    { id: 'analytics', label: '📈 Analytics', desc: 'Efficiency & Sustainability Metrics' },
     { id: 'about', label: 'ℹ️ About', desc: 'Architecture & Features' }
   ];
 
