@@ -123,15 +123,26 @@ export class SignalManager {
     if (!this.emergencyActive && emergency) {
       this.emergencyActive = true;
       this.emergencyDirection = emergency.direction;
+      this.emergencyVehicleId = emergency.id || null;
       this.currentSignal = emergency.direction;
       this.signalTimer = 0;
       this.signalDuration = TRAFFIC_CONSTANTS.MAX_SIGNAL_TIME;
+    }
+  }
 
-      // Reset emergency state after passage
-      setTimeout(() => {
+  checkEmergencyCleared(emergencyLaneCars) {
+    if (this.emergencyActive && this.emergencyDirection) {
+      const stillActive = (emergencyLaneCars || []).some(car =>
+        (car.type === 'emergency' || car.type === 'ambulance' || car.type === 'firetruck' || car.id === this.emergencyVehicleId) &&
+        car.position < 100
+      );
+      if (!stillActive) {
+        // Vehicle has fully crossed and cleared the intersection
         this.emergencyActive = false;
         this.emergencyDirection = null;
-      }, 15000); // 15 seconds for emergency vehicle passage
+        this.emergencyVehicleId = null;
+        this.signalTimer = 0;
+      }
     }
   }
 

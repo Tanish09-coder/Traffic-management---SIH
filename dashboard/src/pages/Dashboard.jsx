@@ -20,7 +20,8 @@ const Dashboard = () => {
     switchToMock, 
     switchToBackend, 
     setSpeed, 
-    resetSimulation 
+    resetSimulation,
+    triggerEmergencyVehicle 
   } = useTrafficData();
 
   // Control panel state
@@ -364,21 +365,56 @@ const Dashboard = () => {
                     {lane}: {count}
                   </div>
                 ))}
+
+                {/* Fullscreen Mode Overlay Controls */}
+                {isFullscreen && (
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-50 select-none">
+                    <div className="bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white px-5 py-2.5 rounded-xl shadow-2xl">
+                      <span className="text-sm font-semibold">
+                        Current: {state?.signal} | Next change in: {Math.max(0, (state?.signal_duration || 30) - (state?.signal_timer || 0))}s
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
+                      disabled={state?.emergencyActive}
+                      className={`px-6 py-2.5 rounded-xl font-bold text-sm text-white transition-all shadow-2xl flex items-center space-x-2 ${
+                        state?.emergencyActive
+                          ? 'bg-red-700 animate-pulse cursor-default'
+                          : 'bg-red-600 hover:bg-red-700 active:scale-95'
+                      }`}
+                    >
+                      <span>{state?.emergencyActive ? '🚨 EMERGENCY ACTIVE' : 'EMERGENCY MODE'}</span>
+                    </button>
+                    <button
+                      onClick={toggleFullscreen}
+                      className="p-2.5 rounded-xl bg-gray-900/90 hover:bg-gray-800 text-white border border-gray-700 shadow-2xl transition"
+                      title="Exit Fullscreen"
+                    >
+                      <Minimize size={18} />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Signal Timer */}
+              {/* Signal Timer & Emergency Mode Button */}
               {state?.signal_timer !== undefined && (
-                <div className="mt-4 flex justify-center space-x-4">
-                  <div className="bg-gray-800 text-white px-4 py-2 rounded-lg">
-                    <span className="text-sm">
-                      Current: {state.signal} | Next change in: {state.signal_duration - state.signal_timer}s
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                  <div className="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-sm">
+                    <span className="text-sm font-medium">
+                      Current: {state.signal} | Next change in: {Math.max(0, state.signal_duration - state.signal_timer)}s
                     </span>
                   </div>
-                  {state.emergencyActive && (
-                    <div className="bg-red-600 text-white px-4 py-2 rounded-lg animate-pulse">
-                      <span className="text-sm">EMERGENCY MODE</span>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
+                    disabled={state?.emergencyActive}
+                    className={`px-5 py-2 rounded-lg font-bold text-sm text-white transition-all shadow-md flex items-center space-x-1.5 ${
+                      state?.emergencyActive
+                        ? 'bg-red-700 animate-pulse cursor-default'
+                        : 'bg-red-600 hover:bg-red-700 active:scale-95'
+                    }`}
+                  >
+                    <span>{state?.emergencyActive ? '🚨 EMERGENCY ACTIVE' : 'EMERGENCY MODE'}</span>
+                  </button>
                 </div>
               )}
             </div>
