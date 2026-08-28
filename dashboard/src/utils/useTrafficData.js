@@ -1,4 +1,4 @@
-  import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+﻿  import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { TRAFFIC_CONSTANTS } from './constants';
 import { VehicleManager } from './VehicleManager';
 import { SignalManager } from './SignalManager';
@@ -196,7 +196,7 @@ class MockTrafficSimulator {
     const priority = type === 'ambulance' ? 3 : type === 'fire' ? 2 : 1;
     
     if (!this.emergencyActive || priority > (this.getCurrentEmergencyPriority() || 0)) {
-      console.log(`🚨 Emergency ${type} detected in lane ${lane}!`);
+      console.log(`ðŸš¨ Emergency ${type} detected in lane ${lane}!`);
       
       this.preEmergencyQueues = { ...this.lastQueueCounts };
       this.emergencyStartTime = Date.now();
@@ -242,7 +242,7 @@ class MockTrafficSimulator {
       );
       
       if (!emergencyVehiclePresent) {
-        console.log(`🚨 Emergency vehicle ${this.emergencyVehicleId} has passed.`);
+        console.log(`ðŸš¨ Emergency vehicle ${this.emergencyVehicleId} has passed.`);
         this.initiatePostEmergencyMode();
       }
     }
@@ -256,7 +256,7 @@ class MockTrafficSimulator {
     this.postEmergencyIndex = 0;
     
     // Close the emergency direction signal immediately
-    console.log(`🚦 Closing emergency lane ${this.emergencyDirection}`);
+    console.log(`ðŸš¦ Closing emergency lane ${this.emergencyDirection}`);
     
     // Determine if we should start rotation or go to AI mode
     const totalWaitingCars = Object.values(this.cars).reduce((total, cars) => total + cars.length, 0);
@@ -491,7 +491,7 @@ class MockTrafficSimulator {
     
     // Update totals
     this.totalFuelSaved += this.totalFuelSavedPerHour / 3600; // Convert to per-tick
-    this.totalCostSaved += (this.totalFuelSavedPerHour / 3600) * 105; // ₹105 per liter
+    this.totalCostSaved += (this.totalFuelSavedPerHour / 3600) * 105; // â‚¹105 per liter
   }
 
   // Enhanced system efficiency calculation for Mumbai
@@ -567,7 +567,7 @@ class MockTrafficSimulator {
       this.metrics.efficiencyHistory.shift();
     }
     
-    console.log(`🎯 Mumbai System - Efficiency: ${this.systemEfficiency.toFixed(1)}% | Wait: ${this.currentAvgWaitTime.toFixed(1)}s | Improvement: ${this.improvementPercentage.toFixed(1)}%`);
+    console.log(`ðŸŽ¯ Mumbai System - Efficiency: ${this.systemEfficiency.toFixed(1)}% | Wait: ${this.currentAvgWaitTime.toFixed(1)}s | Improvement: ${this.improvementPercentage.toFixed(1)}%`);
   }
 
   calculateQueueVariance() {
@@ -619,7 +619,7 @@ class MockTrafficSimulator {
       this.signalTimer = 0;
       
       const status = isEmpty ? 'Empty road' : `${this.cars[this.currentSignal].length} cars`;
-      console.log(`🤖 Mumbai AI: ${this.currentSignal} for ${this.signalDuration}s (${status})`);
+      console.log(`ðŸ¤– Mumbai AI: ${this.currentSignal} for ${this.signalDuration}s (${status})`);
     }
   }
 
@@ -1183,6 +1183,17 @@ export function useTrafficData(pollInterval = 1000) {
     return emg;
   }, [vehicleManager, signalManager]);
 
+
+  useEffect(() => {
+    const isActive = state?.emergencyActive || false;
+    window.dispatchEvent(new CustomEvent('emergency-override', { detail: { active: isActive } }));
+    
+    if (isActive) {
+      document.body.classList.add('emergency-strobe-active');
+    } else {
+      document.body.classList.remove('emergency-strobe-active');
+    }
+  }, [state?.emergencyActive]);
   return {
     state,
     metrics,
