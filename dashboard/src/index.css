@@ -2,6 +2,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 @import 'tailwindcss';
 
+@theme {
+  --color-slate-50: var(--clr-bg);
+  --color-slate-100: var(--clr-surface-2);
+  --color-slate-200: var(--clr-border);
+  --color-slate-300: #d8d1c3;
+  --color-slate-400: var(--clr-text-muted);
+  --color-slate-500: var(--clr-text-muted);
+  --color-slate-600: var(--clr-text-secondary);
+  --color-slate-700: var(--clr-text-secondary);
+  --color-slate-800: var(--clr-text-primary);
+  --color-slate-900: #1a1714;
+
+  --color-blue-50: #f5f2eb;
+  --color-blue-100: #e8e2d5;
+  --color-blue-200: #d1c5b0;
+  --color-blue-500: var(--clr-accent);
+  --color-blue-600: var(--clr-primary);
+  --color-blue-700: #64563f;
+
+  --color-gray-50: var(--clr-bg);
+  --color-gray-100: var(--clr-surface-2);
+  --color-gray-200: var(--clr-border);
+  --color-gray-300: #d8d1c3;
+  --color-gray-700: var(--clr-text-secondary);
+  --color-gray-800: var(--clr-text-primary);
+  --color-gray-900: #1a1714;
+}
+
 /* ============================================================
    SHREYA — index.css
    Styling, Theme & Global CSS
@@ -12,24 +40,24 @@
 /* ── CSS Custom Properties (Design Tokens) ───────────────── */
 :root {
   /* Brand palette */
-  --clr-bg:           #0f1117;
-  --clr-surface:      #1a1d27;
-  --clr-surface-2:    #232635;
-  --clr-border:       #2e3148;
-  --clr-border-light: rgba(255,255,255,0.08);
+  --clr-bg:           #faf8f5;
+  --clr-surface:      #ffffff;
+  --clr-surface-2:    #f7f6f3;
+  --clr-border:       #e7e2d9;
+  --clr-border-light: rgba(41,37,32,0.08);
 
-  --clr-primary:      #3b82f6;
-  --clr-primary-glow: rgba(59,130,246,0.35);
-  --clr-accent:       #6366f1;
-  --clr-success:      #22c55e;
-  --clr-warning:      #f59e0b;
-  --clr-danger:       #ef4444;
-  --clr-emergency:    #f97316;
+  --clr-primary:      #7a6a4f;
+  --clr-primary-glow: rgba(122,106,79,0.20);
+  --clr-accent:       #8f7a58;
+  --clr-success:      #4d7c5e;
+  --clr-warning:      #b08a3e;
+  --clr-danger:       #a5504a;
+  --clr-emergency:    #b3703f;
 
   /* Text */
-  --clr-text-primary:   #f1f5f9;
-  --clr-text-secondary: #94a3b8;
-  --clr-text-muted:     #64748b;
+  --clr-text-primary:   #292520;
+  --clr-text-secondary: #6b6459;
+  --clr-text-muted:     #8a8478;
 
   /* Road surface palette */
   --road-asphalt:     #1c1f26;
@@ -47,10 +75,10 @@
   --radius-xl:  24px;
 
   /* Shadows */
-  --shadow-card:       0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-glow-blue:  0 0 20px rgba(59,130,246,0.4);
-  --shadow-glow-green: 0 0 20px rgba(34,197,94,0.4);
-  --shadow-glow-red:   0 0 20px rgba(239,68,68,0.4);
+  --shadow-card:       0 2px 12px rgba(41,37,32,0.06), 0 1px 3px rgba(41,37,32,0.04);
+  --shadow-glow-blue:  0 0 20px rgba(122,106,79,0.25);
+  --shadow-glow-green: 0 0 20px rgba(77,124,94,0.25);
+  --shadow-glow-red:   0 0 20px rgba(165,80,74,0.25);
 
   /* Transitions */
   --t-fast:   0.15s ease;
@@ -333,7 +361,7 @@ code, pre, .font-mono {
    COMPONENT UTILITY CLASSES
    ════════════════════════════════════════════════════════════ */
 
-/* Dark surface card */
+/* Surface card */
 .card {
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
@@ -342,16 +370,16 @@ code, pre, .font-mono {
   transition: border-color var(--t-fast), box-shadow var(--t-fast);
 }
 .card:hover {
-  border-color: rgba(99,102,241,0.4);
-  box-shadow: var(--shadow-card), 0 0 0 1px rgba(99,102,241,0.15);
+  border-color: var(--clr-primary);
+  box-shadow: var(--shadow-card), 0 0 0 1px var(--clr-primary-glow);
 }
 
 /* Glassmorphism card */
 .card-glass {
-  background: rgba(26,29,39,0.7);
+  background: rgba(255,255,255,0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--clr-border-light);
+  border: 1px solid var(--clr-border);
   border-radius: var(--radius-lg);
 }
 
@@ -366,11 +394,11 @@ code, pre, .font-mono {
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-.pill-green  { background: rgba(34,197,94,0.15);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3);  }
-.pill-blue   { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
-.pill-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
-.pill-red    { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.3);  }
-.pill-orange { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+.pill-green  { background: rgba(77,124,94,0.12);  color: #4d7c5e; border: 1px solid rgba(77,124,94,0.28);  }
+.pill-blue   { background: rgba(122,106,79,0.12); color: #7a6a4f; border: 1px solid rgba(122,106,79,0.28); }
+.pill-yellow { background: rgba(176,138,62,0.12); color: #b08a3e; border: 1px solid rgba(176,138,62,0.28); }
+.pill-red    { background: rgba(165,80,74,0.12);  color: #a5504a; border: 1px solid rgba(165,80,74,0.28);  }
+.pill-orange { background: rgba(179,112,63,0.12); color: #b3703f; border: 1px solid rgba(179,112,63,0.28); }
 
 /* Stat number */
 .stat-value {
@@ -392,16 +420,16 @@ code, pre, .font-mono {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fff;
-  background: rgba(17,24,39,0.85);
-  border: 1px solid rgba(255,255,255,0.15);
+  color: #ffffff;
+  background: rgba(41,37,32,0.85);
+  border: 1px solid rgba(231,226,217,0.3);
   backdrop-filter: blur(6px);
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 2px 8px rgba(41,37,32,0.15);
 }
-.queue-badge.queue-active   { background: rgba(34,197,94,0.75);  border-color: rgba(34,197,94,0.5);  }
-.queue-badge.queue-high     { background: rgba(245,158,11,0.75); border-color: rgba(245,158,11,0.5); }
-.queue-badge.queue-critical { background: rgba(239,68,68,0.75);  border-color: rgba(239,68,68,0.5);  animation: signal-flash 0.8s step-end infinite; }
+.queue-badge.queue-active   { background: rgba(77,124,94,0.85);  border-color: rgba(77,124,94,0.6);  }
+.queue-badge.queue-high     { background: rgba(176,138,62,0.85); border-color: rgba(176,138,62,0.6); }
+.queue-badge.queue-critical { background: rgba(165,80,74,0.85);  border-color: rgba(165,80,74,0.6);  animation: signal-flash 0.8s step-end infinite; }
 
 /* ════════════════════════════════════════════════════════════
    LEGEND COMPONENT STYLES  (Legend.jsx — owned by Shreya)
@@ -475,45 +503,45 @@ code, pre, .font-mono {
 @keyframes emergency-strobe {
   0% {
     box-shadow:
-      0 0 0 2px #ef4444,
-      0 0 18px 4px rgba(239, 68, 68, 0.70),
-      0 0 40px 8px rgba(239, 68, 68, 0.30);
-    border-color: #ef4444;
+      0 0 0 2px #a5504a,
+      0 0 18px 4px rgba(165, 80, 74, 0.40),
+      0 0 40px 8px rgba(165, 80, 74, 0.15);
+    border-color: #a5504a;
   }
   20% {
     box-shadow:
-      0 0 0 2px #f97316,
-      0 0 24px 6px rgba(249, 115, 22, 0.65),
-      0 0 48px 10px rgba(249, 115, 22, 0.25);
-    border-color: #f97316;
+      0 0 0 2px #b3703f,
+      0 0 24px 6px rgba(179, 112, 63, 0.35),
+      0 0 48px 10px rgba(179, 112, 63, 0.15);
+    border-color: #b3703f;
   }
   40% {
     box-shadow:
-      0 0 0 2px #3b82f6,
-      0 0 18px 4px rgba(59, 130, 246, 0.70),
-      0 0 40px 8px rgba(59, 130, 246, 0.30);
-    border-color: #3b82f6;
+      0 0 0 2px #7a6a4f,
+      0 0 18px 4px rgba(122, 106, 79, 0.40),
+      0 0 40px 8px rgba(122, 106, 79, 0.15);
+    border-color: #7a6a4f;
   }
   60% {
     box-shadow:
-      0 0 0 2px #6366f1,
-      0 0 24px 6px rgba(99, 102, 241, 0.65),
-      0 0 48px 10px rgba(99, 102, 241, 0.25);
-    border-color: #6366f1;
+      0 0 0 2px #8f7a58,
+      0 0 24px 6px rgba(143, 122, 88, 0.35),
+      0 0 48px 10px rgba(143, 122, 88, 0.15);
+    border-color: #8f7a58;
   }
   80% {
     box-shadow:
-      0 0 0 2px #ef4444,
-      0 0 18px 4px rgba(239, 68, 68, 0.70),
-      0 0 40px 8px rgba(239, 68, 68, 0.30);
-    border-color: #ef4444;
+      0 0 0 2px #a5504a,
+      0 0 18px 4px rgba(165, 80, 74, 0.40),
+      0 0 40px 8px rgba(165, 80, 74, 0.15);
+    border-color: #a5504a;
   }
   100% {
     box-shadow:
-      0 0 0 2px #3b82f6,
-      0 0 18px 4px rgba(59, 130, 246, 0.70),
-      0 0 40px 8px rgba(59, 130, 246, 0.30);
-    border-color: #3b82f6;
+      0 0 0 2px #7a6a4f,
+      0 0 18px 4px rgba(122, 106, 79, 0.40),
+      0 0 40px 8px rgba(122, 106, 79, 0.15);
+    border-color: #7a6a4f;
   }
 }
 
@@ -526,7 +554,7 @@ code, pre, .font-mono {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
-    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.9));
+    filter: drop-shadow(0 0 6px rgba(165, 80, 74, 0.6));
   }
   15% {
     opacity: 0.15;
@@ -536,7 +564,7 @@ code, pre, .font-mono {
   30% {
     opacity: 1;
     transform: scale(1.15);
-    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.95));
+    filter: drop-shadow(0 0 10px rgba(122, 106, 79, 0.65));
   }
   45% {
     opacity: 0.15;
@@ -546,7 +574,7 @@ code, pre, .font-mono {
   60% {
     opacity: 1;
     transform: scale(1.1);
-    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.85));
+    filter: drop-shadow(0 0 8px rgba(165, 80, 74, 0.55));
   }
   75% {
     opacity: 0.2;
@@ -556,26 +584,23 @@ code, pre, .font-mono {
   90% {
     opacity: 1;
     transform: scale(1.05);
-    filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+    filter: drop-shadow(0 0 6px rgba(122, 106, 79, 0.5));
   }
 }
 
 /*
  * .emergency-strobe-active
  * Apply to a container (div, section, banner) to get the
- * red-orange-blue alternating glow border.
- * Requires `border-2` or similar border width to be set on the element
- * so border-color changes are visible.
+ * muted alternating glow border.
  */
 .emergency-strobe-active {
   animation: emergency-strobe 0.7s ease-in-out infinite;
   border-width: 2px;
   border-style: solid;
-  /* initial state — browser fills in immediately */
-  border-color: #ef4444;
+  border-color: #a5504a;
   box-shadow:
-    0 0 0 2px #ef4444,
-    0 0 18px 4px rgba(239, 68, 68, 0.70);
+    0 0 0 2px #a5504a,
+    0 0 18px 4px rgba(165, 80, 74, 0.40);
 }
 
 /*

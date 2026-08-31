@@ -1,4 +1,11 @@
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const LANE_COLORS = {
+  N: '#8A6B3D',
+  S: '#A6844D',
+  E: '#C4A066',
+  W: '#DFC395'
+};
 
 const ChartPanel = ({ metrics, state }) => {
   if (!metrics) {
@@ -15,11 +22,6 @@ const ChartPanel = ({ metrics, state }) => {
   const waitTimeData = metrics.wait_time_history || [];
   
   // Prepare queue data for bar chart.
-  // Priority order:
-  //   1. Last snapshot in queue_history — shape { queues: {N,S,E,W} } (new format)
-  //   2. Last snapshot flat keys N/S/E/W (old format without nested .queues)
-  //   3. state.queues passed directly from the parent
-  //   4. All-zero fallback
   const lastSnapshot = metrics.queue_history?.slice(-1)[0];
   const queueData =
     lastSnapshot?.queues ||                        // new nested shape
@@ -33,9 +35,8 @@ const ChartPanel = ({ metrics, state }) => {
   const queueChartData = Object.entries(queueData).map(([lane, count]) => ({
     lane,
     count,
-    color: lane === 'N' ? '#3B82F6' : lane === 'S' ? '#10B981' : lane === 'E' ? '#F59E0B' : '#EF4444'
+    color: LANE_COLORS[lane] || '#DFC395'
   }));
-
 
   return (
     <div className="space-y-6">
@@ -76,27 +77,30 @@ const ChartPanel = ({ metrics, state }) => {
       </div>
 
       {/* Queue Length Chart */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Current Queue Lengths</h3>
+      <div className="border-2 border-[#A6844D]/30 rounded-2xl bg-white p-5 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4 text-slate-800">Current Queue Lengths</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={queueChartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#F5F2EB" />
             <XAxis 
               dataKey="lane" 
-              stroke="#666"
-              fontSize={12}
+              stroke="#D1C7B7"
+              tick={{ fill: '#6B5E4C', fontSize: 12 }}
             />
             <YAxis 
-              stroke="#666"
-              fontSize={12}
-              label={{ value: 'Cars', angle: -90, position: 'insideLeft' }}
+              stroke="#D1C7B7"
+              tick={{ fill: '#6B5E4C', fontSize: 12 }}
+              label={{ value: 'Cars', angle: -90, position: 'insideLeft', fill: '#6B5E4C', fontSize: 12 }}
             />
             <Tooltip 
+              cursor={{ fill: 'rgba(223, 195, 149, 0.15)' }}
               contentStyle={{ 
-                backgroundColor: '#fff', 
-                border: '1px solid #ddd',
-                borderRadius: '6px'
+                backgroundColor: '#FFFEFA', 
+                border: '1px solid #DFC395',
+                borderRadius: '12px',
+                boxShadow: '0 4px 10px rgba(138, 107, 61, 0.12)'
               }}
+              itemStyle={{ color: '#8A6B3D' }}
               formatter={(value, name, props) => [
                 `${value} cars`, 
                 `Lane ${props.payload.lane}`
@@ -104,9 +108,12 @@ const ChartPanel = ({ metrics, state }) => {
             />
             <Bar 
               dataKey="count" 
-              fill="#3B82F6"
-              radius={[4, 4, 0, 0]}
-            />
+              radius={[6, 6, 0, 0]}
+            >
+              {queueChartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
