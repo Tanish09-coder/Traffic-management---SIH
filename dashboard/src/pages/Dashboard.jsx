@@ -131,24 +131,9 @@ const Dashboard = () => {
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
                 🧠 Smart Traffic Management System
               </h1>
-              <p className="text-base sm:text-lg text-slate-600 mb-4">
-                AI-Powered Traffic Optimization Dashboard
-              </p>
+
               <div className="flex items-center space-x-4">
-                <span className={`inline-flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold border ${
-                  state?.system_mode === 'Emergency' 
-                    ? 'bg-red-100 text-red-800 border-red-200'
-                    : state?.system_mode === 'Post-Emergency Rotation'
-                      ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                      : 'bg-blue-100 text-blue-800 border-blue-200'
-                }`}>
-                  <span className={`w-2 h-2 rounded-full animate-pulse ${
-                    state?.system_mode === 'Emergency' ? 'bg-red-500'
-                      : state?.system_mode === 'Post-Emergency Rotation' ? 'bg-yellow-500'
-                      : 'bg-blue-500'
-                  }`}></span>
-                  <span>{state?.system_mode || 'AI Intelligent'}</span>
-                </span>
+
                 <span className="text-xs sm:text-sm text-slate-500">📍 Mumbai BKC Junction</span>
               </div>
               
@@ -171,13 +156,7 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-            <div className="text-right hidden sm:block">
-              <div className="text-xs text-slate-500 mb-1">System Status</div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-emerald-600 font-semibold text-sm">OPERATIONAL</span>
-              </div>
-            </div>
+
           </div>
         </div>
 

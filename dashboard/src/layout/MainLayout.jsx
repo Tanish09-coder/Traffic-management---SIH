@@ -121,9 +121,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="font-bold text-lg text-slate-900 tracking-tight">Mumbai STMS</span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
-                      AI v2.4
-                    </span>
+
                   </div>
                   <p className="text-xs text-slate-500 hidden md:block">Smart Traffic Management System • BKC Junction</p>
                 </div>
