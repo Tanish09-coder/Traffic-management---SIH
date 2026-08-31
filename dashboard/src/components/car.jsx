@@ -408,15 +408,15 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
   );
 
   // Smooth overtake lane shift trajectory for emergency vehicles:
-  // Phase 1 (0 -> 28): Smoothly steer sideways into adjacent lane (overtake maneuver)
-  // Phase 2 (28 -> 42): Advance down the adjacent lane past queued cars
-  // Phase 3 (42 -> 55): At center junction box, smoothly steer back left to original lane
-  // Phase 4 (55 -> 100): Clear intersection in original lane
-  let lateralShiftPercent = 0; // 0 = original lane, 1 = adjacent lane
+  // Phase 1 (0 -> 25): Smoothly glide into center overtake corridor between lanes
+  // Phase 2 (25 -> 42): Advance down the clear center corridor past queued cars with 0 collision
+  // Phase 3 (42 -> 55): At empty center junction box, smoothly steer back left to original lane
+  // Phase 4 (55 -> 100): Clear intersection straight in original lane
+  let lateralShiftPercent = 0; // 0 = original lane, 1 = center corridor
   if (isEmergencyVehicle) {
-    if (position <= 28) {
-      lateralShiftPercent = Math.min(1, Math.max(0, position / 24));
-    } else if (position > 28 && position < 42) {
+    if (position <= 25) {
+      lateralShiftPercent = Math.min(1, Math.max(0, position / 22));
+    } else if (position > 25 && position < 42) {
       lateralShiftPercent = 1;
     } else if (position >= 42 && position <= 55) {
       lateralShiftPercent = Math.max(0, 1 - (position - 42) / 13);
@@ -437,11 +437,11 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
         : (isLarge ? '21px' : isBike ? '17.5px' : '19px'),
     };
 
-    // Lateral shift delta kept strictly inside road bounds:
-    // Fullscreen: 12px shift
-    // Normal: 6% shift (moves vehicle smoothly to adjacent lane while staying 100% inside road asphalt)
-    const pxShift = lateralShiftPercent * (isFullscreen ? 12 : 0);
-    const pctShift = lateralShiftPercent * 6;
+    // Corridor shift delta (moves center to 49.5%/50.5% - directly along the center yellow line corridor):
+    // Fullscreen: 18px shift
+    // Normal: 3.5% shift
+    const pxShift = lateralShiftPercent * (isFullscreen ? 18 : 0);
+    const pctShift = lateralShiftPercent * 3.5;
 
     let leftPos = '';
     let topPos = '';
