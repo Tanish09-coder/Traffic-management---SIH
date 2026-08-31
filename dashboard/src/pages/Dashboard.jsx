@@ -329,6 +329,25 @@ const Dashboard = () => {
                         Current: {state?.signal} | Next change in: {Math.max(0, (state?.signal_duration || 30) - (state?.signal_timer || 0))}s
                       </span>
                     </div>
+
+                    {/* Simulation Speed Control */}
+                    <div className="flex items-center space-x-1 bg-gray-900/90 backdrop-blur-md border border-gray-700 p-1 rounded-xl shadow-2xl">
+                      {[1, 2, 5].map(s => (
+                        <button
+                          key={s}
+                          onClick={() => setSpeed(s)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            simulationSpeed === s
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'text-gray-300 hover:bg-gray-800'
+                          }`}
+                          title={`Set simulation speed to ${s}x`}
+                        >
+                          {s}x
+                        </button>
+                      ))}
+                    </div>
+
                     <button
                       onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
                       disabled={state?.emergencyActive}
@@ -342,7 +361,7 @@ const Dashboard = () => {
                     </button>
                     <button
                       onClick={toggleFullscreen}
-                      className="p-2.5 rounded-xl bg-gray-900/90 hover:bg-gray-800 text-white border border-gray-700 shadow-2xl transition"
+                      className="p-2.5 rounded-xl bg-gray-900/90 hover:bg-gray-800 text-white border border-gray-700 shadow-2xl transition cursor-pointer"
                       title="Exit Fullscreen"
                     >
                       <Minimize size={18} />
