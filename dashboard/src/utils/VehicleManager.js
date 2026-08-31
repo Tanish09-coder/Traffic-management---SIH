@@ -107,25 +107,11 @@ export class VehicleManager {
           if (car.position >= 100) {
             this.carsPassed++;
             const wt = typeof car.waitTime === 'number' ? car.waitTime : 0;
-            this._waitTimeHistory.push(wt);
-            if (this._waitTimeHistory.length > 200) {
-              this._waitTimeHistory.shift();
-            }
+            this._waitTimeHistory = [...this._waitTimeHistory.slice(-199), wt];
             return false; // Remove from lane.
           }
         } else {
           // ── RED LIGHT: approach queue slot, then stop and wait ──
-          //
-          // Realistic behaviour: a newly arrived car doesn't freeze at its
-          // spawn position. It rolls forward at QUEUE_APPROACH_SPEED until it
-          // reaches its "natural slot" — the position MIN_VEHICLE_GAP behind
-          // the car ahead, or STOP_LINE_POSITION for the first car in line.
-          // Only once it reaches that slot does wait time start accumulating.
-          //
-          // Side-effect: the rearmost car now always moves away from position 0,
-          // which unblocks the spawn-gap guard and lets new arrivals keep joining
-          // the back of the queue continuously while the signal is red.
-
           const naturalSlot = carAhead
             ? Math.min(STOP_LINE_POSITION, carAhead.position - MIN_VEHICLE_GAP)
             : STOP_LINE_POSITION;
@@ -146,8 +132,6 @@ export class VehicleManager {
     });
 
     // --- Per-lane independent spawning ---
-    // Each lane has its own arrival rate, creating naturally unequal queues.
-    // North is the main artery (high load); West is a side street (low load).
     this._spawnVehiclesForAllLanes();
 
     // Update emergency cooldown
@@ -156,28 +140,22 @@ export class VehicleManager {
     }
 
     // Snapshot queue lengths into rolling history.
-    // Shape: { time, N, S, E, W, queues: { N, S, E, W } }
-    // The flat N/S/E/W keys serve line-chart use-cases; the nested 'queues'
-    // sub-object is what ChartPanel reads via slice(-1)[0]?.queues.
     const ql = this.getQueueLengths();
     const snapshot = {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       ...ql,          // flat: N, S, E, W
       queues: { ...ql } // nested: for ChartPanel bar-chart lookup
     };
-    this._queueHistory.push(snapshot);
-    if (this._queueHistory.length > 30) {
-      this._queueHistory.shift();
-    }
+    this._queueHistory = [...this._queueHistory.slice(-29), snapshot];
 
     // Throughput snapshot
-    this._throughputHistory.push({
-      timestamp: Date.now(),
-      throughput: this.calculateThroughput()
-    });
-    if (this._throughputHistory.length > 120) {
-      this._throughputHistory.shift();
-    }
+    this._throughputHistory = [
+      ...this._throughputHistory.slice(-119),
+      {
+        timestamp: Date.now(),
+        throughput: this.calculateThroughput()
+      }
+    ];
   }
 
   /**
@@ -245,7 +223,7 @@ export class VehicleManager {
         direction
       };
 
-      this.cars[direction].push(newCar);
+      this.cars[direction] = [...this.cars[direction], newCar];
 
       if (isEmergency) {
         this.emergencyVehicleCount++;
@@ -284,7 +262,7 @@ export class VehicleManager {
       direction
     };
 
-    this.cars[direction].unshift(newCar);
+    this.cars[direction] = [newCar, ...this.cars[direction]];
     this.emergencyVehicleCount++;
     this.emergencyCooldown = 300;
 
@@ -391,9 +369,14 @@ export class VehicleManager {
     const emergencyActive = this.emergencyCooldown > 0;
 
     return {
-      // Vehicle data
-      cars: this.cars,
-      queues,
+      // Vehicle data - return fresh array copies
+      cars: {
+        N: [...(this.cars.N || [])],
+        S: [...(this.cars.S || [])],
+        E: [...(this.cars.E || [])],
+        W: [...(this.cars.W || [])]
+      },
+      queues: { ...queues },
       cars_passed: this.carsPassed,
       avg_wait_time: this.calculateAverageWaitTime(),
 
@@ -451,8 +434,8 @@ export class VehicleManager {
       emergency_count: this.emergencyVehicleCount,
 
       // Chart data
-      queue_history: this._queueHistory.slice(-30),
-      wait_time_history: waitTimeHistory.slice(-30),
+      queue_history: [...this._queueHistory.slice(-30)],
+      wait_time_history: [...waitTimeHistory.slice(-30)],
 
       // Efficiency / savings
       fuel_saved_total: 0,
@@ -465,8 +448,8 @@ export class VehicleManager {
       active_road_count: Object.values(this.getQueueLengths()).filter(l => l > 0).length,
 
       // Legacy raw arrays
-      wait_times: this.calculateWaitTimes(),
-      historical_queues: this.getQueueLengths(),
+      wait_times: [...this.calculateWaitTimes()],
+      historical_queues: { ...this.getQueueLengths() },
 
       // Mumbai metrics
       traditional_wait_time: TRAFFIC_CONSTANTS.TRADITIONAL_WAIT_TIME,

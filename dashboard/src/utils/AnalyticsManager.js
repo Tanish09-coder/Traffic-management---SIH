@@ -160,7 +160,7 @@ export class AnalyticsManager {
           this.laneProcessed[lane] = (this.laneProcessed[lane] || 0) + 1;
 
           const wait = typeof car.waitTime === 'number' ? car.waitTime : 0;
-          this.completedWaitTimes.push(wait);
+          this.completedWaitTimes = [...this.completedWaitTimes, wait];
           this.totalWaitTimeSum += wait;
         }
       });
@@ -175,7 +175,7 @@ export class AnalyticsManager {
       // If cars were passed internally by VehicleManager before position check
       if (this.completedWaitTimes.length === 0) {
         const estWait = this.lastMeasuredDelay || 30.0;
-        this.completedWaitTimes.push(estWait);
+        this.completedWaitTimes = [...this.completedWaitTimes, estWait];
         this.totalWaitTimeSum += estWait * delta;
       }
     }
@@ -209,13 +209,16 @@ export class AnalyticsManager {
     if (isEmergencyActive && !this.lastEmergencyActive) {
       this.emergencyPreemptions++;
       this.eventCount++;
-      this.emergencyEvents.push({
-        id: `EMG-${Date.now().toString().slice(-4)}`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        direction: state.emergencyDirection || currentSignal,
-        vehicleType: 'Emergency Vehicle',
-        resolved: false
-      });
+      this.emergencyEvents = [
+        ...this.emergencyEvents,
+        {
+          id: `EMG-${Date.now().toString().slice(-4)}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          direction: state.emergencyDirection || currentSignal,
+          vehicleType: 'Emergency Vehicle',
+          resolved: false
+        }
+      ];
     } else if (!isEmergencyActive && this.lastEmergencyActive && this.emergencyEvents.length > 0) {
       const lastEmg = this.emergencyEvents[this.emergencyEvents.length - 1];
       if (lastEmg && !lastEmg.resolved) {
@@ -243,26 +246,24 @@ export class AnalyticsManager {
         ? Number((this.totalWaitTimeSum / this.completedWaitTimes.length).toFixed(1))
         : (this.lastMeasuredDelay ? Number(this.lastMeasuredDelay.toFixed(1)) : 30.0);
 
-      this.timeSeries.push({
-        time: timeLabel,
-        tick: this.tickCounter,
-        activeVehicles: currentActiveCount,
-        processedVehicles: this.totalProcessed,
-        throughput: currentThroughput,
-        avgWaitTime: avgWaitSoFar,
-        totalQueue: currentTotalQueue,
-        queueN: queues.N || 0,
-        queueS: queues.S || 0,
-        queueE: queues.E || 0,
-        queueW: queues.W || 0,
-        signal: currentSignal,
-        isEmergency: isEmergencyActive
-      });
-
-      // Keep max 40 time-series points to prevent memory creep
-      if (this.timeSeries.length > 40) {
-        this.timeSeries.shift();
-      }
+      this.timeSeries = [
+        ...this.timeSeries.slice(-39),
+        {
+          time: timeLabel,
+          tick: this.tickCounter,
+          activeVehicles: currentActiveCount,
+          processedVehicles: this.totalProcessed,
+          throughput: currentThroughput,
+          avgWaitTime: avgWaitSoFar,
+          totalQueue: currentTotalQueue,
+          queueN: queues.N || 0,
+          queueS: queues.S || 0,
+          queueE: queues.E || 0,
+          queueW: queues.W || 0,
+          signal: currentSignal,
+          isEmergency: isEmergencyActive
+        }
+      ];
     }
   }
 
