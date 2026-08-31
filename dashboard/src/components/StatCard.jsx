@@ -1,26 +1,94 @@
 import { motion } from 'framer-motion';
 
-const ACCENT_MAP = {
-  blue: { border: '#7a6a4f', chipBg: '#eeeae2' },
-  orange: { border: '#9c8355', chipBg: '#f1eadc' },
-  green: { border: '#b08a3e', chipBg: '#f5ecd9' },
-  purple: { border: '#8f7248', chipBg: '#ece3d3' },
-  red: { border: '#8f7248', chipBg: '#ece3d3' },
-  'vehicles passed': { border: '#7a6a4f', chipBg: '#eeeae2' },
-  'average wait time': { border: '#9c8355', chipBg: '#f1eadc' },
-  'total throughput': { border: '#b08a3e', chipBg: '#f5ecd9' },
-  'emergency vehicles': { border: '#8f7248', chipBg: '#ece3d3' }
+const CARD_THEMES = {
+  // 1. Vehicles Passed (matching Image 2 "Current Signal" beige theme with deep blue value)
+  'vehicles passed': {
+    bg: '#F5F2EB',
+    borderColor: '#E7E2D9',
+    topBorder: '#857357',
+    labelColor: '#857357',
+    valueColor: '#1E40AF',
+    chipBg: '#EAE5DB'
+  },
+  // 2. Average Wait Time (matching Image 2 "Wait Time" soft peach/orange theme)
+  'average wait time': {
+    bg: '#FDF2E9',
+    borderColor: '#FDE68A',
+    topBorder: '#EA580C',
+    labelColor: '#D9531E',
+    valueColor: '#9A3412',
+    chipBg: '#FFEDD5'
+  },
+  // 3. Total Throughput (matching Image 2 "Active Roads" soft mint green theme)
+  'total throughput': {
+    bg: '#EBF7EE',
+    borderColor: '#BBF7D0',
+    topBorder: '#16A34A',
+    labelColor: '#16A34A',
+    valueColor: '#065F46',
+    chipBg: '#DCFCE7'
+  },
+  // 4. Emergency Vehicles (matching Soft Lavender purple theme)
+  'emergency vehicles': {
+    bg: '#F5EEFD',
+    borderColor: '#E9D5FF',
+    topBorder: '#9333EA',
+    labelColor: '#9333EA',
+    valueColor: '#581C87',
+    chipBg: '#F3E8FF'
+  },
+  // Color prop fallbacks
+  blue: {
+    bg: '#F5F2EB',
+    borderColor: '#E7E2D9',
+    topBorder: '#7A6A4F',
+    labelColor: '#857357',
+    valueColor: '#1E40AF',
+    chipBg: '#EAE5DB'
+  },
+  orange: {
+    bg: '#FDF2E9',
+    borderColor: '#FDE68A',
+    topBorder: '#EA580C',
+    labelColor: '#D9531E',
+    valueColor: '#9A3412',
+    chipBg: '#FFEDD5'
+  },
+  green: {
+    bg: '#EBF7EE',
+    borderColor: '#BBF7D0',
+    topBorder: '#16A34A',
+    labelColor: '#16A34A',
+    valueColor: '#065F46',
+    chipBg: '#DCFCE7'
+  },
+  purple: {
+    bg: '#F5EEFD',
+    borderColor: '#E9D5FF',
+    topBorder: '#9333EA',
+    labelColor: '#9333EA',
+    valueColor: '#581C87',
+    chipBg: '#F3E8FF'
+  },
+  red: {
+    bg: '#FDF2F2',
+    borderColor: '#FECDD3',
+    topBorder: '#DC2626',
+    labelColor: '#DC2626',
+    valueColor: '#991B1B',
+    chipBg: '#FEE2E2'
+  }
 };
 
-const getAccent = (color, title) => {
-  if (color && ACCENT_MAP[color]) return ACCENT_MAP[color];
-  const titleKey = title ? title.toLowerCase() : '';
-  if (ACCENT_MAP[titleKey]) return ACCENT_MAP[titleKey];
-  return { border: '#7a6a4f', chipBg: '#eeeae2' };
+const getTheme = (color, title) => {
+  const titleKey = title ? title.toLowerCase().trim() : '';
+  if (CARD_THEMES[titleKey]) return CARD_THEMES[titleKey];
+  if (color && CARD_THEMES[color]) return CARD_THEMES[color];
+  return CARD_THEMES.blue;
 };
 
 const StatCard = ({ title, value, unit, icon, color = 'blue' }) => {
-  const accent = getAccent(color, title);
+  const theme = getTheme(color, title);
 
   // Format the value to handle NaN, strings, and decimals
   const numValue = Number(value);
@@ -32,32 +100,45 @@ const StatCard = ({ title, value, unit, icon, color = 'blue' }) => {
 
   return (
     <motion.div
-      className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow"
-      style={{ borderTop: `3px solid ${accent.border}` }}
+      className="rounded-2xl shadow-xs border p-4 hover:shadow-md transition-all duration-200"
+      style={{ 
+        backgroundColor: theme.bg, 
+        borderColor: theme.borderColor,
+        borderTop: `3px solid ${theme.topBorder}` 
+      }}
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
     >
       <div className="flex items-center justify-between">
         {icon ? (
           <div
-            className="w-[30px] h-[30px] rounded-[8px] flex items-center justify-center text-[18px] flex-shrink-0"
-            style={{ backgroundColor: accent.chipBg }}
+            className="w-[32px] h-[32px] rounded-[8px] flex items-center justify-center text-[18px] flex-shrink-0 shadow-xs"
+            style={{ backgroundColor: theme.chipBg }}
           >
             <span>{icon}</span>
           </div>
         ) : (
           <span className="hidden" />
         )}
-        <span className={`text-${color}-500 text-sm font-semibold uppercase`}>
+        <span 
+          className="text-xs font-bold uppercase tracking-wider text-right"
+          style={{ color: theme.labelColor }}
+        >
           {title}
         </span>
       </div>
-      <div className="mt-2 flex items-baseline">
-        <span className="text-2xl font-bold text-gray-900">
+      <div className="mt-3 flex items-baseline">
+        <span 
+          className="text-2xl sm:text-3xl font-extrabold tracking-tight"
+          style={{ color: theme.valueColor }}
+        >
           {formattedValue}
         </span>
         {unit && (
-          <span className="ml-1 text-sm text-gray-600">
+          <span 
+            className="ml-1.5 text-xs font-medium"
+            style={{ color: theme.labelColor }}
+          >
             {unit}
           </span>
         )}
