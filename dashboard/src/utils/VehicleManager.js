@@ -93,17 +93,19 @@ export class VehicleManager {
         const myIndex = laneArr.indexOf(car);
         const carAhead = myIndex > 0 ? laneArr[myIndex - 1] : null;
 
+        const prevPos = car.position || 0;
+
         if (isGreen || mustClear || car.type === 'emergency') {
           // ── ACTIVE MOVEMENT: green light / committed crossing / emergency ──
           car.position += car.speed;
 
-          // Following-distance clamp: stay at least MIN_VEHICLE_GAP behind
-          // the car directly ahead while moving.
-          if (carAhead && car.position > carAhead.position - MIN_VEHICLE_GAP) {
-            car.position = carAhead.position - MIN_VEHICLE_GAP;
+          if (carAhead && car.type !== 'emergency' && carAhead.position > MIN_VEHICLE_GAP) {
+            const maxAllowed = carAhead.position - MIN_VEHICLE_GAP;
+            if (car.position > maxAllowed) {
+              car.position = Math.max(prevPos, maxAllowed);
+            }
           }
 
-          // Exit: car has fully cleared the intersection.
           if (car.position >= 100) {
             this.carsPassed++;
             const wt = typeof car.waitTime === 'number' ? car.waitTime : 0;
@@ -113,18 +115,17 @@ export class VehicleManager {
         } else {
           // ── RED LIGHT: approach queue slot, then stop and wait ──
           const naturalSlot = carAhead
-            ? Math.min(STOP_LINE_POSITION, carAhead.position - MIN_VEHICLE_GAP)
+            ? Math.max(prevPos, Math.min(STOP_LINE_POSITION, carAhead.position - MIN_VEHICLE_GAP))
             : STOP_LINE_POSITION;
 
           if (car.position < naturalSlot) {
-            // Still approaching — roll forward, don't count wait time yet.
             car.position = Math.min(naturalSlot, car.position + QUEUE_APPROACH_SPEED);
-          } else {
-            // Reached queue slot — stopped and waiting.
-            car.position = Math.min(car.position, naturalSlot); // hard-clamp
-            car.waitTime = (car.waitTime || 0) + 1;
           }
+          car.waitTime = (car.waitTime || 0) + 1;
         }
+
+        // Strictly enforce monotonic non-decreasing position: CAR NEVER MOVES BACKWARD
+        car.position = Math.max(prevPos, car.position);
         return true;
       });
 
