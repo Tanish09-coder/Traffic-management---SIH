@@ -8,6 +8,7 @@ import StatCard from '../components/StatCard';
 import ChartPanel from '../components/ChartPanel';
 import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { calculateEnvironmentalImpact } from '../utils/environmentalImpact';
 
 const Dashboard = () => {
   const { 
@@ -54,51 +55,26 @@ const Dashboard = () => {
 
   // Sustainability & Economic Savings
   const [savingsStats, setSavingsStats] = useState({
-    fuelSavedLiters: 2.8,
-    timeSavedMinutes: 22,
-    co2ReducedKg: 6.5,
-    totalSavingsRupees: 367
+    fuelSavedLiters: 0,
+    timeSavedMinutes: 0,
+    co2ReducedKg: 0,
+    totalSavingsRupees: 0
   });
 
   useEffect(() => {
     if (state || metrics) {
-      const traditionalWaitTime = metrics?.traditional_wait_time || 45.0;
+      const carsPassed = state?.cars_passed || metrics?.total_cars || 0;
       const currentAvgWait = (typeof state?.avg_wait_time === 'number' && state.avg_wait_time > 0)
         ? state.avg_wait_time
-        : 32.5;
+        : (metrics?.current_avg_wait_time || 30.0);
 
-      const avgWaitReduction = Math.max(3.5, traditionalWaitTime - currentAvgWait);
-      const carsPassed = state?.cars_passed || metrics?.total_cars || 0;
-      const activeCarCount = state?.cars ? Object.values(state.cars).flat().length : 8;
-
-      const effectiveCarsPerMin = (metrics?.throughput && metrics.throughput > 0)
-        ? metrics.throughput
-        : Math.max(16, (activeCarCount * 2) + Math.min(carsPassed, 20));
-
-      const carsPerHour = effectiveCarsPerMin * 60;
-
-      const actualFuelSaved = (state?.fuel_saved_per_hour && state.fuel_saved_per_hour > 0)
-        ? state.fuel_saved_per_hour
-        : (metrics?.fuel_saved_per_hour_liters && metrics.fuel_saved_per_hour_liters > 0)
-          ? metrics.fuel_saved_per_hour_liters
-          : Math.max(2.4, avgWaitReduction * carsPerHour * 0.00028);
-
-      const timeSaved = (state?.time_saved_per_hour && state.time_saved_per_hour > 0)
-        ? state.time_saved_per_hour
-        : (metrics?.time_saved_per_hour_minutes && metrics.time_saved_per_hour_minutes > 0)
-          ? metrics.time_saved_per_hour_minutes
-          : Math.max(18, (avgWaitReduction * carsPerHour) / 60);
-
-      const co2Reduced = Math.max(5.5, actualFuelSaved * 2.31);
-      const fuelCostSaved = actualFuelSaved * 105;
-      const timeCostSaved = (timeSaved / 60) * 200;
-      const totalSavings = fuelCostSaved + timeCostSaved;
+      const impact = calculateEnvironmentalImpact(carsPassed, currentAvgWait, 45.0);
 
       setSavingsStats({
-        fuelSavedLiters: actualFuelSaved,
-        timeSavedMinutes: timeSaved,
-        co2ReducedKg: co2Reduced,
-        totalSavingsRupees: totalSavings
+        fuelSavedLiters: impact.fuelSavedLiters,
+        timeSavedMinutes: Number((impact.commuterTimeSaved / 60).toFixed(1)),
+        co2ReducedKg: impact.co2ReducedKg,
+        totalSavingsRupees: impact.economicSavingsRupees
       });
     }
   }, [state, metrics]);

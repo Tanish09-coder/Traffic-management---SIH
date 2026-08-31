@@ -4,6 +4,7 @@ import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
 import Loader from '../components/Loader';
+import { calculateEnvironmentalImpact } from '../utils/environmentalImpact';
 
 const LiveIntersection = () => {
   const { 
@@ -22,12 +23,12 @@ const LiveIntersection = () => {
 
   // Mumbai-specific intelligent calculations
   const [mumbaiStats, setMumbaiStats] = useState({
-    fuelSavedLiters: 2.8,
-    timeSavedMinutes: 22,
-    co2ReducedKg: 6.5,
-    totalSavingsRupees: 367,
-    waitTimeImprovement: 12.5,
-    efficiencyGain: 27.8
+    fuelSavedLiters: 0,
+    timeSavedMinutes: 0,
+    co2ReducedKg: 0,
+    totalSavingsRupees: 0,
+    waitTimeImprovement: 0,
+    efficiencyGain: 0
   });
 
   // Manual override state
@@ -39,61 +40,20 @@ const LiveIntersection = () => {
 
   useEffect(() => {
     if (state || metrics) {
-      // Mumbai traditional fixed baseline: 45.0s
-      const traditionalWaitTime = metrics?.traditional_wait_time || 45.0;
+      const carsPassed = state?.cars_passed || metrics?.total_cars || 0;
       const currentAvgWait = (typeof state?.avg_wait_time === 'number' && state.avg_wait_time > 0)
         ? state.avg_wait_time
-        : 32.5;
+        : (metrics?.current_avg_wait_time || 30.0);
 
-      // Improvement per vehicle in seconds
-      const avgWaitReduction = Math.max(3.5, traditionalWaitTime - currentAvgWait);
-
-      // Calculate realistic active traffic throughput rate
-      const carsPassed = state?.cars_passed || metrics?.total_cars || 0;
-      const activeCarCount = state?.cars ? Object.values(state.cars).flat().length : 8;
-
-      // Effective throughput per minute
-      const effectiveCarsPerMin = (metrics?.throughput && metrics.throughput > 0)
-        ? metrics.throughput
-        : Math.max(16, (activeCarCount * 2) + Math.min(carsPassed, 20));
-
-      const carsPerHour = effectiveCarsPerMin * 60;
-
-      // Mumbai-specific fuel consumption: 0.00028 L/s idling rate
-      const actualFuelSaved = (state?.fuel_saved_per_hour && state.fuel_saved_per_hour > 0)
-        ? state.fuel_saved_per_hour
-        : (metrics?.fuel_saved_per_hour_liters && metrics.fuel_saved_per_hour_liters > 0)
-          ? metrics.fuel_saved_per_hour_liters
-          : Math.max(2.4, avgWaitReduction * carsPerHour * 0.00028);
-
-      // Time saved in minutes per hour
-      const timeSaved = (state?.time_saved_per_hour && state.time_saved_per_hour > 0)
-        ? state.time_saved_per_hour
-        : (metrics?.time_saved_per_hour_minutes && metrics.time_saved_per_hour_minutes > 0)
-          ? metrics.time_saved_per_hour_minutes
-          : Math.max(18, (avgWaitReduction * carsPerHour) / 60);
-
-      // CO2 reduction: 2.31 kg CO2 per liter of petrol saved
-      const co2Reduced = Math.max(5.5, actualFuelSaved * 2.31);
-
-      // Economic savings per hour
-      const fuelCostSaved = actualFuelSaved * 105; // ₹105 per liter
-      const timeCostSaved = (timeSaved / 60) * 200; // ₹200 per hour commuter time value
-      const totalSavings = fuelCostSaved + timeCostSaved;
-
-      // Wait time improvement in seconds
-      const waitTimeImprovement = avgWaitReduction;
-
-      // Efficiency gain percentage
-      const efficiencyGain = ((avgWaitReduction / traditionalWaitTime) * 100);
+      const impact = calculateEnvironmentalImpact(carsPassed, currentAvgWait, 45.0);
 
       setMumbaiStats({
-        fuelSavedLiters: actualFuelSaved,
-        timeSavedMinutes: timeSaved,
-        co2ReducedKg: co2Reduced,
-        totalSavingsRupees: totalSavings,
-        waitTimeImprovement: waitTimeImprovement,
-        efficiencyGain: efficiencyGain
+        fuelSavedLiters: impact.fuelSavedLiters,
+        timeSavedMinutes: Number((impact.commuterTimeSaved / 60).toFixed(1)),
+        co2ReducedKg: impact.co2ReducedKg,
+        totalSavingsRupees: impact.economicSavingsRupees,
+        waitTimeImprovement: impact.delayReductionPerVehicle,
+        efficiencyGain: Number(((impact.delayReductionPerVehicle / 45.0) * 100).toFixed(1))
       });
     }
   }, [state, metrics]);
