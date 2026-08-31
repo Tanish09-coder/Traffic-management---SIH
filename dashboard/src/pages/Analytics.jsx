@@ -340,24 +340,30 @@ const Analytics = ({ onNavigate }) => {
                       <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
+                        itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                        labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                       <Line 
                         type="monotone" 
                         dataKey="activeVehicles" 
                         name="Active in Lanes" 
-                        stroke="#3B82F6" 
+                        stroke="#2563EB" 
                         strokeWidth={2.5}
                         dot={false}
+                        isAnimationActive={false}
+                        connectNulls={true}
                       />
                       <Line 
                         type="monotone" 
                         dataKey="processedVehicles" 
                         name="Total Cleared" 
-                        stroke="#10B981" 
+                        stroke="#059669" 
                         strokeWidth={2.5}
                         dot={false}
+                        isAnimationActive={false}
+                        connectNulls={true}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -389,16 +395,20 @@ const Analytics = ({ onNavigate }) => {
                       <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} unit=" c/m" />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
+                        itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                        labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                       <Line 
                         type="monotone" 
                         dataKey="throughput" 
                         name="Throughput (cars/min)" 
-                        stroke="#F59E0B" 
+                        stroke="#D97706" 
                         strokeWidth={2.5}
-                        dot={{ fill: '#F59E0B', r: 3 }}
+                        dot={{ fill: '#D97706', r: 3 }}
+                        isAnimationActive={false}
+                        connectNulls={true}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -435,12 +445,14 @@ const Analytics = ({ onNavigate }) => {
                       <XAxis dataKey="label" stroke="#94A3B8" fontSize={10} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
+                        itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                        labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                      <Bar dataKey="arrivals" name="Total Spawned" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="processed" name="Cleared" fill="#10B981" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="activeQueue" name="Queued" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="arrivals" name="Total Spawned" fill="#2563EB" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="processed" name="Cleared" fill="#059669" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="activeQueue" name="Queued" fill="#D97706" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -466,29 +478,28 @@ const Analytics = ({ onNavigate }) => {
               <div className="h-[250px] w-full flex flex-col sm:flex-row items-center justify-center">
                 {session.vehicleTypeData.length > 0 ? (
                   <>
-                    <div className="h-[180px] w-[180px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={session.vehicleTypeData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={45}
-                            outerRadius={75}
-                            paddingAngle={3}
-                            dataKey="count"
-                          >
-                            {session.vehicleTypeData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
-                            itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
-                            labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
+                    <div className="w-[180px] h-[180px] shrink-0 flex items-center justify-center">
+                      <PieChart width={180} height={180}>
+                        <Pie
+                          data={session.vehicleTypeData}
+                          cx={90}
+                          cy={90}
+                          innerRadius={45}
+                          outerRadius={75}
+                          paddingAngle={3}
+                          dataKey="count"
+                          isAnimationActive={false}
+                        >
+                          {session.vehicleTypeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                          itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                          labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                        />
+                      </PieChart>
                     </div>
 
                     <div className="space-y-1.5 text-xs text-slate-600 sm:ml-4 flex-1">
@@ -534,29 +545,28 @@ const Analytics = ({ onNavigate }) => {
               <div className="h-[250px] w-full flex flex-col sm:flex-row items-center justify-center">
                 {session.signalStateData.length > 0 ? (
                   <>
-                    <div className="h-[180px] w-[180px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={session.signalStateData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={45}
-                            outerRadius={75}
-                            paddingAngle={3}
-                            dataKey="seconds"
-                          >
-                            {session.signalStateData.map((entry, index) => (
-                              <Cell key={`sig-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
-                            itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
-                            labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
+                    <div className="w-[180px] h-[180px] shrink-0 flex items-center justify-center">
+                      <PieChart width={180} height={180}>
+                        <Pie
+                          data={session.signalStateData}
+                          cx={90}
+                          cy={90}
+                          innerRadius={45}
+                          outerRadius={75}
+                          paddingAngle={3}
+                          dataKey="seconds"
+                          isAnimationActive={false}
+                        >
+                          {session.signalStateData.map((entry, index) => (
+                            <Cell key={`sig-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                          itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                          labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                        />
+                      </PieChart>
                     </div>
 
                     <div className="space-y-2 text-xs text-slate-600 sm:ml-4 flex-1">

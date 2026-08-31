@@ -318,7 +318,12 @@ export class AnalyticsManager {
 
     // Prepare Lane Distribution
     const laneData = ['N', 'S', 'E', 'W'].map(lane => {
-      const labels = { N: 'North (Artery)', S: 'South (Secondary)', E: 'East (Cross)', W: 'West (Side)' };
+      const labels = {
+        N: 'North (Secondary)',
+        S: 'South (Artery)',
+        E: 'East (Side Road)',
+        W: 'West (Expressway)'
+      };
       return {
         lane: `Lane ${lane}`,
         direction: lane,
@@ -335,10 +340,10 @@ export class AnalyticsManager {
       const seconds = this.signalPhaseSeconds[dir] || 0;
       const pct = totalSignalSeconds > 0 ? Number(((seconds / totalSignalSeconds) * 100).toFixed(1)) : 0;
       const colors = { 
-        N: '#2563EB', // Vibrant Royal Blue (North Artery)
-        S: '#059669', // Rich Emerald Green (South Highway)
-        E: '#D97706', // Warm Amber (East Cross)
-        W: '#7C3AED'  // Rich Purple (West Side)
+        N: '#2563EB', // Vibrant Royal Blue (North Secondary)
+        S: '#059669', // Rich Emerald Green (South Artery)
+        E: '#D97706', // Warm Amber (East Side)
+        W: '#7C3AED'  // Rich Purple (West Expressway)
       };
       return {
         name: `Phase ${dir} (Green)`,
