@@ -612,78 +612,53 @@ class MockTrafficSimulator {
       const isGreen = this.currentSignal === lane;
 
       this.cars[lane] = this.cars[lane].map((car, index) => {
-        const prevPos = car.position || 0;
         const carInFront = this.cars[lane][index - 1];
+        const isBlocked = carInFront && (car.position + 6 >= carInFront.position); // Closer following distance in Mumbai
 
-        const intersectionStart = 34; // Stop line threshold
-        const intersectionEnd = 60;
+        const intersectionStart = 42;
+        const intersectionEnd = 58;
         const isInIntersection = car.position >= intersectionStart && car.position <= intersectionEnd;
 
         if (car.position >= intersectionStart && !car.hasPassedIntersection) {
           car.hasPassedIntersection = true;
         }
 
-        const isEmergency = (
-          car.type === 'ambulance' ||
-          car.type === 'fire' ||
-          car.type === 'police' ||
-          car.type === 'emergency' ||
-          car.type === 'firetruck'
-        );
+        const shouldMove =
+          isInIntersection ||
+          car.hasPassedIntersection ||
+          (isGreen && !isBlocked);
 
-        let shouldMove = false;
-        let shouldStop = false;
+        const shouldStop =
+          !isGreen &&
+          !isInIntersection &&
+          !car.hasPassedIntersection &&
+          car.position < intersectionStart;
 
-        if (this.emergencyActive) {
-          // Emergency Mode rules:
-          // 1. Emergency vehicles ALWAYS move.
-          // 2. Cars that already crossed the signal line (hasPassedIntersection / isInIntersection) MUST finish clearing out.
-          // 3. ALL OTHER cars before the signal line MUST STOP COMPLETELY.
-          if (isEmergency || car.hasPassedIntersection || isInIntersection) {
-            shouldMove = true;
-          } else {
-            shouldStop = true;
-          }
-        } else {
-          // Normal Operation rules:
-          const isBlocked = carInFront && (car.position + 6 >= carInFront.position);
-          shouldMove = isInIntersection || car.hasPassedIntersection || (isGreen && !isBlocked);
-          shouldStop = !shouldMove;
-        }
-
-        let newPosition = car.position;
-        if (shouldMove && car.position < 100) {
-          newPosition = Math.min(100, car.position + (isEmergency ? car.speed * 1.5 : car.speed));
-          // If blocked by car in front (unless emergency vehicle), clamp forward movement
-          if (carInFront && !isEmergency && carInFront.position > 6) {
-            newPosition = Math.min(newPosition, carInFront.position - 6);
-          }
-        }
-
-        // Strictly enforce monotonic non-decreasing position: CAR NEVER MOVES BACKWARD
-        const finalPosition = Math.max(prevPos, newPosition);
-
-        if (shouldStop || finalPosition === prevPos) {
-          const fuelConsumedThisTick = 0.00028;
+        if (shouldMove && car.position < 120) {
           return {
             ...car,
-            position: finalPosition,
+            position: Math.min(120, car.position + car.speed),
+            waitTime: isInIntersection || car.hasPassedIntersection ? car.waitTime : 0
+          };
+        }
+
+        if (shouldStop || isBlocked) {
+          const fuelConsumedThisTick = 0.00028; // Mumbai-specific fuel consumption
+
+          return {
+            ...car,
             waitTime: car.waitTime + 1,
             totalWaitTime: car.totalWaitTime + 1,
             fuelConsumed: car.fuelConsumed + fuelConsumedThisTick
           };
         }
 
-        return {
-          ...car,
-          position: finalPosition,
-          waitTime: isInIntersection || car.hasPassedIntersection ? car.waitTime : 0
-        };
+        return car;
       });
 
       // Process cars that have passed through
-      const passedCars = this.cars[lane].filter(car => car.position >= 100);
-      this.cars[lane] = this.cars[lane].filter(car => car.position < 100);
+      const passedCars = this.cars[lane].filter(car => car.position >= 120);
+      this.cars[lane] = this.cars[lane].filter(car => car.position < 120);
 
       passedCars.forEach(car => {
         this.totalCarsPassed++;
