@@ -1,12 +1,20 @@
 import { motion } from 'framer-motion';
 
 const TrafficLight = ({ direction, signal, emergencyActive = false, isFullscreen = false }) => {
-  const positions = {
-    N: { top: '15%', left: '46%' },
-    S: { bottom: '15%', right: '46%' },
-    E: { right: '15%', top: '46%' },
-    W: { left: '15%', bottom: '46%' }
-  };
+  // Equidistant coordinates relative to the 50% intersection center (matching reference layout)
+  const positions = isFullscreen
+    ? {
+        N: { top: 'calc(50% - 240px)', left: 'calc(50% - 75px)' },
+        S: { top: 'calc(50% + 140px)', left: 'calc(50% + 25px)' },
+        E: { left: 'calc(50% + 195px)', top: 'calc(50% + 10px)' },
+        W: { left: 'calc(50% - 240px)', top: 'calc(50% - 120px)' }
+      }
+    : {
+        N: { top: 'calc(50% - 155px)', left: 'calc(50% - 44px)' },
+        S: { top: 'calc(50% + 95px)', left: 'calc(50% + 14px)' },
+        E: { left: 'calc(50% + 125px)', top: 'calc(50% + 6px)' },
+        W: { left: 'calc(50% - 155px)', top: 'calc(50% - 78px)' }
+      };
 
   const position = positions[direction];
   

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
+import PedestrianLight from '../components/PedestrianLight';
 import Loader from '../components/Loader';
 
 const LiveIntersection = () => {
@@ -17,7 +18,8 @@ const LiveIntersection = () => {
     switchToBackend, 
     setSpeed, 
     resetSimulation,
-    manualOverride
+    manualOverride,
+    triggerEmergencyVehicle
   } = useTrafficData();
 
   // Mumbai-specific intelligent calculations
@@ -347,11 +349,11 @@ const LiveIntersection = () => {
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-orange-500 rounded-full animate-ping"></div>
                   <p className="font-semibold">
-                    🚨 EMERGENCY VEHICLE PRIORITY ACTIVE
+                    🚨 EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
                   </p>
                 </div>
-                <div className="text-sm">
-                  Lane {state.emergencyDirection} • Priority Override
+                <div className="text-sm font-medium bg-orange-200 px-3 py-1 rounded">
+                  Way {state.emergencyDirection} Priority Preemption
                 </div>
               </div>
             </motion.div>
@@ -610,7 +612,6 @@ const LiveIntersection = () => {
 
           {/* Intersection Container */}
           <div className="relative w-full h-[600px] bg-[#E5E7EB] rounded-xl overflow-hidden border-4 border-gray-500 shadow-inner">
-            
             {/* Enhanced Road Infrastructure */}
             <div className="absolute inset-0">
               {/* Horizontal Road */}
@@ -648,6 +649,123 @@ const LiveIntersection = () => {
                   {overrideActive ? 'MAN' : 'AI'}
                 </div>
               </div>
+
+              {/* 🚶‍♂️ Minimalist Compact Zebra Crossings & High-Visibility Pedestrian Walkers */}
+              {/* North Crosswalk */}
+              {(() => {
+                const pN = state?.pedestrian_signals?.N || 'STOP';
+                const isWalk = pN === 'WALK';
+                return (
+                  <>
+                    <div className="absolute left-1/2 top-[calc(50%-92px)] w-20 h-7 transform -translate-x-1/2 z-10 pointer-events-none">
+                      <div className="w-full h-full flex justify-between px-0.5">
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className="w-[2.5px] h-full rounded-[0.5px] bg-white shadow-sm" />
+                        ))}
+                      </div>
+                      {isWalk && (
+                        <motion.div
+                          className="absolute -top-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
+                          transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                        >
+                          🚶‍♀️
+                        </motion.div>
+                      )}
+                    </div>
+                    {/* North Pedestrian Signal Light (Right Curb) */}
+                    <div className="absolute left-[calc(50%+52px)] top-[calc(50%-94px)] z-20">
+                      <PedestrianLight status={pN} />
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* South Crosswalk */}
+              {(() => {
+                const pS = state?.pedestrian_signals?.S || 'STOP';
+                const isWalk = pS === 'WALK';
+                return (
+                  <>
+                    <div className="absolute left-1/2 top-[calc(50%+68px)] w-20 h-7 transform -translate-x-1/2 z-10 pointer-events-none">
+                      <div className="w-full h-full flex justify-between px-0.5">
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className="w-[2.5px] h-full rounded-[0.5px] bg-white shadow-sm" />
+                        ))}
+                      </div>
+                      {isWalk && (
+                        <motion.div
+                          className="absolute -top-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
+                          transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                        >
+                          🚶‍♀️
+                        </motion.div>
+                      )}
+                    </div>
+                    {/* South Pedestrian Signal Light (Left Curb) */}
+                    <div className="absolute left-[calc(50%-64px)] top-[calc(50%+68px)] z-20">
+                      <PedestrianLight status={pS} />
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* West Crosswalk */}
+              {(() => {
+                const pW = state?.pedestrian_signals?.W || 'STOP';
+                const isWalk = pW === 'WALK';
+                return (
+                  <>
+                    <div className="absolute top-1/2 left-[calc(50%-92px)] w-7 h-20 transform -translate-y-1/2 z-10 flex flex-col justify-between py-0.5 pointer-events-none">
+                      {[...Array(8)].map((_, i) => (
+                        <div key={i} className="w-full h-[2.5px] rounded-[0.5px] bg-white shadow-sm" />
+                      ))}
+                      {isWalk && (
+                        <motion.div
+                          className="absolute -left-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
+                          transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                        >
+                          🚶‍♀️
+                        </motion.div>
+                      )}
+                    </div>
+                    {/* West Pedestrian Signal Light (Top Curb) */}
+                    <div className="absolute left-[calc(50%-94px)] top-[calc(50%-64px)] z-20">
+                      <PedestrianLight status={pW} />
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* East Crosswalk */}
+              {(() => {
+                const pE = state?.pedestrian_signals?.E || 'STOP';
+                const isWalk = pE === 'WALK';
+                return (
+                  <>
+                    <div className="absolute top-1/2 left-[calc(50%+68px)] w-7 h-20 transform -translate-y-1/2 z-10 flex flex-col justify-between py-0.5 pointer-events-none">
+                      {[...Array(8)].map((_, i) => (
+                        <div key={i} className="w-full h-[2.5px] rounded-[0.5px] bg-white shadow-sm" />
+                      ))}
+                      {isWalk && (
+                        <motion.div
+                          className="absolute -right-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
+                          transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                        >
+                          🚶‍♀️
+                        </motion.div>
+                      )}
+                    </div>
+                    {/* East Pedestrian Signal Light (Bottom Curb) */}
+                    <div className="absolute left-[calc(50%+68px)] top-[calc(50%+52px)] z-20">
+                      <PedestrianLight status={pE} />
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Enhanced Traffic Lights */}
@@ -730,6 +848,78 @@ const LiveIntersection = () => {
           </div>
         </div>
 
+        {/* 🚶‍♂️ Automatic Intelligent Pedestrian Safety Monitor */}
+        <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border-l-4 border-emerald-500">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">🚶‍♂️</span>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Automated Pedestrian Crosswalk Intelligence
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Continuous AI signal scanning • Dynamic non-conflicting crossing allocation
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                🛡️ 100% Zero-Conflict Active
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { dir: 'N', name: 'North Crosswalk (Kurla)', laneType: 'Vertical Corridor' },
+              { dir: 'S', name: 'South Crosswalk (Fort)', laneType: 'Vertical Corridor' },
+              { dir: 'E', name: 'East Crosswalk (Chembur)', laneType: 'Horizontal Corridor' },
+              { dir: 'W', name: 'West Crosswalk (Bandra)', laneType: 'Horizontal Corridor' }
+            ].map(({ dir, name, laneType }) => {
+              const pStatus = state?.pedestrian_signals?.[dir] || (
+                (state?.signal === 'E' || state?.signal === 'W') && !state?.emergencyActive
+                  ? (dir === 'N' || dir === 'S' ? 'WALK' : 'STOP')
+                  : (dir === 'E' || dir === 'W' && !state?.emergencyActive ? 'WALK' : 'STOP')
+              );
+              const isWalk = pStatus === 'WALK' && !state?.emergencyActive;
+
+              return (
+                <div
+                  key={dir}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                    state?.emergencyActive
+                      ? 'border-red-300 bg-red-50/70'
+                      : isWalk
+                        ? 'border-emerald-400 bg-emerald-50 shadow-sm'
+                        : 'border-slate-200 bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-sm text-gray-800">{name}</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                      state?.emergencyActive
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : isWalk
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-slate-300 text-slate-700'
+                    }`}>
+                      {state?.emergencyActive ? '✋ CLEAR' : isWalk ? '🚶 WALK' : '✋ WAIT'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-gray-600">
+                    {state?.emergencyActive
+                      ? '🚨 Emergency corridor priority — Crossing held'
+                      : isWalk
+                        ? `✅ Safe to walk (${laneType} halted)`
+                        : `⛔ Stopped — ${state?.signal} vehicular flow active`}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Enhanced Real-time Statistics */}
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Performance Metrics</h3>
@@ -796,6 +986,20 @@ const LiveIntersection = () => {
                   className="w-24 h-2 bg-gray-200 rounded-lg"
                 />
               </div>
+            )}
+            
+            {useMock && (
+              <button
+                onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
+                disabled={state?.emergencyActive}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-all ${
+                  state?.emergencyActive
+                    ? 'bg-red-700 animate-pulse cursor-default'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {state?.emergencyActive ? '🚨 Emergency Active' : '🚨 Emergency Mode'}
+              </button>
             )}
             
             {useMock && (
