@@ -1,7 +1,8 @@
-﻿  import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { TRAFFIC_CONSTANTS } from './constants';
 import { VehicleManager } from './VehicleManager';
 import { SignalManager } from './SignalManager';
+import { analyticsManager } from './AnalyticsManager';
 import { 
   getState, 
   getMetrics, 
@@ -926,7 +927,7 @@ export function useTrafficData(pollInterval = 1000) {
     const vmState = vehicleManager.getState();
     const smState = signalManager.getState();
 
-    setState({
+    const mergedState = {
       ...vmState,
       // Override the placeholder signal fields with real values from SignalManager
       signal: smState.current_signal,
@@ -937,15 +938,21 @@ export function useTrafficData(pollInterval = 1000) {
       system_mode: smState.emergency_active
         ? 'Emergency'
         : 'AI Intelligent',
-    });
+    };
 
     // Merge emergency info into metrics as well
     const vmMetrics = vehicleManager.getMetrics();
-    setMetrics({
+    const mergedMetrics = {
       ...vmMetrics,
       system_mode: smState.emergency_active ? 'Emergency' : 'AI Intelligent',
-    });
-  }, [vehicleManager, signalManager]);
+    };
+
+    // Record strictly genuine simulation state to the Analytics single source of truth
+    analyticsManager.recordTick(mergedState, mergedMetrics, simulationSpeed);
+
+    setState(mergedState);
+    setMetrics(mergedMetrics);
+  }, [vehicleManager, signalManager, simulationSpeed]);
 
 
   const queueHistoryRef = useRef([]);
@@ -1167,6 +1174,7 @@ export function useTrafficData(pollInterval = 1000) {
   };
 
   const resetSimulation = () => {
+    analyticsManager.reset();
     if (useMock) {
       vehicleManager.reset();
       signalManager.reset();
@@ -1194,9 +1202,11 @@ export function useTrafficData(pollInterval = 1000) {
       document.body.classList.remove('emergency-strobe-active');
     }
   }, [state?.emergencyActive]);
+
   return {
     state,
     metrics,
+    analyticsSession: analyticsManager.getSnapshot(),
     loading: useMock ? false : loading,
     error,
     useMock,

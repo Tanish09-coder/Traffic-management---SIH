@@ -3,9 +3,11 @@ export const TRAFFIC_CONSTANTS = {
   MAX_SIGNAL_TIME: 60,
   BASE_TIME_PER_CAR: 2,
   POLL_INTERVAL: 1000,
-  FUEL_CONSUMPTION_RATE: 0.00022, // L/second
+  FUEL_CONSUMPTION_RATE: 0.00028, // L/sec delay reduction
+  CO2_FACTOR: 2.31, // kg CO2 per liter of gasoline
   FUEL_COST: 105, // INR/L
-  TRADITIONAL_WAIT_TIME: 45, // seconds
+  COMMUTER_TIME_VALUE_PER_HOUR: 200, // INR/hour commuter time valuation
+  TRADITIONAL_WAIT_TIME: 45.0, // seconds baseline fixed plan delay
   EMERGENCY_TYPES: {
     AMBULANCE: { priority: 3, spawnRate: 0.0008 },
     FIRE: { priority: 2, spawnRate: 0.0004 },

@@ -1,261 +1,734 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { 
+  ResponsiveContainer, 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend 
+} from 'recharts';
+import { 
+  BarChart3, 
+  Compass, 
+  Clock, 
+  Activity, 
+  ShieldAlert, 
+  RotateCcw, 
+  CheckCircle2, 
+  AlertCircle, 
+  Layers, 
+  TrendingUp, 
+  Car, 
+  Timer, 
+  Fuel, 
+  Leaf, 
+  IndianRupee,
+  Play,
+  Pause
+} from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Loader from '../components/Loader';
 
 const Analytics = ({ onNavigate }) => {
-  const { state, metrics, loading } = useTrafficData();
+  const { 
+    state, 
+    metrics, 
+    analyticsSession, 
+    loading, 
+    simulationSpeed, 
+    setSpeed, 
+    resetSimulation 
+  } = useTrafficData();
 
-  // Sustainability & Economic Savings
-  const [savingsStats, setSavingsStats] = useState({
-    fuelSavedLiters: 2.8,
-    timeSavedMinutes: 22,
-    co2ReducedKg: 6.5,
-    totalSavingsRupees: 367
-  });
-
-  useEffect(() => {
-    if (state || metrics) {
-      const traditionalWaitTime = metrics?.traditional_wait_time || 45.0;
-      const currentAvgWait = (typeof state?.avg_wait_time === 'number' && state.avg_wait_time > 0)
-        ? state.avg_wait_time
-        : 32.5;
-
-      const avgWaitReduction = Math.max(3.5, traditionalWaitTime - currentAvgWait);
-      const carsPassed = state?.cars_passed || metrics?.total_cars || 0;
-      const activeCarCount = state?.cars ? Object.values(state.cars).flat().length : 8;
-
-      const effectiveCarsPerMin = (metrics?.throughput && metrics.throughput > 0)
-        ? metrics.throughput
-        : Math.max(16, (activeCarCount * 2) + Math.min(carsPassed, 20));
-
-      const carsPerHour = effectiveCarsPerMin * 60;
-
-      const actualFuelSaved = (state?.fuel_saved_per_hour && state.fuel_saved_per_hour > 0)
-        ? state.fuel_saved_per_hour
-        : (metrics?.fuel_saved_per_hour_liters && metrics.fuel_saved_per_hour_liters > 0)
-          ? metrics.fuel_saved_per_hour_liters
-          : Math.max(2.4, avgWaitReduction * carsPerHour * 0.00028);
-
-      const timeSaved = (state?.time_saved_per_hour && state.time_saved_per_hour > 0)
-        ? state.time_saved_per_hour
-        : (metrics?.time_saved_per_hour_minutes && metrics.time_saved_per_hour_minutes > 0)
-          ? metrics.time_saved_per_hour_minutes
-          : Math.max(18, (avgWaitReduction * carsPerHour) / 60);
-
-      const co2Reduced = Math.max(5.5, actualFuelSaved * 2.31);
-      const fuelCostSaved = actualFuelSaved * 105;
-      const timeCostSaved = (timeSaved / 60) * 200;
-      const totalSavings = fuelCostSaved + timeCostSaved;
-
-      setSavingsStats({
-        fuelSavedLiters: actualFuelSaved,
-        timeSavedMinutes: timeSaved,
-        co2ReducedKg: co2Reduced,
-        totalSavingsRupees: totalSavings
-      });
-    }
-  }, [state, metrics]);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'charts' | 'environmental'
 
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
-        <Loader message="Loading Analytics & Sustainability Telemetry..." />
+        <Loader message="Loading Current Simulation Analytics Engine..." />
       </div>
     );
   }
 
-  // Calculated projections
-  const dailyFuelSaved = savingsStats.fuelSavedLiters * 16; // 16 active traffic hours
-  const dailyCo2Saved = savingsStats.co2ReducedKg * 16;
-  const dailyMoneySaved = savingsStats.totalSavingsRupees * 16;
-  const treesEquivalent = (dailyCo2Saved * 365 / 21.77).toFixed(0);
+  const session = analyticsSession || {
+    sessionId: 'SIM-INIT',
+    sessionStartTime: Date.now(),
+    sessionDurationSeconds: 0,
+    eventCount: 0,
+    isRunning: false,
+    totalVehicles: 0,
+    vehiclesProcessed: 0,
+    activeVehicles: 0,
+    emergencyVehicles: 0,
+    emergencyPreemptions: 0,
+    averageWaitTime: 0,
+    hasWaitTimeData: false,
+    peakActiveVehicles: 0,
+    peakQueueLength: 0,
+    peakThroughput: 0,
+    currentThroughput: 0,
+    vehicleTypeData: [],
+    laneData: [],
+    signalStateData: [],
+    timeSeries: [],
+    hasTimeSeriesData: false,
+    emergencyEvents: [],
+    sustainability: { hasData: false }
+  };
+
+  // Format session duration helper
+  const formatDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}m ${secs.toString().padStart(2, '0')}s`;
+  };
+
+  const startTimeString = new Date(session.sessionStartTime).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  const isSimulationActive = simulationSpeed > 0;
+  const hasData = session.totalVehicles > 0 || session.vehiclesProcessed > 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 font-sans">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-slate-900">
-              📈 Efficiency & Sustainability Analytics
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-              Live Telemetry
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
+      
+      {/* ── 1. Page Header & Session Control Strip ─────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <BarChart3 className="text-[#F59E0B]" size={28} />
+                <span>Traffic Analytics</span>
+              </h1>
+
+              {/* Strict Data Source Indicator */}
+              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Data Source: Current Simulation
+              </span>
+
+              {/* Status Pill */}
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                isSimulationActive 
+                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}>
+                {isSimulationActive ? `Running (${simulationSpeed}x)` : 'Paused'}
+              </span>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Real-time analytics from the current simulation session. Zero mocked or fabricated numbers.
+            </p>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => setSpeed(isSimulationActive ? 0 : 1)}
+              className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
+            >
+              {isSimulationActive ? <Pause size={14} /> : <Play size={14} />}
+              <span>{isSimulationActive ? 'Pause Sim' : 'Resume Sim'}</span>
+            </button>
+
+            <button
+              onClick={resetSimulation}
+              className="px-3.5 py-2 text-xs font-bold rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 flex items-center gap-1.5 transition cursor-pointer"
+              title="Clear all session data and start fresh"
+            >
+              <RotateCcw size={14} />
+              <span>Reset Session</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate && onNavigate('live-intersection')}
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+            >
+              <Compass size={14} />
+              <span>Live Intersection</span>
+            </button>
+          </div>
+
+        </div>
+
+        {/* Session Metadata Strip */}
+        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-xs text-slate-600">
+          <div>
+            <span className="text-slate-400 block font-medium text-[11px]">Session ID</span>
+            <span className="font-mono font-bold text-slate-800">{session.sessionId}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block font-medium text-[11px]">Session Started</span>
+            <span className="font-semibold text-slate-800">{startTimeString}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block font-medium text-[11px]">Elapsed Duration</span>
+            <span className="font-semibold text-slate-800">{formatDuration(session.sessionDurationSeconds)}</span>
+          </div>
+          <div>
+            <span className="text-slate-400 block font-medium text-[11px]">Recorded Events</span>
+            <span className="font-semibold text-blue-600">{session.eventCount} events</span>
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <span className="text-slate-400 block font-medium text-[11px]">Active Signal</span>
+            <span className="font-bold text-emerald-600">Lane {state?.signal || 'N'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. Required KPI Cards (Current Session Data) ────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        
+        {/* Total Vehicles */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Vehicles</span>
+            <Car size={16} className="text-blue-500" />
+          </div>
+          <div className="mt-2">
+            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {session.totalVehicles}
             </span>
+            <p className="text-[11px] text-slate-400 mt-0.5">Generated in session</p>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Real-time urban mobility efficiency, carbon abatement, and commuter economic impact for Mumbai BKC corridor.
+        </div>
+
+        {/* Vehicles Processed */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Processed</span>
+            <CheckCircle2 size={16} className="text-emerald-500" />
+          </div>
+          <div className="mt-2">
+            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">
+              {session.vehiclesProcessed}
+            </span>
+            <p className="text-[11px] text-slate-400 mt-0.5">Cleared intersection</p>
+          </div>
+        </div>
+
+        {/* Active Vehicles */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active in Grid</span>
+            <Activity size={16} className="text-indigo-500" />
+          </div>
+          <div className="mt-2">
+            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {session.activeVehicles}
+            </span>
+            <p className="text-[11px] text-slate-400 mt-0.5">In approach lanes</p>
+          </div>
+        </div>
+
+        {/* Average Waiting Time */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg Wait Time</span>
+            <Timer size={16} className="text-amber-500" />
+          </div>
+          <div className="mt-2">
+            {session.hasWaitTimeData ? (
+              <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 tracking-tight">
+                {session.averageWaitTime}s
+              </span>
+            ) : (
+              <span className="text-xs font-semibold text-slate-400 block py-1.5">
+                Insufficient data
+              </span>
+            )}
+            <p className="text-[11px] text-slate-400 mt-0.5">Measured wait/car</p>
+          </div>
+        </div>
+
+        {/* Peak Traffic */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Peak Traffic</span>
+            <TrendingUp size={16} className="text-purple-500" />
+          </div>
+          <div className="mt-2">
+            {session.peakActiveVehicles > 0 ? (
+              <span className="text-2xl sm:text-3xl font-extrabold text-purple-600 tracking-tight">
+                {session.peakActiveVehicles}
+              </span>
+            ) : (
+              <span className="text-xs font-semibold text-slate-400 block py-1.5">
+                Insufficient data
+              </span>
+            )}
+            <p className="text-[11px] text-slate-400 mt-0.5">Max concurrent cars</p>
+          </div>
+        </div>
+
+        {/* Emergency Vehicles */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Emergency</span>
+            <ShieldAlert size={16} className="text-red-500" />
+          </div>
+          <div className="mt-2">
+            <span className="text-2xl sm:text-3xl font-extrabold text-red-600 tracking-tight">
+              {session.emergencyVehicles}
+            </span>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              {session.emergencyPreemptions} priority waves
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── 3. Empty State Guard if No Traffic Generated Yet ────── */}
+      {!hasData && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-2xl">
+            🚦
+          </div>
+          <h3 className="text-lg font-bold text-slate-900">No traffic data yet</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
+            Start the simulation or allow the current session to spawn vehicles. Analytics will automatically record and visualize live telemetry.
           </p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => onNavigate && onNavigate('dashboard')}
-            className="px-3.5 py-2 text-xs font-medium bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 shadow-sm transition"
-          >
-            📊 View Dashboard
-          </button>
-          <button
-            onClick={() => onNavigate && onNavigate('live-intersection')}
-            className="px-3.5 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition"
-          >
-            🚦 Live Intersection
-          </button>
-        </div>
-      </div>
-
-      {/* Sustainability & Economic Impact Bar (Moved from Dashboard) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-            <span>Fuel Saved</span>
-            <span>⛽</span>
-          </div>
-          <div className="text-xl font-bold text-emerald-600">{savingsStats.fuelSavedLiters.toFixed(1)} L/hr</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">₹{(savingsStats.fuelSavedLiters * 105).toFixed(0)} saved / hr</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-blue-500">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-            <span>Time Saved</span>
-            <span>⏰</span>
-          </div>
-          <div className="text-xl font-bold text-blue-600">{savingsStats.timeSavedMinutes.toFixed(0)} min/hr</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Commuter idle reduction</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-teal-500">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-            <span>CO₂ Reduced</span>
-            <span>🌱</span>
-          </div>
-          <div className="text-xl font-bold text-teal-600">{savingsStats.co2ReducedKg.toFixed(1)} kg/hr</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Emission abatement</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-amber-500">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-            <span>Economic Benefit</span>
-            <span>💰</span>
-          </div>
-          <div className="text-xl font-bold text-amber-600">₹{savingsStats.totalSavingsRupees.toFixed(0)}/hr</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Direct urban savings</div>
-        </div>
-      </div>
-
-      {/* Aggregate Impact & Environmental Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Environmental Equivalencies */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center space-x-2 text-emerald-700 font-semibold mb-4 text-sm">
-            <span>🌿</span>
-            <span>Environmental Offset Equivalencies</span>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-emerald-50/70 border border-emerald-100 rounded-lg">
-              <div>
-                <p className="text-xs text-slate-600 font-medium">Urban Trees Absorptive Equivalent</p>
-                <p className="text-lg font-bold text-emerald-800">{treesEquivalent} Mature Trees / yr</p>
-              </div>
-              <span className="text-2xl">🌳</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-teal-50/70 border border-teal-100 rounded-lg">
-              <div>
-                <p className="text-xs text-slate-600 font-medium">Daily Fuel Conserved (16 hr active)</p>
-                <p className="text-lg font-bold text-teal-800">{dailyFuelSaved.toFixed(1)} Liters / day</p>
-              </div>
-              <span className="text-2xl">⛽</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-blue-50/70 border border-blue-100 rounded-lg">
-              <div>
-                <p className="text-xs text-slate-600 font-medium">Daily Carbon Offset</p>
-                <p className="text-lg font-bold text-blue-800">{dailyCo2Saved.toFixed(1)} kg CO₂e / day</p>
-              </div>
-              <span className="text-2xl">☁️</span>
-            </div>
+          <div className="pt-2">
+            <button
+              onClick={() => onNavigate && onNavigate('live-intersection')}
+              className="px-5 py-2.5 rounded-xl bg-[#07172E] text-white text-xs font-bold hover:bg-[#0D2E5C] transition"
+            >
+              Open Live Intersection
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Economic & Productivity Savings */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center space-x-2 text-amber-700 font-semibold mb-4 text-sm">
-            <span>📊</span>
-            <span>Economic & Productivity Impact</span>
+      {/* ── 4. Main Charts Grid ─────────────────────────────────── */}
+      {hasData && (
+        <div className="space-y-6">
+          
+          {/* Row 1: Volume Over Time & Throughput Trend */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Chart 1: Traffic Volume Over Time */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Traffic Volume Over Time</h3>
+                  <p className="text-[11px] text-slate-500">Active vs Processed vehicle counts across simulation ticks</p>
+                </div>
+                <span className="text-[10px] bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full">
+                  LINE CHART
+                </span>
+              </div>
+
+              <div className="h-[250px] w-full pt-2">
+                {session.hasTimeSeriesData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={session.timeSeries}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="activeVehicles" 
+                        name="Active in Lanes" 
+                        stroke="#3B82F6" 
+                        strokeWidth={2.5}
+                        dot={false}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="processedVehicles" 
+                        name="Total Cleared" 
+                        stroke="#10B981" 
+                        strokeWidth={2.5}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    Insufficient time-series data
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Chart 2: Traffic Throughput Trend */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Traffic Throughput (Cars / Min)</h3>
+                  <p className="text-[11px] text-slate-500">Real processing velocity derived from actual passed vehicles</p>
+                </div>
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">
+                  RATE TREND
+                </span>
+              </div>
+
+              <div className="h-[250px] w-full pt-2">
+                {session.hasTimeSeriesData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={session.timeSeries}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} unit=" c/m" />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="throughput" 
+                        name="Throughput (cars/min)" 
+                        stroke="#F59E0B" 
+                        strokeWidth={2.5}
+                        dot={{ fill: '#F59E0B', r: 3 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    Insufficient throughput data
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
-          <div className="space-y-4">
-            <div className="p-3 bg-amber-50/70 border border-amber-100 rounded-lg">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-slate-600 font-medium">Daily Projected Savings</span>
-                <span className="text-xs font-bold text-amber-700">₹{(dailyMoneySaved).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+
+          {/* Row 2: Traffic by Lane & Vehicle Type Distribution */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Chart 3: Traffic by Lane / Direction (Bar Chart) */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Traffic by Lane / Direction</h3>
+                  <p className="text-[11px] text-slate-500">Actual vehicle counts generated vs processed per approach</p>
+                </div>
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2.5 py-0.5 rounded-full">
+                  BAR CHART
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500">Based on fuel savings + commuter time valuation @ ₹200/hr</p>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-slate-600 font-medium">Monthly Corridor Value</span>
-                <span className="text-xs font-bold text-slate-800">₹{(dailyMoneySaved * 30).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+
+              <div className="h-[250px] w-full pt-2">
+                {session.laneData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={session.laneData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="label" stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                      <Bar dataKey="arrivals" name="Total Spawned" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="processed" name="Cleared" fill="#10B981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="activeQueue" name="Queued" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    No lane data recorded yet
+                  </div>
+                )}
               </div>
-              <p className="text-[11px] text-slate-500">Projected across 30 operational days at BKC Junction</p>
             </div>
-            <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-lg">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-slate-600 font-medium">Annualized Benefit (1 Node)</span>
-                <span className="text-xs font-bold text-indigo-700">₹{(dailyMoneySaved * 365).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+
+            {/* Chart 4: Vehicle Type Distribution (Pie Chart) */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Vehicle Type Distribution</h3>
+                  <p className="text-[11px] text-slate-500">Actual classification breakdown from current session traffic</p>
+                </div>
+                <span className="text-[10px] bg-purple-50 text-purple-700 font-bold px-2.5 py-0.5 rounded-full">
+                  PIE CHART
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500">Scalable to ₹10Cr+ when networked across 50 intersections</p>
+
+              <div className="h-[250px] w-full flex flex-col sm:flex-row items-center justify-center">
+                {session.vehicleTypeData.length > 0 ? (
+                  <>
+                    <div className="h-[180px] w-[180px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={session.vehicleTypeData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={75}
+                            paddingAngle={3}
+                            dataKey="count"
+                          >
+                            {session.vehicleTypeData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                            itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                            labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs text-slate-600 sm:ml-4 flex-1">
+                      {session.vehicleTypeData.map(item => (
+                        <div key={item.type} className="flex items-center justify-between py-1 border-b border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full shrink-0 shadow-xs ring-1 ring-slate-900/10" style={{ backgroundColor: item.color }}></span>
+                            <span className="font-semibold text-slate-800">{item.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 font-mono">
+                            <span className="text-slate-600 font-medium">{item.count} cars</span>
+                            <span className="font-bold text-slate-900">{item.percentage}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    No vehicle distribution data recorded
+                  </div>
+                )}
+              </div>
             </div>
+
           </div>
+
+          {/* Row 3: Signal Phase State Distribution & Queue Trends */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Chart 5: Signal State Distribution */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Signal State Distribution</h3>
+                  <p className="text-[11px] text-slate-500">Actual time allocated to green phase per direction</p>
+                </div>
+                <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2.5 py-0.5 rounded-full">
+                  PHASE TIME
+                </span>
+              </div>
+
+              <div className="h-[250px] w-full flex flex-col sm:flex-row items-center justify-center">
+                {session.signalStateData.length > 0 ? (
+                  <>
+                    <div className="h-[180px] w-[180px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={session.signalStateData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={75}
+                            paddingAngle={3}
+                            dataKey="seconds"
+                          >
+                            {session.signalStateData.map((entry, index) => (
+                              <Cell key={`sig-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                            itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                            labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="space-y-2 text-xs text-slate-600 sm:ml-4 flex-1">
+                      {session.signalStateData.map(item => (
+                        <div key={item.direction} className="flex items-center justify-between py-1 border-b border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full shrink-0 shadow-xs ring-1 ring-slate-900/10" style={{ backgroundColor: item.color }}></span>
+                            <span className="font-semibold text-slate-800">{item.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 font-mono">
+                            <span className="text-slate-600 font-medium">{item.seconds}s green</span>
+                            <span className="font-bold text-slate-900">{item.percentage}%</span>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="pt-1 text-[11px] flex justify-between">
+                        <span className="text-slate-600 font-medium">Total Switches:</span>
+                        <span className="font-bold text-slate-900">{session.signalSwitchCount} times</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    No signal phase data recorded yet
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Chart 6: Queue & Congestion Trend */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Queue & Congestion Trend</h3>
+                  <p className="text-[11px] text-slate-500">Real cumulative queue sizes observed in all 4 approaches</p>
+                </div>
+                <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2.5 py-0.5 rounded-full">
+                  QUEUE SIZES
+                </span>
+              </div>
+
+              <div className="h-[250px] w-full pt-2">
+                {session.hasTimeSeriesData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={session.timeSeries}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                      <Line type="monotone" dataKey="totalQueue" name="Total Queue" stroke="#EF4444" strokeWidth={2.5} dot={false} />
+                      <Line type="monotone" dataKey="queueN" name="Queue N" stroke="#3B82F6" strokeWidth={1.5} dot={false} />
+                      <Line type="monotone" dataKey="queueS" name="Queue S" stroke="#10B981" strokeWidth={1.5} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    No queue trend data recorded yet
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Row 4: Emergency Events Log & Derived ROI Matrix */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Emergency Vehicle Priority Log */}
+            <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Emergency Priority Log</h3>
+                  <p className="text-[11px] text-slate-500">Actual priority pre-emption activations</p>
+                </div>
+                <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full">
+                  {session.emergencyEvents.length} Events
+                </span>
+              </div>
+
+              <div className="space-y-2.5 max-h-[200px] overflow-y-auto pt-1">
+                {session.emergencyEvents.length > 0 ? (
+                  session.emergencyEvents.map(evt => (
+                    <div key={evt.id} className="p-2.5 rounded-xl bg-red-50/60 border border-red-100 flex items-center justify-between text-xs">
+                      <div>
+                        <div className="flex items-center gap-1.5 font-bold text-red-900">
+                          <span>🚨</span>
+                          <span>Lane {evt.direction} Preemption</span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-mono">{evt.timestamp} • {evt.id}</span>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        evt.resolved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-200 text-red-900 animate-pulse'
+                      }`}>
+                        {evt.resolved ? 'CLEARED' : 'ACTIVE'}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-xs text-slate-400">
+                    <ShieldAlert size={28} className="mx-auto mb-2 text-slate-300" />
+                    No emergency vehicles detected in this session
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Derived Environmental & Commuter Benefit Audit */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Derived Environmental & Commuter Impact</h3>
+                  <p className="text-[11px] text-slate-500">
+                    Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: 45.0s)
+                  </p>
+                </div>
+                <span className="text-[10px] bg-teal-50 text-teal-700 font-bold px-2.5 py-0.5 rounded-full">
+                  DERIVED MATRIX
+                </span>
+              </div>
+
+              {session.sustainability.hasData ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
+                    <div className="flex items-center justify-between text-emerald-700 text-xs font-bold">
+                      <span>Fuel Conserved</span>
+                      <Fuel size={16} />
+                    </div>
+                    <div className="text-2xl font-black text-emerald-800">
+                      {session.sustainability.fuelSavedLiters} L
+                    </div>
+                    <p className="text-[10px] text-slate-500">Rate: 0.00028 L/sec delay reduction</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-100 space-y-1">
+                    <div className="flex items-center justify-between text-teal-700 text-xs font-bold">
+                      <span>CO₂ Avoided</span>
+                      <Leaf size={16} />
+                    </div>
+                    <div className="text-2xl font-black text-teal-800">
+                      {session.sustainability.co2ReducedKg} kg
+                    </div>
+                    <p className="text-[10px] text-slate-500">Factor: 2.31 kg CO₂ per liter</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-100 space-y-1">
+                    <div className="flex items-center justify-between text-amber-700 text-xs font-bold">
+                      <span>Economic Value</span>
+                      <IndianRupee size={16} />
+                    </div>
+                    <div className="text-2xl font-black text-amber-800">
+                      ₹{session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}
+                    </div>
+                    <p className="text-[10px] text-slate-500">Retail fuel + commuter time value</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+                  <AlertCircle size={24} className="mx-auto mb-1.5 text-slate-300" />
+                  <p className="font-semibold text-slate-600">Insufficient Data for Environmental Audit</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Vehicles must pass through the intersection to compute measured fuel & emissions savings.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+
         </div>
+      )}
 
-        {/* System Efficiency Overview */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center space-x-2 text-indigo-700 font-semibold mb-4 text-sm">
-            <span>⚡</span>
-            <span>Performance vs Baseline</span>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                <span>Wait Time Reduction</span>
-                <span className="font-bold text-emerald-600">27.8% Faster</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '72%' }}></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                <span>Green Wave Clearance</span>
-                <span className="font-bold text-blue-600">91.4% Rate</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                <span>Empty Approach Elimination</span>
-                <span className="font-bold text-teal-600">100% Zero-Loss</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-teal-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-medium text-slate-700 mb-1">
-                <span>Emergency Corridor Clearance</span>
-                <span className="font-bold text-purple-600">&lt; 3.2s Trigger</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '95%' }}></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
