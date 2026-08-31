@@ -393,39 +393,12 @@ const resolveVehicle = (id, type) => {
 
 const Car = ({ id, lane, position, type, isFullscreen = false }) => {
   const vehicle = resolveVehicle(id, type);
-  const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus' || vehicle.kind === 'ambulance';
+  const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus';
   const isBike = vehicle.kind === 'bike';
 
-  const isEmergencyVehicle = (
-    type === 'emergency' ||
-    type === 'ambulance' ||
-    type === 'firetruck' ||
-    type === 'police' ||
-    type === 'fire' ||
-    vehicle.kind === 'ambulance' ||
-    vehicle.kind === 'firetruck' ||
-    vehicle.kind === 'police'
-  );
-
-  // Smooth overtake lane shift trajectory for emergency vehicles:
-  // Phase 1 (0 -> 25): Smoothly glide into center overtake corridor between lanes
-  // Phase 2 (25 -> 42): Advance down the clear center corridor past queued cars with 0 collision
-  // Phase 3 (42 -> 55): At empty center junction box, smoothly steer back left to original lane
-  // Phase 4 (55 -> 100): Clear intersection straight in original lane
-  let lateralShiftPercent = 0; // 0 = original lane, 1 = center corridor
-  if (isEmergencyVehicle) {
-    if (position <= 25) {
-      lateralShiftPercent = Math.min(1, Math.max(0, position / 22));
-    } else if (position > 25 && position < 42) {
-      lateralShiftPercent = 1;
-    } else if (position >= 42 && position <= 55) {
-      lateralShiftPercent = Math.max(0, 1 - (position - 42) / 13);
-    } else {
-      lateralShiftPercent = 0;
-    }
-  }
-
   // Calculate position and rotation based on lane
+  // Normal: Cars 11x19px, Bikes 9.5x17.5px (just smaller than cars)
+  // Fullscreen: Cars 22x38px, Bikes 19x35px (scaled for rich detail)
   const getStyles = () => {
     const baseStyles = {
       position: 'absolute',
@@ -437,59 +410,44 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
         : (isLarge ? '21px' : isBike ? '17.5px' : '19px'),
     };
 
-    // Corridor shift delta (moves center to 49.5%/50.5% - directly along the center yellow line corridor):
-    // Fullscreen: 18px shift
-    // Normal: 3.5% shift
-    const pxShift = lateralShiftPercent * (isFullscreen ? 18 : 0);
-    const pctShift = lateralShiftPercent * 3.5;
-
-    let leftPos = '';
-    let topPos = '';
-    let rightPos = '';
-    let bottomPos = '';
-    let transformStr = '';
+    // In fullscreen, the container is huge but roads have a fixed pixel width.
+    // Percentage offsets (53%/47%) would put cars outside the road.
+    // Use calc(50% ± fixed offset) to keep cars in their lane.
+    const laneOffsetPos = isFullscreen ? 'calc(50% + 25px)' : '53%';
+    const laneOffsetNeg = isFullscreen ? 'calc(50% - 25px)' : '47%';
 
     switch (lane) {
       case 'N':
-        leftPos = isFullscreen
-          ? `calc(50% + 25px - ${pxShift}px)`
-          : `${53 - pctShift}%`;
-        topPos = `${position}%`;
-        transformStr = 'translateX(-50%)';
-        break;
+        return {
+          ...baseStyles,
+          left: laneOffsetPos,
+          top: `${position}%`,
+          transform: 'translateX(-50%)',
+        };
       case 'S':
-        leftPos = isFullscreen
-          ? `calc(50% - 25px + ${pxShift}px)`
-          : `${47 + pctShift}%`;
-        bottomPos = `${position}%`;
-        transformStr = 'translateX(-50%) rotate(180deg)';
-        break;
+        return {
+          ...baseStyles,
+          left: laneOffsetNeg,
+          bottom: `${position}%`,
+          transform: 'translateX(-50%) rotate(180deg)',
+        };
       case 'E':
-        topPos = isFullscreen
-          ? `calc(50% + 25px - ${pxShift}px)`
-          : `${53 - pctShift}%`;
-        rightPos = `${position}%`;
-        transformStr = 'translateY(-50%) rotate(90deg)';
-        break;
+        return {
+          ...baseStyles,
+          top: laneOffsetPos,
+          right: `${position}%`,
+          transform: 'translateY(-50%) rotate(90deg)',
+        };
       case 'W':
-        topPos = isFullscreen
-          ? `calc(50% - 25px + ${pxShift}px)`
-          : `${47 + pctShift}%`;
-        leftPos = `${position}%`;
-        transformStr = 'translateY(-50%) rotate(-90deg)';
-        break;
+        return {
+          ...baseStyles,
+          top: laneOffsetNeg,
+          left: `${position}%`,
+          transform: 'translateY(-50%) rotate(-90deg)',
+        };
       default:
-        break;
+        return baseStyles;
     }
-
-    return {
-      ...baseStyles,
-      ...(leftPos && { left: leftPos }),
-      ...(topPos && { top: topPos }),
-      ...(rightPos && { right: rightPos }),
-      ...(bottomPos && { bottom: bottomPos }),
-      transform: transformStr,
-    };
   };
 
   const renderShape = VEHICLE_RENDERERS[vehicle.kind] || VEHICLE_RENDERERS.car;
@@ -499,9 +457,9 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
       initial={getStyles()}
       animate={getStyles()}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3, ease: 'linear' }}
+      transition={{ duration: 0.4, ease: 'linear' }}
       style={{
-        transition: 'left 300ms ease-in-out, top 300ms ease-in-out, right 300ms ease-in-out, bottom 300ms ease-in-out, transform 300ms ease-in-out',
+        transition: 'left 400ms linear, top 400ms linear, right 400ms linear, bottom 400ms linear, transform 400ms linear',
       }}
       className="flex items-center justify-center pointer-events-none"
     >
