@@ -21,14 +21,14 @@ class MockTrafficSimulator {
     this.carIdCounter = 0;
     this.currentSignal = 'N';
     this.signalTimer = 0;
-    this.signalDuration = 35; // Increased for Mumbai conditions
+    this.signalDuration = 30; // 30s duration for North
     this.totalCarsPassed = 0;
     this.emergencyVehicleCount = 0;
     this.emergencyCooldown = 0;
     this.emergencyActive = false;
     this.emergencyDirection = null;
     this.emergencyVehicleId = null;
-    
+
     // Enhanced emergency management - reduced frequency for Mumbai
     this.postEmergencyMode = false;
     this.postEmergencyTimer = 0;
@@ -36,7 +36,7 @@ class MockTrafficSimulator {
     this.postEmergencyIndex = 0;
     this.preEmergencyQueues = { N: 0, S: 0, E: 0, W: 0 };
     this.emergencyStartTime = null;
-    
+
     // Mumbai-specific wait time tracking
     this.recentWaitTimes = []; // Last 50 cars for rolling average
     this.historicalWaitTimes = []; // For trend analysis
@@ -44,7 +44,7 @@ class MockTrafficSimulator {
     this.traditionalSystemWaitTime = 45; // Mumbai average wait time
     this.targetWaitTime = 32.5; // Target: 30-35 seconds (average 32.5)
     this.currentAvgWaitTime = 35; // Start with current Mumbai average
-    
+
     this.metrics = {
       waitTimes: [],
       throughputHistory: [],
@@ -54,11 +54,11 @@ class MockTrafficSimulator {
       timeSaved: 0,
       costSaved: 0
     };
-    
+
     this.isRunning = false;
     this.signalSequence = ['N', 'E', 'S', 'W'];
     this.currentSignalIndex = 0;
-    
+
     // Mumbai-adapted timing parameters
     this.minSignalTime = 15; // Minimum 15 seconds for heavy traffic
     this.maxSignalTime = 60; // Maximum 90 seconds for extreme congestion
@@ -68,13 +68,13 @@ class MockTrafficSimulator {
     this.totalCostSaved = 0;
     this.emptyRoadThreshold = 0;
     this.minSignalTimeForEmpty = 8; // Even empty roads need some time
-    
+
     // Performance tracking
     this.tickCount = 0;
     this.lastEfficiencyUpdate = 0;
     this.consecutiveGoodDecisions = 0;
     this.consecutiveBadDecisions = 0;
-    
+
     // Mumbai traffic improvement metrics
     this.improvementPercentage = 0; // Track improvement over traditional system
     this.totalTimeSavedPerHour = 0;
@@ -105,46 +105,24 @@ class MockTrafficSimulator {
     return ['N', 'S', 'E', 'W'].filter(direction => !this.isRoadEmpty(direction));
   }
 
-  // Mumbai-specific signal duration calculation
-  calculateSignalDuration(queueLength, isEmpty = false) {
-    if (isEmpty) {
-      return this.minSignalTimeForEmpty;
+  calculateSignalDuration(arg1, arg2, arg3) {
+    const fixedDurations = { N: 30, S: 45, E: 22, W: 60 };
+    let dir = null;
+    if (typeof arg1 === 'string' && fixedDurations[arg1.toUpperCase()]) dir = arg1.toUpperCase();
+    else if (typeof arg2 === 'string' && fixedDurations[arg2.toUpperCase()]) dir = arg2.toUpperCase();
+    else if (typeof arg3 === 'string' && fixedDurations[arg3.toUpperCase()]) dir = arg3.toUpperCase();
+    else if (this.currentSignal && fixedDurations[this.currentSignal.toUpperCase()]) dir = this.currentSignal.toUpperCase();
+
+    if (dir && fixedDurations[dir]) {
+      return fixedDurations[dir];
     }
-    
-    if (queueLength === 0) return this.minSignalTime;
-    
-    // Mumbai-adapted calculation for heavy traffic
-    let duration = this.minSignalTime + (queueLength * this.baseTimePerCar);
-    
-    // Efficiency modifier - AI optimization reduces time needed
-    const efficiencyModifier = this.systemEfficiency / 100;
-    duration = duration * (2.2 - efficiencyModifier); // More conservative for Mumbai
-    
-    // Heavy congestion adjustments (common in Mumbai)
-    if (queueLength > 12) {
-      duration += 10; // Extra time for very heavy congestion
-    } else if (queueLength > 8) {
-      duration += 5; // Extra time for heavy congestion
-    }
-    
-    // Rush hour simulation
-    const timeOfDay = (Date.now() / 1000) % 86400;
-    const isRushHour = (timeOfDay >= 28800 && timeOfDay <= 36000) || // 8 AM - 10 AM
-                       (timeOfDay >= 64800 && timeOfDay <= 72000);    // 6 PM - 8 PM
-    
-    if (isRushHour) {
-      duration *= 1.2; // 20% longer during rush hour
-    }
-    
-    duration = Math.max(this.minSignalTime, Math.min(this.maxSignalTime, duration));
-    
-    return Math.floor(duration);
+    return 30;
   }
 
   // Enhanced lane selection with Mumbai traffic patterns
   getHighestQueueLane() {
     const roadsWithTraffic = this.getRoadsWithTraffic();
-    
+
     if (roadsWithTraffic.length === 0) {
       return this.currentSignal;
     }
@@ -157,7 +135,7 @@ class MockTrafficSimulator {
     // Current lane analysis
     const currentQueueSize = this.cars[this.currentSignal].length;
     const timeRemaining = this.signalDuration - this.signalTimer;
-    
+
     // Don't switch if current lane is still productive (conservative for Mumbai)
     if (currentQueueSize > 5 && timeRemaining > 8 && !this.emergencyActive && roadsWithTraffic.includes(this.currentSignal)) {
       return this.currentSignal;
@@ -166,7 +144,7 @@ class MockTrafficSimulator {
     // Find optimal lane switch with Mumbai-specific logic
     let maxQueue = 0;
     let bestLane = roadsWithTraffic[0] || this.currentSignal;
-    
+
     Object.entries(queues).forEach(([lane, count]) => {
       // Priority to heavily congested lanes (Mumbai-specific)
       const adjustedCount = count > 10 ? count * 1.5 : count;
@@ -179,7 +157,7 @@ class MockTrafficSimulator {
     // Decision quality tracking
     const currentQueue = this.cars[this.currentSignal].length;
     const switchBenefit = maxQueue - currentQueue;
-    
+
     if (switchBenefit >= 3) { // Higher threshold for Mumbai
       this.consecutiveGoodDecisions++;
       this.consecutiveBadDecisions = 0;
@@ -195,32 +173,32 @@ class MockTrafficSimulator {
   // Reduced emergency vehicle handling (max 3-4 at a time)
   handleEmergencyVehicle(lane, type) {
     const priority = type === 'ambulance' ? 3 : type === 'fire' ? 2 : 1;
-    
+
     if (!this.emergencyActive || priority > (this.getCurrentEmergencyPriority() || 0)) {
       console.log(`ðŸš¨ Emergency ${type} detected in lane ${lane}!`);
-      
+
       this.preEmergencyQueues = { ...this.lastQueueCounts };
       this.emergencyStartTime = Date.now();
-      
+
       const emergencyVehicle = this.cars[lane].find(car => car.type === type);
       this.emergencyVehicleId = emergencyVehicle ? emergencyVehicle.id : null;
-      
+
       this.emergencyActive = true;
       this.emergencyDirection = lane;
       this.currentSignal = lane;
       this.signalTimer = 0;
       this.signalDuration = Math.min(45, this.calculateSignalDuration(this.cars[lane].length));
-      
+
       // Emergency mode affects efficiency but less severely
       this.systemEfficiency = Math.max(75, this.systemEfficiency - 8);
-      
+
       console.log(`Emergency signal activated: ${lane} for ${this.signalDuration}s`);
     }
   }
 
   getCurrentEmergencyPriority() {
     let maxPriority = 0;
-    
+
     ['N', 'S', 'E', 'W'].forEach(lane => {
       this.cars[lane].forEach(car => {
         if (car.type !== 'normal') {
@@ -229,7 +207,7 @@ class MockTrafficSimulator {
         }
       });
     });
-    
+
     return maxPriority;
   }
 
@@ -238,10 +216,10 @@ class MockTrafficSimulator {
     if (this.emergencyActive && this.emergencyDirection && this.emergencyVehicleId) {
       // Check if the specific emergency vehicle has passed
       const emergencyLaneCars = this.cars[this.emergencyDirection] || [];
-      const emergencyVehiclePresent = emergencyLaneCars.some(car => 
+      const emergencyVehiclePresent = emergencyLaneCars.some(car =>
         car.id === this.emergencyVehicleId && car.type !== 'normal'
       );
-      
+
       if (!emergencyVehiclePresent) {
         console.log(`ðŸš¨ Emergency vehicle ${this.emergencyVehicleId} has passed.`);
         this.initiatePostEmergencyMode();
@@ -255,19 +233,19 @@ class MockTrafficSimulator {
     this.postEmergencyMode = true;
     this.postEmergencyTimer = 0;
     this.postEmergencyIndex = 0;
-    
+
     // Close the emergency direction signal immediately
     console.log(`ðŸš¦ Closing emergency lane ${this.emergencyDirection}`);
-    
+
     // Determine if we should start rotation or go to AI mode
     const totalWaitingCars = Object.values(this.cars).reduce((total, cars) => total + cars.length, 0);
-    
+
     if (totalWaitingCars > 12) { // Higher threshold for Mumbai
       this.startPostEmergencyRotation();
     } else {
       this.switchToAIMode();
     }
-    
+
     this.emergencyDirection = null;
     this.emergencyVehicleId = null;
   }
@@ -275,7 +253,7 @@ class MockTrafficSimulator {
   startPostEmergencyRotation() {
     // Find the highest congestion lane to start with
     const roadsWithTraffic = this.getRoadsWithTraffic();
-    
+
     if (roadsWithTraffic.length === 0) {
       this.switchToAIMode();
       return;
@@ -283,7 +261,7 @@ class MockTrafficSimulator {
 
     let highestQueue = 0;
     let startDirection = roadsWithTraffic[0];
-    
+
     roadsWithTraffic.forEach(direction => {
       const queueSize = this.cars[direction].length;
       if (queueSize > highestQueue) {
@@ -315,7 +293,7 @@ class MockTrafficSimulator {
 
       // Move to next direction with traffic
       const roadsWithTraffic = this.getRoadsWithTraffic();
-      
+
       if (roadsWithTraffic.length === 0) {
         this.switchToAIMode();
         return;
@@ -324,7 +302,7 @@ class MockTrafficSimulator {
       // Get next direction in rotation that has traffic
       let nextDirection = this.postEmergencyRotation[this.postEmergencyIndex % 4];
       let attempts = 0;
-      
+
       while (!roadsWithTraffic.includes(nextDirection) && attempts < 4) {
         this.postEmergencyIndex += 1;
         nextDirection = this.postEmergencyRotation[this.postEmergencyIndex % 4];
@@ -348,13 +326,13 @@ class MockTrafficSimulator {
     this.postEmergencyMode = false;
     this.postEmergencyTimer = 0;
     this.postEmergencyIndex = 0;
-    
+
     this.systemEfficiency = Math.min(100, this.systemEfficiency + 10);
-    
+
     const bestLane = this.getHighestQueueLane();
     this.currentSignal = bestLane;
     this.signalTimer = 0;
-    
+
     const isEmpty = this.isRoadEmpty(bestLane);
     this.signalDuration = this.calculateSignalDuration(this.cars[bestLane].length, isEmpty);
   }
@@ -365,26 +343,19 @@ class MockTrafficSimulator {
     const baseSpawnRate = 0.45; // Higher spawn rate for Mumbai density
     const efficiencyFactor = (100 - this.systemEfficiency) / 300; // Less aggressive
     const finalSpawnRate = Math.min(0.7, baseSpawnRate + efficiencyFactor);
-    
+
     const spawnChance = Math.random() < finalSpawnRate;
-    
+
     if (spawnChance) {
       // Mumbai traffic pattern simulation
-      const timeOfDay = (Date.now() / 1000) % 86400;
-      let laneWeights = { N: 0.28, S: 0.28, E: 0.22, W: 0.22 }; // Balanced for Mumbai
-      
-      // Rush hour adjustments
-      const isRushHour = (timeOfDay >= 28800 && timeOfDay <= 36000) || // 8 AM - 10 AM
-                         (timeOfDay >= 64800 && timeOfDay <= 72000);    // 6 PM - 8 PM
-      
-      if (isRushHour) {
-        laneWeights = { N: 0.32, S: 0.30, E: 0.20, W: 0.18 }; // North-South bias during rush
-      }
-      
+      // Align vehicle spawning weights with PCU loads (E=5 PCU, N=10 PCU, S=20 PCU, W=30 PCU)
+      let laneWeights = { W: 0.46, S: 0.31, N: 0.16, E: 0.07 };
+      const maxQueueCaps = { E: 6, N: 12, S: 23, W: 34 };
+
       const rand = Math.random();
       let cumulativeWeight = 0;
-      let selectedLane = 'N';
-      
+      let selectedLane = 'W';
+
       for (const [lane, weight] of Object.entries(laneWeights)) {
         cumulativeWeight += weight;
         if (rand <= cumulativeWeight) {
@@ -392,13 +363,24 @@ class MockTrafficSimulator {
           break;
         }
       }
-      
+
+      // Respect queue cap so vehicle count matches PCU ratio
+      if (this.cars[selectedLane].length >= maxQueueCaps[selectedLane]) {
+        // Find alternative lane that is not capped
+        const uncappedLanes = ['W', 'S', 'N', 'E'].filter(l => this.cars[l].length < maxQueueCaps[l]);
+        if (uncappedLanes.length > 0) {
+          selectedLane = uncappedLanes[0];
+        } else {
+          return; // All queues at target ratio capacity
+        }
+      }
+
       let carType = 'normal';
-      
+
       // Reduced emergency vehicle spawning (max 3-4 total)
       if (this.emergencyVehicleCount < 3 && this.emergencyCooldown <= 0) {
         const emergencyRand = Math.random();
-        
+
         if (emergencyRand < 0.0005) { // Reduced from 0.0008
           carType = 'ambulance';
           this.emergencyVehicleCount++;
@@ -443,7 +425,7 @@ class MockTrafficSimulator {
     if (!this.isRunning) return;
 
     this.tickCount++;
-    
+
     this.spawnCar();
 
     // Handle different modes
@@ -457,13 +439,13 @@ class MockTrafficSimulator {
     }
 
     this.moveCarsAndCalculateMetrics();
-    
+
     // Update efficiency every 45 ticks (45 seconds)
     if (this.tickCount % 45 === 0) {
       this.updateSystemEfficiency();
       this.calculateMumbaiImprovements();
     }
-    
+
     this.lastQueueCounts = {
       N: this.cars.N.length,
       S: this.cars.S.length,
@@ -480,16 +462,16 @@ class MockTrafficSimulator {
     const traditionalWait = 45; // Mumbai traditional average
     const currentWait = this.currentAvgWaitTime;
     this.improvementPercentage = Math.max(0, ((traditionalWait - currentWait) / traditionalWait) * 100);
-    
+
     // Calculate real-world benefits for Mumbai
     const carsPerHour = this.calculateThroughput() * 60;
     const timeSavedPerCar = Math.max(0, traditionalWait - currentWait);
     this.totalTimeSavedPerHour = (timeSavedPerCar * carsPerHour) / 60; // in minutes
-    
+
     // Fuel savings (Mumbai-specific consumption rates)
     const fuelPerSecondIdle = 0.00028; // Liters per second while idling (Mumbai traffic)
     this.totalFuelSavedPerHour = timeSavedPerCar * carsPerHour * fuelPerSecondIdle;
-    
+
     // Update totals
     this.totalFuelSaved += this.totalFuelSavedPerHour / 3600; // Convert to per-tick
     this.totalCostSaved += (this.totalFuelSavedPerHour / 3600) * 105; // â‚¹105 per liter
@@ -500,10 +482,10 @@ class MockTrafficSimulator {
     // Target efficiency: achieve 30-35 second average wait time
     const targetWaitTime = 32.5; // Target average
     const currentWaitTime = this.currentAvgWaitTime;
-    
+
     // Factors that improve efficiency
     let efficiencyBoost = 0;
-    
+
     // Achievement of target wait time
     if (currentWaitTime <= 35 && currentWaitTime >= 30) {
       efficiencyBoost += 5; // Big boost for achieving target
@@ -512,27 +494,27 @@ class MockTrafficSimulator {
     } else if (currentWaitTime < 45) {
       efficiencyBoost += 1;
     }
-    
+
     // Good decision making
     if (this.consecutiveGoodDecisions > this.consecutiveBadDecisions) {
       efficiencyBoost += 2;
     }
-    
+
     // High throughput
     const currentThroughput = this.calculateThroughput();
     if (currentThroughput > 12) { // Lower threshold for Mumbai traffic
       efficiencyBoost += 2;
     }
-    
+
     // Balanced queue lengths
     const queueVariance = this.calculateQueueVariance();
     if (queueVariance < 6) { // Higher tolerance for Mumbai
       efficiencyBoost += 1;
     }
-    
+
     // Factors that decrease efficiency
     let efficiencyPenalty = 0;
-    
+
     // High wait times (penalty for exceeding traditional system)
     if (currentWaitTime > 45) {
       efficiencyPenalty += 5; // Heavy penalty for performing worse than traditional
@@ -541,21 +523,21 @@ class MockTrafficSimulator {
     } else if (currentWaitTime > 35) {
       efficiencyPenalty += 1;
     }
-    
+
     // Poor decision making
     if (this.consecutiveBadDecisions > 4) {
       efficiencyPenalty += 3;
     }
-    
+
     // Emergency disruptions (reduced penalty)
     if (this.emergencyActive) {
       efficiencyPenalty += 1;
     }
-    
+
     // Update efficiency (bounded between 60 and 100 for Mumbai conditions)
     const netChange = (efficiencyBoost - efficiencyPenalty) * 0.5; // Slower change
     this.systemEfficiency = Math.max(60, Math.min(100, this.systemEfficiency + netChange));
-    
+
     // Record efficiency history
     this.metrics.efficiencyHistory.push({
       timestamp: Date.now(),
@@ -563,11 +545,11 @@ class MockTrafficSimulator {
       avgWaitTime: this.currentAvgWaitTime,
       improvementPercentage: this.improvementPercentage
     });
-    
+
     if (this.metrics.efficiencyHistory.length > 100) {
       this.metrics.efficiencyHistory.shift();
     }
-    
+
     console.log(`ðŸŽ¯ Mumbai System - Efficiency: ${this.systemEfficiency.toFixed(1)}% | Wait: ${this.currentAvgWaitTime.toFixed(1)}s | Improvement: ${this.improvementPercentage.toFixed(1)}%`);
   }
 
@@ -580,12 +562,12 @@ class MockTrafficSimulator {
 
   manageNormalOperation() {
     this.signalTimer += 1;
-    
+
     if (this.signalTimer >= this.signalDuration) {
       const previousSignal = this.currentSignal;
       const bestLane = this.getHighestQueueLane();
       const roadsWithTraffic = this.getRoadsWithTraffic();
-      
+
       // Smart lane switching logic for Mumbai
       if (this.isRoadEmpty(this.currentSignal) && roadsWithTraffic.length > 0) {
         this.currentSignal = bestLane;
@@ -596,17 +578,17 @@ class MockTrafficSimulator {
         const availableRoads = roadsWithTraffic.length > 0 ? roadsWithTraffic : ['N', 'E', 'S', 'W'];
         this.currentSignalIndex = (this.currentSignalIndex + 1) % this.signalSequence.length;
         let nextSignal = this.signalSequence[this.currentSignalIndex];
-        
+
         let attempts = 0;
         while (this.isRoadEmpty(nextSignal) && roadsWithTraffic.length > 0 && !roadsWithTraffic.includes(nextSignal) && attempts < 4) {
           this.currentSignalIndex = (this.currentSignalIndex + 1) % this.signalSequence.length;
           nextSignal = this.signalSequence[this.currentSignalIndex];
           attempts++;
         }
-        
+
         this.currentSignal = nextSignal;
       }
-      
+
       // Efficiency tracking for lane switches
       if (previousSignal !== this.currentSignal) {
         const switchBenefit = this.cars[this.currentSignal].length - this.cars[previousSignal].length;
@@ -614,11 +596,11 @@ class MockTrafficSimulator {
           this.consecutiveGoodDecisions++;
         }
       }
-      
+
       const isEmpty = this.isRoadEmpty(this.currentSignal);
-      this.signalDuration = this.calculateSignalDuration(this.cars[this.currentSignal].length, isEmpty);
+      this.signalDuration = this.calculateSignalDuration(this.cars[this.currentSignal].length, isEmpty, this.currentSignal);
       this.signalTimer = 0;
-      
+
       const status = isEmpty ? 'Empty road' : `${this.cars[this.currentSignal].length} cars`;
       console.log(`ðŸ¤– Mumbai AI: ${this.currentSignal} for ${this.signalDuration}s (${status})`);
     }
@@ -628,30 +610,30 @@ class MockTrafficSimulator {
   moveCarsAndCalculateMetrics() {
     ['N', 'S', 'E', 'W'].forEach(lane => {
       const isGreen = this.currentSignal === lane;
-      
+
       this.cars[lane] = this.cars[lane].map((car, index) => {
         const carInFront = this.cars[lane][index - 1];
         const isBlocked = carInFront && (car.position + 6 >= carInFront.position); // Closer following distance in Mumbai
-        
+
         const intersectionStart = 42;
         const intersectionEnd = 58;
         const isInIntersection = car.position >= intersectionStart && car.position <= intersectionEnd;
-        
+
         if (car.position >= intersectionStart && !car.hasPassedIntersection) {
           car.hasPassedIntersection = true;
         }
-        
-        const shouldMove = 
-          isInIntersection || 
-          car.hasPassedIntersection || 
+
+        const shouldMove =
+          isInIntersection ||
+          car.hasPassedIntersection ||
           (isGreen && !isBlocked);
-          
-        const shouldStop = 
-          !isGreen && 
-          !isInIntersection && 
-          !car.hasPassedIntersection && 
+
+        const shouldStop =
+          !isGreen &&
+          !isInIntersection &&
+          !car.hasPassedIntersection &&
           car.position < intersectionStart;
-        
+
         if (shouldMove && car.position < 120) {
           return {
             ...car,
@@ -659,10 +641,10 @@ class MockTrafficSimulator {
             waitTime: isInIntersection || car.hasPassedIntersection ? car.waitTime : 0
           };
         }
-        
+
         if (shouldStop || isBlocked) {
           const fuelConsumedThisTick = 0.00028; // Mumbai-specific fuel consumption
-          
+
           return {
             ...car,
             waitTime: car.waitTime + 1,
@@ -677,29 +659,29 @@ class MockTrafficSimulator {
       // Process cars that have passed through
       const passedCars = this.cars[lane].filter(car => car.position >= 120);
       this.cars[lane] = this.cars[lane].filter(car => car.position < 120);
-      
+
       passedCars.forEach(car => {
         this.totalCarsPassed++;
-        
+
         // Use total accumulated wait time for accurate measurement
         const actualWaitTime = car.totalWaitTime;
         this.recentWaitTimes.push(actualWaitTime);
         this.metrics.waitTimes.push(actualWaitTime);
-        
+
         // Keep rolling average of recent wait times
         if (this.recentWaitTimes.length > 100) { // Larger sample for Mumbai
           this.recentWaitTimes.shift();
         }
-        
+
         // Calculate current rolling average (target: 30-35 seconds)
-        this.currentAvgWaitTime = this.recentWaitTimes.length > 0 
-          ? this.recentWaitTimes.reduce((sum, time) => sum + time, 0) / this.recentWaitTimes.length 
+        this.currentAvgWaitTime = this.recentWaitTimes.length > 0
+          ? this.recentWaitTimes.reduce((sum, time) => sum + time, 0) / this.recentWaitTimes.length
           : 35; // Start with 35 seconds
-        
+
         if (car.type !== 'normal') {
           this.emergencyVehicleCount = Math.max(0, this.emergencyVehicleCount - 1);
         }
-        
+
         if (this.metrics.waitTimes.length > 300) {
           this.metrics.waitTimes.shift();
         }
@@ -709,7 +691,7 @@ class MockTrafficSimulator {
 
   updateMetrics() {
     const currentThroughput = this.calculateThroughput();
-    
+
     this.metrics.throughputHistory.push({
       timestamp: Date.now(),
       throughput: currentThroughput
@@ -731,7 +713,7 @@ class MockTrafficSimulator {
     const recentHistory = this.metrics.throughputHistory.filter(
       entry => Date.now() - entry.timestamp < 120000 // 2 minutes
     );
-    return recentHistory.length > 0 ? 
+    return recentHistory.length > 0 ?
       this.totalCarsPassed / Math.max(1, recentHistory.length / 60) :
       0;
   }
@@ -739,7 +721,7 @@ class MockTrafficSimulator {
   getState() {
     const emptyRoads = this.getEmptyRoads();
     const roadsWithTraffic = this.getRoadsWithTraffic();
-    
+
     return {
       signal: this.currentSignal,
       emergencyActive: this.emergencyActive,
@@ -757,8 +739,8 @@ class MockTrafficSimulator {
       total_cost_saved: this.totalCostSaved,
       empty_roads: emptyRoads,
       roads_with_traffic: roadsWithTraffic,
-      system_mode: this.emergencyActive ? 'Emergency' : 
-                   this.postEmergencyMode ? 'Post-Emergency Rotation' : 'AI Intelligent',
+      system_mode: this.emergencyActive ? 'Emergency' :
+        this.postEmergencyMode ? 'Post-Emergency Rotation' : 'AI Intelligent',
       system_efficiency: this.systemEfficiency,
       wait_time_trend: this.getWaitTimeTrend(),
       mumbai_improvement_percentage: this.improvementPercentage,
@@ -770,17 +752,17 @@ class MockTrafficSimulator {
 
   getWaitTimeTrend() {
     if (this.recentWaitTimes.length < 20) return 'stable';
-    
+
     const recent20 = this.recentWaitTimes.slice(-20);
     const previous20 = this.recentWaitTimes.slice(-40, -20);
-    
+
     if (previous20.length === 0) return 'stable';
-    
+
     const recentAvg = recent20.reduce((sum, time) => sum + time, 0) / recent20.length;
     const previousAvg = previous20.reduce((sum, time) => sum + time, 0) / previous20.length;
-    
+
     const difference = recentAvg - previousAvg;
-    
+
     if (difference < -3) return 'improving';
     if (difference > 3) return 'worsening';
     return 'stable';
@@ -789,7 +771,7 @@ class MockTrafficSimulator {
   getMetrics() {
     const currentThroughput = this.calculateThroughput();
     const avgWaitTime = this.currentAvgWaitTime;
-    
+
     return {
       total_cars: this.totalCarsPassed,
       avg_trip_time: avgWaitTime * 0.6, // Adjusted for Mumbai conditions
@@ -820,18 +802,18 @@ class MockTrafficSimulator {
   // Manual override remains the same but with Mumbai context
   manualOverride(direction, reason) {
     console.log(`Mumbai Traffic Control - Manual override: ${direction} - Reason: ${reason}`);
-    
+
     this.systemEfficiency = Math.max(70, this.systemEfficiency - 15);
-    
+
     this.emergencyActive = false;
     this.postEmergencyMode = false;
     this.emergencyDirection = null;
     this.emergencyVehicleId = null;
-    
+
     this.currentSignal = direction;
     this.signalTimer = 0;
     this.signalDuration = 60;
-    
+
     const overrideLog = {
       timestamp: new Date().toISOString(),
       action: 'MANUAL_OVERRIDE_ACTIVATED',
@@ -842,7 +824,7 @@ class MockTrafficSimulator {
       previous_mode: this.postEmergencyMode ? 'Post-Emergency' : 'AI',
       system_efficiency_impact: -15
     };
-    
+
     console.log('Mumbai Override logged:', overrideLog);
   }
 
@@ -865,7 +847,7 @@ class MockTrafficSimulator {
     this.totalFuelSaved = 0;
     this.totalCostSaved = 0;
     this.lastQueueCounts = { N: 0, S: 0, E: 0, W: 0 };
-    
+
     // Reset Mumbai-specific metrics
     this.systemEfficiency = 85;
     this.currentAvgWaitTime = 35;
@@ -877,7 +859,7 @@ class MockTrafficSimulator {
     this.improvementPercentage = 0;
     this.totalTimeSavedPerHour = 0;
     this.totalFuelSavedPerHour = 0;
-    
+
     this.metrics = {
       waitTimes: [],
       throughputHistory: [],
@@ -903,13 +885,13 @@ export function useTrafficData(pollInterval = 1000) {
 
   const vehicleManager = useMemo(() => new VehicleManager(), []);
   const signalManager = useMemo(() => new SignalManager(), []);
-  
+
   const intervalRef = useRef(null);
   const mockIntervalRef = useRef(null);
 
   const simulationTick = useCallback(() => {
     const emergencyVehicle = vehicleManager.spawnCar(signalManager.currentSignal);
-    
+
     if (emergencyVehicle) {
       signalManager.handleEmergencyVehicle(emergencyVehicle);
     }
@@ -960,7 +942,7 @@ export function useTrafficData(pollInterval = 1000) {
 
   const mapBackendStateToFrontend = (backendState, backendMetrics) => {
     if (!backendState) return null;
-    
+
     const cars = { N: [], S: [], E: [], W: [] };
     if (Array.isArray(backendState.vehicles)) {
       backendState.vehicles.forEach(v => {
@@ -1015,11 +997,11 @@ export function useTrafficData(pollInterval = 1000) {
 
   const mapBackendMetricsToFrontend = (backendMetrics, backendState) => {
     if (!backendMetrics) return null;
-    
+
     const totalCars = backendMetrics.total_vehicles || 0;
     const avgWaitTime = backendMetrics.avg_wait_time || 0;
     const emergencyCount = backendMetrics.emergency_count || 0;
-    
+
     const queues = backendState?.queues || { N: 0, S: 0, E: 0, W: 0 };
     const emptyRoadCount = ['N', 'S', 'E', 'W'].filter(dir => queues[dir] === 0).length;
     const activeRoadCount = 4 - emptyRoadCount;
@@ -1053,7 +1035,7 @@ export function useTrafficData(pollInterval = 1000) {
     if (useMock) {
       try {
         vehicleManager.start();
-        
+
         const mockTick = () => {
           simulationTick();
           setLoading(false);
@@ -1062,7 +1044,7 @@ export function useTrafficData(pollInterval = 1000) {
 
         mockTick();
         mockIntervalRef.current = setInterval(
-          mockTick, 
+          mockTick,
           Math.max(100, 500 / simulationSpeed)
         );
 
@@ -1097,11 +1079,11 @@ export function useTrafficData(pollInterval = 1000) {
         try {
           const stateData = await getState();
           const metricsData = await getMetrics();
-          
+
           if (active) {
             const currentQueues = stateData.queues || { N: 0, S: 0, E: 0, W: 0 };
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
+
             queueHistoryRef.current = [
               ...queueHistoryRef.current,
               {
@@ -1124,7 +1106,7 @@ export function useTrafficData(pollInterval = 1000) {
 
             const mappedState = mapBackendStateToFrontend(stateData, metricsData);
             const mappedMetrics = mapBackendMetricsToFrontend(metricsData, stateData);
-            
+
             mappedMetrics.queue_history = queueHistoryRef.current;
             mappedMetrics.wait_time_history = waitTimeHistoryRef.current;
 
@@ -1195,7 +1177,7 @@ export function useTrafficData(pollInterval = 1000) {
   useEffect(() => {
     const isActive = state?.emergencyActive || false;
     window.dispatchEvent(new CustomEvent('emergency-override', { detail: { active: isActive } }));
-    
+
     if (isActive) {
       document.body.classList.add('emergency-strobe-active');
     } else {
