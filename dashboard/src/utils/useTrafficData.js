@@ -613,37 +613,53 @@ class MockTrafficSimulator {
 
       this.cars[lane] = this.cars[lane].map((car, index) => {
         const carInFront = this.cars[lane][index - 1];
-        const isBlocked = carInFront && (car.position + 6 >= carInFront.position); // Closer following distance in Mumbai
+        const isBlocked = carInFront && (car.position + 6 >= carInFront.position);
 
-        const intersectionStart = 42;
-        const intersectionEnd = 58;
+        const intersectionStart = 34; // Stop line threshold
+        const intersectionEnd = 60;
         const isInIntersection = car.position >= intersectionStart && car.position <= intersectionEnd;
 
         if (car.position >= intersectionStart && !car.hasPassedIntersection) {
           car.hasPassedIntersection = true;
         }
 
-        const shouldMove =
-          isInIntersection ||
-          car.hasPassedIntersection ||
-          (isGreen && !isBlocked);
+        const isEmergency = (
+          car.type === 'ambulance' ||
+          car.type === 'fire' ||
+          car.type === 'police' ||
+          car.type === 'emergency' ||
+          car.type === 'firetruck'
+        );
 
-        const shouldStop =
-          !isGreen &&
-          !isInIntersection &&
-          !car.hasPassedIntersection &&
-          car.position < intersectionStart;
+        let shouldMove = false;
+        let shouldStop = false;
 
-        if (shouldMove && car.position < 120) {
+        if (this.emergencyActive) {
+          // Emergency Mode rules:
+          // 1. Emergency vehicles ALWAYS move.
+          // 2. Cars that already crossed the signal line (hasPassedIntersection / isInIntersection) MUST finish clearing out.
+          // 3. ALL OTHER cars before the signal line MUST STOP COMPLETELY.
+          if (isEmergency || car.hasPassedIntersection || isInIntersection) {
+            shouldMove = true;
+          } else {
+            shouldStop = true;
+          }
+        } else {
+          // Normal Operation rules:
+          shouldMove = isInIntersection || car.hasPassedIntersection || (isGreen && !isBlocked);
+          shouldStop = !shouldMove || isBlocked;
+        }
+
+        if (shouldMove && car.position < 100) {
           return {
             ...car,
-            position: Math.min(120, car.position + car.speed),
+            position: Math.min(100, car.position + (isEmergency ? car.speed * 1.5 : car.speed)),
             waitTime: isInIntersection || car.hasPassedIntersection ? car.waitTime : 0
           };
         }
 
-        if (shouldStop || isBlocked) {
-          const fuelConsumedThisTick = 0.00028; // Mumbai-specific fuel consumption
+        if (shouldStop) {
+          const fuelConsumedThisTick = 0.00028;
 
           return {
             ...car,
@@ -657,8 +673,8 @@ class MockTrafficSimulator {
       });
 
       // Process cars that have passed through
-      const passedCars = this.cars[lane].filter(car => car.position >= 120);
-      this.cars[lane] = this.cars[lane].filter(car => car.position < 120);
+      const passedCars = this.cars[lane].filter(car => car.position >= 100);
+      this.cars[lane] = this.cars[lane].filter(car => car.position < 100);
 
       passedCars.forEach(car => {
         this.totalCarsPassed++;
