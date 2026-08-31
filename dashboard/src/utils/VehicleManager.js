@@ -186,8 +186,6 @@ export class VehicleManager {
   }
 
   _spawnOneLane(direction) {
-    const isEmergency = this.emergencyCooldown === 0 && Math.random() < 0.02;
-
     const maxCap = LANE_CAPACITIES[direction] || 40;
     if (this.cars[direction].length < maxCap) {
       const lane = this.cars[direction];
@@ -196,40 +194,27 @@ export class VehicleManager {
       if (lane.length > 0) {
         const rearCar = lane[lane.length - 1];
         // Set the starting position to the back of the current queue.
-        // If the queue is backed up, this will be a negative (off-screen) position,
-        // allowing the queue to grow realistically beyond the visual limit of 5 cars.
         spawnPosition = Math.min(0, rearCar.position - MIN_VEHICLE_GAP);
       }
 
+      // Normal mock traffic generator generates regular vehicles only
+      const rand = Math.random();
       let carType = 'car';
-      if (isEmergency) {
-        const emgTypes = ['ambulance', 'firetruck', 'police'];
-        carType = emgTypes[Math.floor(Math.random() * emgTypes.length)];
-      } else {
-        const rand = Math.random();
-        if (rand < 0.25) carType = 'bike';
-        else if (rand < 0.40) carType = 'bus';
-        else carType = 'car';
-      }
+      if (rand < 0.25) carType = 'bike';
+      else if (rand < 0.40) carType = 'bus';
+      else carType = 'car';
 
       const newCar = {
         id: `${direction}-${this.carIdCounter++}`,
         position: spawnPosition,
-        // Speed 4 → crosses 100-unit lane in ~25 ticks.
-        // Emergency vehicles are 2× faster at speed 8.
-        speed: isEmergency ? 8 : (carType === 'bike' ? 4.5 : carType === 'bus' ? 3.5 : 4),
+        speed: carType === 'bike' ? 4.5 : carType === 'bus' ? 3.5 : 4,
         type: carType,
         waitTime: 0,
         direction
       };
 
       this.cars[direction] = [...this.cars[direction], newCar];
-
-      if (isEmergency) {
-        this.emergencyVehicleCount++;
-        this.emergencyCooldown = 300;
-        return { direction, type: carType, id: newCar.id };
-      }
+      return null;
     }
     return null;
   }

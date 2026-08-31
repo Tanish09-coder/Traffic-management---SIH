@@ -887,23 +887,15 @@ export function useTrafficData(pollInterval = 1000) {
   const signalManager = useMemo(() => new SignalManager(), []);
 
   const intervalRef = useRef(null);
-  const mockIntervalRef = useRef(null);
-
   const simulationTick = useCallback(() => {
-    const emergencyVehicle = vehicleManager.spawnCar(signalManager.currentSignal);
-
-    if (emergencyVehicle) {
-      signalManager.handleEmergencyVehicle(emergencyVehicle);
-    }
-
-    signalManager.updateSignal(vehicleManager.getQueueLengths());
-    vehicleManager.updateVehicles(signalManager.currentSignal);
-
     // Continuous tracking: Check if emergency vehicle has cleared the intersection
     if (signalManager.emergencyActive && signalManager.emergencyDirection) {
       const emergencyLaneCars = vehicleManager.cars[signalManager.emergencyDirection] || [];
       signalManager.checkEmergencyCleared(emergencyLaneCars);
     }
+
+    signalManager.updateSignal(vehicleManager.getQueueLengths());
+    vehicleManager.updateVehicles(signalManager.currentSignal);
 
     // Merge SignalManager state so all UI fields are present
     const vmState = vehicleManager.getState();

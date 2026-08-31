@@ -48,9 +48,7 @@ class TrafficSimulator:
                 else:
                     v_type = VehicleType.HEAVY
 
-                is_emergency = random.random() < 0.05
-                if is_emergency:
-                    self.stats['emergency_count'] += 1
+                is_emergency = False
 
                 vehicle = Vehicle(
                     id=f"{time.time()}_{direction.value}",
