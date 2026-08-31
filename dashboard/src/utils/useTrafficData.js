@@ -887,6 +887,8 @@ export function useTrafficData(pollInterval = 1000) {
   const signalManager = useMemo(() => new SignalManager(), []);
 
   const intervalRef = useRef(null);
+  const mockIntervalRef = useRef(null);
+
   const simulationTick = useCallback(() => {
     // Continuous tracking: Check if emergency vehicle has cleared the intersection
     if (signalManager.emergencyActive && signalManager.emergencyDirection) {
