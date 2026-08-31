@@ -38,13 +38,27 @@ export class SignalManager {
     });
 
     this.signalTimer += 1;
+
+    // DYNAMIC EMPTY-ROAD SWITCH: If the currently green lane is completely empty (0 cars),
+    // and other lanes are waiting with queued vehicles, switch signal immediately after a 2-second minimum green
+    // so traffic flows smoothly and green time is not wasted on an empty road!
+    const currentQueue = (queues && queues[this.currentSignal]) || 0;
+    const maxOtherQueue = queues
+      ? Math.max(...Object.entries(queues).filter(([d]) => d !== this.currentSignal).map(([, q]) => q), 0)
+      : 0;
+
+    if (currentQueue === 0 && maxOtherQueue > 0 && this.signalTimer >= 2) {
+      this.switchSignal(queues);
+      return;
+    }
+
     if (this.signalTimer >= this.signalDuration) {
       this.switchSignal(queues);
     }
   }
 
-  switchSignal(queues) {
-    const nextSignal = this.determineNextSignal(queues);
+  switchSignal(queues, forceOptimal = false) {
+    const nextSignal = this.determineNextSignal(queues, forceOptimal);
     this.currentSignal = nextSignal;
     this.signalTimer = 0;
     this.signalDuration = this.calculateSignalDuration(queues[nextSignal]);
@@ -63,7 +77,7 @@ export class SignalManager {
    *    Otherwise keep the current signal to avoid premature switching.
    * 4. If all effective queues are <= 2, fall back to normal round-robin (N→E→S→W).
    */
-  determineNextSignal(queues) {
+  determineNextSignal(queues, forceOptimal = false) {
     // --- Step 1: effective queues with anti-starvation boost ---
     const effective = {};
     Object.entries(queues).forEach(([dir, rawLen]) => {
@@ -79,11 +93,20 @@ export class SignalManager {
     let bestScore = currentEffective;
 
     Object.entries(effective).forEach(([dir, score]) => {
-      if (score > bestScore) {
+      if (score > bestScore || (forceOptimal && score === bestScore && dir !== this.currentSignal && score > 0)) {
         bestScore = score;
         bestDir = dir;
       }
     });
+
+    if (forceOptimal) {
+      if (bestScore === 0) {
+        this.currentSignalIndex = (this.currentSignalIndex + 1) % this.signalSequence.length;
+        return this.signalSequence[this.currentSignalIndex];
+      }
+      this.currentSignalIndex = this.signalSequence.indexOf(bestDir);
+      return bestDir;
+    }
 
     // --- Step 3: switch-margin guard ---
     // Only switch if the best OTHER direction beats the current by >= SWITCH_MARGIN.
@@ -122,28 +145,115 @@ export class SignalManager {
   }
 
   handleEmergencyVehicle(emergency) {
-    if (!this.emergencyActive && emergency) {
-      this.emergencyActive = true;
-      this.emergencyDirection = emergency.direction;
-      this.emergencyVehicleId = emergency.id || null;
-      this.currentSignal = emergency.direction;
-      this.signalTimer = 0;
-      this.signalDuration = TRAFFIC_CONSTANTS.MAX_SIGNAL_TIME;
+    if (emergency) {
+      const approach = emergency.approach || emergency.direction;
+      if (approach) {
+        this.emergencyActive = true;
+        this.emergencyDirection = approach;
+        this.emergencyVehicleId = emergency.id || null;
+        // Priority strictly given to the emergency vehicle's approach
+        this.currentSignal = approach;
+        const seqIdx = this.signalSequence.indexOf(approach);
+        if (seqIdx !== -1) {
+          this.currentSignalIndex = seqIdx;
+        }
+        this.signalTimer = 0;
+        this.signalDuration = TRAFFIC_CONSTANTS.MAX_SIGNAL_TIME || 60;
+      }
     }
   }
 
-  checkEmergencyCleared(emergencyLaneCars) {
+  endEmergency(queues = {}) {
+    this.emergencyActive = false;
+    this.emergencyDirection = null;
+    this.emergencyVehicleId = null;
+    this.signalTimer = 0;
+
+    // Instantly switch signal to the lane with the highest traffic demand
+    // instead of staying green on an empty road!
+    this.switchSignal(queues, true);
+  }
+
+  checkEmergencyCleared(emergencyLaneCars, queues = {}) {
     if (this.emergencyActive && this.emergencyDirection) {
       const stillActive = (emergencyLaneCars || []).some(car =>
-        (car.type === 'emergency' || car.type === 'ambulance' || car.type === 'firetruck' || car.id === this.emergencyVehicleId) &&
+        (car.type === 'emergency' || car.type === 'ambulance' || car.type === 'firetruck' || car.type === 'police' || car.id === this.emergencyVehicleId || (car.id && String(car.id).includes('-emg-'))) &&
         car.position < 100
       );
       if (!stillActive) {
         // Vehicle has fully crossed and cleared the intersection
-        this.emergencyActive = false;
-        this.emergencyDirection = null;
-        this.emergencyVehicleId = null;
-        this.signalTimer = 0;
+        this.endEmergency(queues);
+      }
+    }
+  }
+
+  /**
+   * Real-time Intelligent Pedestrian Safety & Traffic Density Analysis
+   * Dynamically analyzes vehicular green waves, queue congestion, moving vehicle states,
+   * clearance buffers, and emergency preemption.
+   */
+  getPedestrianSignals(queues = {}, cars = {}) {
+    // 1. Emergency Preemption: All crosswalks immediately locked to STOP
+    if (this.emergencyActive) {
+      return { N: 'STOP', S: 'STOP', E: 'STOP', W: 'STOP' };
+    }
+
+    const currentGreen = this.currentSignal;
+    const remainingTime = Math.max(0, this.signalDuration - this.signalTimer);
+    const isClearingPhase = remainingTime <= 2; // Last 2s clearance window
+
+    // Active lane analysis
+    const greenQueue = (queues && queues[currentGreen]) || 0;
+    const greenCars = (cars && cars[currentGreen]) || [];
+    const hasApproachingVehicles = greenCars.some(c => c.position < 60);
+
+    const signals = { N: 'STOP', S: 'STOP', E: 'STOP', W: 'STOP' };
+
+    if (currentGreen === 'N' || currentGreen === 'S') {
+      // Vehicular traffic is moving vertically (North/South axis)
+      // East and West vehicular approaches are RED (stopped at line)
+      // => East and West crosswalks are 100% safe for pedestrians to walk!
+      signals.E = isClearingPhase ? 'STOP' : 'WALK';
+      signals.W = isClearingPhase ? 'STOP' : 'WALK';
+
+      // North & South roads have green light.
+      // If the road has 0 queued cars and 0 approaching cars, safe crossing window is open:
+      if (greenQueue === 0 && !hasApproachingVehicles) {
+        signals.N = isClearingPhase ? 'STOP' : 'WALK';
+        signals.S = isClearingPhase ? 'STOP' : 'WALK';
+      } else {
+        signals.N = 'STOP';
+        signals.S = 'STOP';
+      }
+    } else if (currentGreen === 'E' || currentGreen === 'W') {
+      // Vehicular traffic is moving horizontally (East/West axis)
+      // North and South vehicular approaches are RED (stopped at line)
+      // => North and South crosswalks are 100% safe for pedestrians to walk!
+      signals.N = isClearingPhase ? 'STOP' : 'WALK';
+      signals.S = isClearingPhase ? 'STOP' : 'WALK';
+
+      // East & West roads have green light.
+      // If the road has 0 queued cars and 0 approaching cars, safe crossing window is open:
+      if (greenQueue === 0 && !hasApproachingVehicles) {
+        signals.E = isClearingPhase ? 'STOP' : 'WALK';
+        signals.W = isClearingPhase ? 'STOP' : 'WALK';
+      } else {
+        signals.E = 'STOP';
+        signals.W = 'STOP';
+      }
+    }
+
+    return signals;
+  }
+
+  manualOverride(direction) {
+    if (['N', 'S', 'E', 'W'].includes(direction)) {
+      this.currentSignal = direction;
+      this.signalTimer = 0;
+      this.signalDuration = 60;
+      const idx = this.signalSequence.indexOf(direction);
+      if (idx !== -1) {
+        this.currentSignalIndex = idx;
       }
     }
   }
@@ -158,14 +268,15 @@ export class SignalManager {
     this.waitingTicks = { N: 0, E: 0, S: 0, W: 0 };
   }
 
-  getState() {
+  getState(queues = {}, cars = {}) {
     return {
       current_signal: this.currentSignal,
       timer: this.signalTimer,
       duration: this.signalDuration,
       emergency_active: this.emergencyActive,
       emergency_direction: this.emergencyDirection,
-      waiting_ticks: { ...this.waitingTicks }
+      waiting_ticks: { ...this.waitingTicks },
+      pedestrian_signals: this.getPedestrianSignals(queues, cars)
     };
   }
 }

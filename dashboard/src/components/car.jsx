@@ -461,7 +461,7 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
       style={{
         transition: 'left 400ms linear, top 400ms linear, right 400ms linear, bottom 400ms linear, transform 400ms linear',
       }}
-      className="flex items-center justify-center pointer-events-none"
+      className="flex items-center justify-center pointer-events-none z-20"
     >
       {renderShape({ colorIndex: vehicle.colorIndex })}
     </motion.div>

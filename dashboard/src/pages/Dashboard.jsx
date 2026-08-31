@@ -4,6 +4,7 @@ import { Maximize, Minimize } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
+import PedestrianLight from '../components/PedestrianLight';
 import StatCard from '../components/StatCard';
 import ChartPanel from '../components/ChartPanel';
 import Loader from '../components/Loader';
@@ -117,7 +118,7 @@ const Dashboard = () => {
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                 <p className="text-sm font-semibold">
-                  🚨 EMERGENCY VEHICLE PRIORITY - Lane {state.emergencyDirection} active
+                  🚨 EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED (Conflicting Traffic Held)
                 </p>
               </div>
             </motion.div>
@@ -177,7 +178,7 @@ const Dashboard = () => {
           />
           <StatCard
             title="Total Throughput" 
-            value={metrics?.throughput ? parseFloat(metrics.throughput) : (state?.cars_passed ? parseFloat((state.cars_passed * 1.5).toFixed(1)) : 18.0)}
+            value={typeof metrics?.throughput === 'number' ? Number(metrics.throughput.toFixed(1)) : 0}
             unit="cars/min"
             icon="📊"
             color="green"
@@ -237,7 +238,6 @@ const Dashboard = () => {
                 ref={intersectionRef}
                 className={`relative w-full bg-[#EAECEF] rounded-2xl overflow-hidden border-2 border-[#1E293B] shadow-sm ${isFullscreen ? 'h-full' : 'h-96'}`}
               >
-                
                 {/* Road lanes with improved styling */}
                 <div className="absolute inset-0">
                   {/* Horizontal road */}
@@ -253,6 +253,164 @@ const Dashboard = () => {
                   {/* Intersection center box */}
                   <div className={`absolute top-1/2 left-1/2 bg-[#4B5461] rounded-lg transform -translate-x-1/2 -translate-y-1/2 shadow-2xl ${isFullscreen ? 'w-40 h-40' : 'w-20 h-20'}`}>
                   </div>
+
+                  {/* 🚶‍♂️ Minimalist Compact Zebra Crossings & High-Visibility Pedestrian Walkers */}
+                  
+                  {/* North Crosswalk */}
+                  {(() => {
+                    const pN = state?.pedestrian_signals?.N || 'STOP';
+                    const isWalk = pN === 'WALK';
+                    return (
+                      <>
+                        <div className={`absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none ${
+                          isFullscreen 
+                            ? 'top-[calc(50%-145px)] w-32 h-12' 
+                            : 'top-[calc(50%-78px)] w-16 h-6.5'
+                        }`}>
+                          <div className="w-full h-full flex justify-between px-0.5">
+                            {[...Array(8)].map((_, i) => (
+                              <div key={i} className={`h-full rounded-[0.5px] bg-white shadow-sm ${isFullscreen ? 'w-[3.5px]' : 'w-[2px]'}`} />
+                            ))}
+                          </div>
+                          {isWalk && (
+                            <motion.div
+                              className={`absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                                isFullscreen ? 'text-sm -top-4' : 'text-xs -top-3'
+                              }`}
+                              animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
+                              transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                            >
+                              🚶‍♀️
+                            </motion.div>
+                          )}
+                        </div>
+                        {/* North Pedestrian Signal Light (Right Curb) */}
+                        <div className={`absolute z-20 ${
+                          isFullscreen 
+                            ? 'left-[calc(50%+84px)] top-[calc(50%-148px)]' 
+                            : 'left-[calc(50%+42px)] top-[calc(50%-80px)]'
+                        }`}>
+                          <PedestrianLight status={pN} isFullscreen={isFullscreen} />
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {/* South Crosswalk */}
+                  {(() => {
+                    const pS = state?.pedestrian_signals?.S || 'STOP';
+                    const isWalk = pS === 'WALK';
+                    return (
+                      <>
+                        <div className={`absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none ${
+                          isFullscreen 
+                            ? 'top-[calc(50%+102px)] w-32 h-12' 
+                            : 'top-[calc(50%+55px)] w-16 h-6.5'
+                        }`}>
+                          <div className="w-full h-full flex justify-between px-0.5">
+                            {[...Array(8)].map((_, i) => (
+                              <div key={i} className={`h-full rounded-[0.5px] bg-white shadow-sm ${isFullscreen ? 'w-[3.5px]' : 'w-[2px]'}`} />
+                            ))}
+                          </div>
+                          {isWalk && (
+                            <motion.div
+                              className={`absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                                isFullscreen ? 'text-sm -top-4' : 'text-xs -top-3'
+                              }`}
+                              animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
+                              transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                            >
+                              🚶‍♀️
+                            </motion.div>
+                          )}
+                        </div>
+                        {/* South Pedestrian Signal Light (Left Curb) */}
+                        <div className={`absolute z-20 ${
+                          isFullscreen 
+                            ? 'left-[calc(50%-98px)] top-[calc(50%+102px)]' 
+                            : 'left-[calc(50%-52px)] top-[calc(50%+55px)]'
+                        }`}>
+                          <PedestrianLight status={pS} isFullscreen={isFullscreen} />
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {/* West Crosswalk */}
+                  {(() => {
+                    const pW = state?.pedestrian_signals?.W || 'STOP';
+                    const isWalk = pW === 'WALK';
+                    return (
+                      <>
+                        <div className={`absolute top-1/2 transform -translate-y-1/2 z-10 flex flex-col justify-between pointer-events-none ${
+                          isFullscreen 
+                            ? 'left-[calc(50%-145px)] w-12 h-32 py-0.5' 
+                            : 'left-[calc(50%-78px)] w-6.5 h-16 py-0.5'
+                        }`}>
+                          {[...Array(8)].map((_, i) => (
+                            <div key={i} className={`w-full rounded-[0.5px] bg-white shadow-sm ${isFullscreen ? 'h-[3.5px]' : 'h-[2px]'}`} />
+                          ))}
+                          {isWalk && (
+                            <motion.div
+                              className={`absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                                isFullscreen ? 'text-sm -left-4' : 'text-xs -left-3'
+                              }`}
+                              animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
+                              transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                            >
+                              🚶‍♀️
+                            </motion.div>
+                          )}
+                        </div>
+                        {/* West Pedestrian Signal Light (Top Curb) */}
+                        <div className={`absolute z-20 ${
+                          isFullscreen 
+                            ? 'left-[calc(50%-148px)] top-[calc(50%-98px)]' 
+                            : 'left-[calc(50%-80px)] top-[calc(50%-52px)]'
+                        }`}>
+                          <PedestrianLight status={pW} isFullscreen={isFullscreen} />
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {/* East Crosswalk */}
+                  {(() => {
+                    const pE = state?.pedestrian_signals?.E || 'STOP';
+                    const isWalk = pE === 'WALK';
+                    return (
+                      <>
+                        <div className={`absolute top-1/2 transform -translate-y-1/2 z-10 flex flex-col justify-between pointer-events-none ${
+                          isFullscreen 
+                            ? 'left-[calc(50%+102px)] w-12 h-32 py-0.5' 
+                            : 'left-[calc(50%+55px)] w-6.5 h-16 py-0.5'
+                        }`}>
+                          {[...Array(8)].map((_, i) => (
+                            <div key={i} className={`w-full rounded-[0.5px] bg-white shadow-sm ${isFullscreen ? 'h-[3.5px]' : 'h-[2px]'}`} />
+                          ))}
+                          {isWalk && (
+                            <motion.div
+                              className={`absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                                isFullscreen ? 'text-sm -right-4' : 'text-xs -right-3'
+                              }`}
+                              animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
+                              transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
+                            >
+                              🚶‍♀️
+                            </motion.div>
+                          )}
+                        </div>
+                        {/* East Pedestrian Signal Light (Bottom Curb) */}
+                        <div className={`absolute z-20 ${
+                          isFullscreen 
+                            ? 'left-[calc(50%+102px)] top-[calc(50%+84px)]' 
+                            : 'left-[calc(50%+55px)] top-[calc(50%+42px)]'
+                        }`}>
+                          <PedestrianLight status={pE} isFullscreen={isFullscreen} />
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Traffic Lights */}

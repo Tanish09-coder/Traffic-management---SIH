@@ -377,25 +377,6 @@ class MockTrafficSimulator {
 
       let carType = 'normal';
 
-      // Reduced emergency vehicle spawning (max 3-4 total)
-      if (this.emergencyVehicleCount < 3 && this.emergencyCooldown <= 0) {
-        const emergencyRand = Math.random();
-
-        if (emergencyRand < 0.0005) { // Reduced from 0.0008
-          carType = 'ambulance';
-          this.emergencyVehicleCount++;
-          this.emergencyCooldown = 450; // Longer cooldown
-        } else if (emergencyRand < 0.0008) { // Reduced from 0.0012
-          carType = 'fire';
-          this.emergencyVehicleCount++;
-          this.emergencyCooldown = 400;
-        } else if (emergencyRand < 0.0010) { // Reduced from 0.0015
-          carType = 'police';
-          this.emergencyVehicleCount++;
-          this.emergencyCooldown = 350;
-        }
-      }
-
       const newCar = {
         id: this.carIdCounter++,
         position: 0,
@@ -891,9 +872,11 @@ export function useTrafficData(pollInterval = 1000) {
 
   const simulationTick = useCallback(() => {
     // Continuous tracking: Check if emergency vehicle has cleared the intersection
-    if (signalManager.emergencyActive && signalManager.emergencyDirection) {
-      const emergencyLaneCars = vehicleManager.cars[signalManager.emergencyDirection] || [];
-      signalManager.checkEmergencyCleared(emergencyLaneCars);
+    const activeEmg = vehicleManager.getActiveEmergencyVehicle();
+    if (signalManager.emergencyActive) {
+      if (!activeEmg || activeEmg.position >= 100) {
+        signalManager.endEmergency(vehicleManager.getQueueLengths());
+      }
     }
 
     signalManager.updateSignal(vehicleManager.getQueueLengths());
@@ -901,7 +884,7 @@ export function useTrafficData(pollInterval = 1000) {
 
     // Merge SignalManager state so all UI fields are present
     const vmState = vehicleManager.getState();
-    const smState = signalManager.getState();
+    const smState = signalManager.getState(vehicleManager.getQueueLengths(), vmState.cars);
 
     const mergedState = {
       ...vmState,
@@ -911,6 +894,7 @@ export function useTrafficData(pollInterval = 1000) {
       signal_duration: smState.duration,
       emergencyActive: smState.emergency_active ?? vmState.emergencyActive,
       emergencyDirection: smState.emergency_direction ?? vmState.emergencyDirection,
+      pedestrian_signals: smState.pedestrian_signals || { N: 'STOP', S: 'STOP', E: 'WALK', W: 'WALK' },
       system_mode: smState.emergency_active
         ? 'Emergency'
         : 'AI Intelligent',
@@ -1160,12 +1144,14 @@ export function useTrafficData(pollInterval = 1000) {
   };
 
   const triggerEmergencyVehicle = useCallback((direction = null, type = null) => {
-    const emg = vehicleManager.triggerEmergency(direction, type);
+    const activeSignal = signalManager.currentSignal || 'N';
+    const emg = vehicleManager.triggerEmergency(direction, type, activeSignal);
     if (emg) {
       signalManager.handleEmergencyVehicle(emg);
+      simulationTick();
     }
     return emg;
-  }, [vehicleManager, signalManager]);
+  }, [vehicleManager, signalManager, simulationTick]);
 
 
   useEffect(() => {
@@ -1179,6 +1165,16 @@ export function useTrafficData(pollInterval = 1000) {
     }
   }, [state?.emergencyActive]);
 
+  const handleManualOverride = useCallback((direction, reason) => {
+    if (useMock) {
+      if (signalManager && signalManager.manualOverride) {
+        signalManager.manualOverride(direction);
+      }
+    } else {
+      mockSimulator.manualOverride(direction, reason);
+    }
+  }, [useMock, signalManager]);
+
   return {
     state,
     metrics,
@@ -1191,7 +1187,7 @@ export function useTrafficData(pollInterval = 1000) {
     switchToBackend,
     setSpeed,
     resetSimulation,
-    manualOverride: useMock ? mockSimulator.manualOverride.bind(mockSimulator) : null,
+    manualOverride: handleManualOverride,
     triggerEmergencyVehicle
   };
 }

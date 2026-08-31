@@ -41,74 +41,102 @@ const ChartPanel = ({ metrics, state }) => {
   return (
     <div className="space-y-6">
       {/* Wait Time Chart */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Average Wait Time</h3>
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-gray-800">Average Wait Time</h3>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+            Target: 30s – 35s
+          </span>
+        </div>
         <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={waitTimeData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <LineChart data={waitTimeData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
             <XAxis 
               dataKey="time" 
-              stroke="#666"
-              fontSize={12}
+              stroke="#CBD5E1"
+              tick={{ fill: '#64748B', fontSize: 11 }}
+              minTickGap={35}
+              interval="preserveStartEnd"
+              tickFormatter={(val) => {
+                if (!val || val === 'undefined') return '';
+                if (typeof val === 'string') {
+                  const parts = val.replace(/[^\d:]/g, '').split(':');
+                  if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+                }
+                return String(val);
+              }}
             />
             <YAxis 
-              stroke="#666"
-              fontSize={12}
-              label={{ value: 'Wait Time (s)', angle: -90, position: 'insideLeft' }}
+              stroke="#CBD5E1"
+              tick={{ fill: '#64748B', fontSize: 11 }}
+              domain={[20, 40]}
+              ticks={[20, 25, 30, 35, 40]}
+              tickFormatter={(val) => `${val}s`}
+              width={38}
             />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: '#fff', 
-                border: '1px solid #ddd',
-                borderRadius: '6px'
+                backgroundColor: '#FFFFFF', 
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
               }}
-              formatter={(value) => [`${value.toFixed(1)}s`, 'Wait Time']}
+              formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : value}s`, 'Avg Wait Time']}
+              labelFormatter={(label) => `Time: ${label}`}
             />
             <Line 
               type="monotone" 
               dataKey="wait_time" 
               stroke="#3B82F6" 
-              strokeWidth={2}
-              dot={{ fill: '#3B82F6', strokeWidth: 2, r: 3 }}
-              activeDot={{ r: 5, fill: '#1D4ED8' }}
+              strokeWidth={2.5}
+              dot={{ fill: '#3B82F6', strokeWidth: 1.5, r: 3 }}
+              activeDot={{ r: 5, fill: '#1D4ED8', stroke: '#EFF6FF', strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* Queue Length Chart */}
-      <div className="border-2 border-[#A6844D]/30 rounded-2xl bg-white p-5 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 text-slate-800">Current Queue Lengths</h3>
+      <div className="border border-[#DFC395]/60 rounded-xl bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-slate-800">Current Queue Lengths</h3>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+            Real-Time
+          </span>
+        </div>
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={queueChartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F5F2EB" />
+          <BarChart data={queueChartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F8FAFC" vertical={false} />
             <XAxis 
               dataKey="lane" 
-              stroke="#D1C7B7"
-              tick={{ fill: '#6B5E4C', fontSize: 12 }}
+              stroke="#CBD5E1"
+              tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
             />
             <YAxis 
-              stroke="#D1C7B7"
-              tick={{ fill: '#6B5E4C', fontSize: 12 }}
-              label={{ value: 'Cars', angle: -90, position: 'insideLeft', fill: '#6B5E4C', fontSize: 12 }}
+              stroke="#CBD5E1"
+              tick={{ fill: '#64748B', fontSize: 11 }}
+              domain={[0, 'dataMax + 2']}
+              allowDecimals={false}
+              tickFormatter={(val) => `${val}`}
+              width={30}
             />
             <Tooltip 
               cursor={{ fill: 'rgba(223, 195, 149, 0.15)' }}
               contentStyle={{ 
-                backgroundColor: '#FFFEFA', 
+                backgroundColor: '#FFFFFF', 
                 border: '1px solid #DFC395',
-                borderRadius: '12px',
+                borderRadius: '8px',
                 boxShadow: '0 4px 10px rgba(138, 107, 61, 0.12)'
               }}
-              itemStyle={{ color: '#8A6B3D' }}
               formatter={(value, name, props) => [
-                `${value} cars`, 
-                `Lane ${props.payload.lane}`
+                `${value} vehicles`, 
+                `Approach ${props.payload.lane}`
               ]}
             />
             <Bar 
               dataKey="count" 
               radius={[6, 6, 0, 0]}
+              maxBarSize={45}
             >
               {queueChartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
