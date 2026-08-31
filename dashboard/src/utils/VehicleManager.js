@@ -46,10 +46,10 @@ const SPAWN_CLEARANCE = MIN_VEHICLE_GAP / 2; // = 4
 // congested lanes naturally top out at different numbers rather than showing
 // the same maximum queue lengths at the same time.
 const LANE_CAPACITIES = {
-  N: 45, // North (major highway)
-  S: 36, // South (secondary highway)
-  E: 28, // East (cross street)
-  W: 20  // West (side road)
+  W: 34, // West (highest PCU = 30)
+  S: 23, // South (medium-high PCU = 20)
+  N: 12, // North (medium-low PCU = 10)
+  E: 6   // East (lowest PCU = 5)
 };
 
 export class VehicleManager {
@@ -197,7 +197,7 @@ export class VehicleManager {
    * To increase density further raise the rates; to reduce it lower them.
    */
   _spawnVehiclesForAllLanes() {
-    const arrivalRates = { N: 0.35, S: 0.22, E: 0.12, W: 0.06 };
+    const arrivalRates = { W: 0.35, S: 0.22, N: 0.12, E: 0.06 };
 
     for (const [direction, baseRate] of Object.entries(arrivalRates)) {
       const jitter = (Math.random() - 0.5) * 0.12; // ±0.06

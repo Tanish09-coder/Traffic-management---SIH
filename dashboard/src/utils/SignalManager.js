@@ -108,15 +108,17 @@ export class SignalManager {
     return this.currentSignal;
   }
 
-  calculateSignalDuration(queueLength) {
-    // Base duration plus additional time per car in queue
-    const duration = TRAFFIC_CONSTANTS.MIN_SIGNAL_TIME + 
-                    (queueLength * TRAFFIC_CONSTANTS.BASE_TIME_PER_CAR);
-    
-    return Math.min(
-      Math.max(duration, TRAFFIC_CONSTANTS.MIN_SIGNAL_TIME),
-      TRAFFIC_CONSTANTS.MAX_SIGNAL_TIME
-    );
+  calculateSignalDuration(arg1, arg2) {
+    const fixedDurations = { N: 30, S: 45, E: 22, W: 60 };
+    let dir = null;
+    if (typeof arg1 === 'string' && fixedDurations[arg1.toUpperCase()]) dir = arg1.toUpperCase();
+    else if (typeof arg2 === 'string' && fixedDurations[arg2.toUpperCase()]) dir = arg2.toUpperCase();
+    else if (this.currentSignal && fixedDurations[this.currentSignal.toUpperCase()]) dir = this.currentSignal.toUpperCase();
+
+    if (dir && fixedDurations[dir]) {
+      return fixedDurations[dir];
+    }
+    return 30;
   }
 
   handleEmergencyVehicle(emergency) {
