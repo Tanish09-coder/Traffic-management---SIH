@@ -437,8 +437,11 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
         : (isLarge ? '21px' : isBike ? '17.5px' : '19px'),
     };
 
-    const pxShift = lateralShiftPercent * (isFullscreen ? 26 : 0);
-    const pctShift = lateralShiftPercent * 12;
+    // Lateral shift delta kept strictly inside road bounds:
+    // Fullscreen: 12px shift
+    // Normal: 6% shift (moves vehicle smoothly to adjacent lane while staying 100% inside road asphalt)
+    const pxShift = lateralShiftPercent * (isFullscreen ? 12 : 0);
+    const pctShift = lateralShiftPercent * 6;
 
     let leftPos = '';
     let topPos = '';

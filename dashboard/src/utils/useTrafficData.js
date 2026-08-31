@@ -612,8 +612,8 @@ class MockTrafficSimulator {
       const isGreen = this.currentSignal === lane;
 
       this.cars[lane] = this.cars[lane].map((car, index) => {
+        const prevPos = car.position || 0;
         const carInFront = this.cars[lane][index - 1];
-        const isBlocked = carInFront && (car.position + 6 >= carInFront.position);
 
         const intersectionStart = 34; // Stop line threshold
         const intersectionEnd = 60;
@@ -646,30 +646,39 @@ class MockTrafficSimulator {
           }
         } else {
           // Normal Operation rules:
+          const isBlocked = carInFront && (car.position + 6 >= carInFront.position);
           shouldMove = isInIntersection || car.hasPassedIntersection || (isGreen && !isBlocked);
-          shouldStop = !shouldMove || isBlocked;
+          shouldStop = !shouldMove;
         }
 
+        let newPosition = car.position;
         if (shouldMove && car.position < 100) {
-          return {
-            ...car,
-            position: Math.min(100, car.position + (isEmergency ? car.speed * 1.5 : car.speed)),
-            waitTime: isInIntersection || car.hasPassedIntersection ? car.waitTime : 0
-          };
+          newPosition = Math.min(100, car.position + (isEmergency ? car.speed * 1.5 : car.speed));
+          // If blocked by car in front (unless emergency vehicle), clamp forward movement
+          if (carInFront && !isEmergency && carInFront.position > 6) {
+            newPosition = Math.min(newPosition, carInFront.position - 6);
+          }
         }
 
-        if (shouldStop) {
-          const fuelConsumedThisTick = 0.00028;
+        // Strictly enforce monotonic non-decreasing position: CAR NEVER MOVES BACKWARD
+        const finalPosition = Math.max(prevPos, newPosition);
 
+        if (shouldStop || finalPosition === prevPos) {
+          const fuelConsumedThisTick = 0.00028;
           return {
             ...car,
+            position: finalPosition,
             waitTime: car.waitTime + 1,
             totalWaitTime: car.totalWaitTime + 1,
             fuelConsumed: car.fuelConsumed + fuelConsumedThisTick
           };
         }
 
-        return car;
+        return {
+          ...car,
+          position: finalPosition,
+          waitTime: isInIntersection || car.hasPassedIntersection ? car.waitTime : 0
+        };
       });
 
       // Process cars that have passed through
