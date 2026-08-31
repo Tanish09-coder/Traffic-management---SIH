@@ -223,7 +223,7 @@ export const TrafficProvider = ({ children }) => {
             const phasePcu = activeApproaches.reduce((acc, a) => acc + a.pcu, 0);
 
             if (systemMode === 'adaptive') {
-              newGreen = Math.min(65, Math.max(18, Math.round(15 + phasePcu * 0.4)));
+              newGreen = newPhase === 'NS' ? 45 : 60;
             } else {
               newGreen = j.fixedGreenTime;
             }
