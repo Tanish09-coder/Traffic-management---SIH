@@ -332,10 +332,10 @@ const Dashboard = () => {
 
                     {/* Simulation Speed Control */}
                     <div className="flex items-center space-x-1 bg-gray-900/90 backdrop-blur-md border border-gray-700 p-1 rounded-xl shadow-2xl">
-                      {[1, 2, 5].map(s => (
+                      {[1, 2, 3].map(s => (
                         <button
                           key={s}
-                          onClick={() => setSpeed(s)}
+                          onClick={() => setSpeed && setSpeed(s)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                             simulationSpeed === s
                               ? 'bg-blue-600 text-white shadow-md'
