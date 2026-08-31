@@ -197,34 +197,34 @@ const Dashboard = () => {
           {/* Intersection View */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <h2 className="text-xl font-semibold text-gray-800">
                   Live Intersection View
                 </h2>
-                <div className="flex items-center space-x-4">
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                  <div className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                     state?.signal === 'N' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                   }`}>
                     North: {state?.signal === 'N' ? 'OPEN' : 'CLOSED'}
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <div className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                     state?.signal === 'S' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                   }`}>
                     South: {state?.signal === 'S' ? 'OPEN' : 'CLOSED'}
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <div className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                     state?.signal === 'E' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                   }`}>
                     East: {state?.signal === 'E' ? 'OPEN' : 'CLOSED'}
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <div className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                     state?.signal === 'W' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
                   }`}>
                     West: {state?.signal === 'W' ? 'OPEN' : 'CLOSED'}
                   </div>
                   <button
                     onClick={toggleFullscreen}
-                    className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors"
+                    className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition-colors ml-0.5 shrink-0"
                     title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
                   >
                     {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
@@ -235,31 +235,23 @@ const Dashboard = () => {
               {/* Intersection Container */}
               <div
                 ref={intersectionRef}
-                className={`relative w-full bg-gray-200 rounded-lg overflow-hidden border-2 ${isFullscreen ? 'h-full' : 'h-96'}`}
+                className={`relative w-full bg-[#EAECEF] rounded-2xl overflow-hidden border-2 border-[#1E293B] shadow-sm ${isFullscreen ? 'h-full' : 'h-96'}`}
               >
                 
                 {/* Road lanes with improved styling */}
                 <div className="absolute inset-0">
                   {/* Horizontal road */}
-                  <div className={`absolute top-1/2 left-0 w-full bg-gray-700 transform -translate-y-1/2 shadow-inner ${isFullscreen ? 'h-40' : 'h-20'}`}>
-                    {/* Lane dividers */}
-                    <div className={`absolute left-0 w-full h-0.5 bg-yellow-300 ${isFullscreen ? 'top-12' : 'top-6'}`}></div>
-                    <div className={`absolute left-0 w-full h-0.5 bg-yellow-300 ${isFullscreen ? 'bottom-12' : 'bottom-6'}`}></div>
-                    <div className="absolute top-1/2 left-0 w-full h-1 bg-yellow-400 transform -translate-y-1/2 opacity-80"></div>
+                  <div className={`absolute top-1/2 left-0 w-full bg-[#364152] transform -translate-y-1/2 shadow-2xl ${isFullscreen ? 'h-40' : 'h-20'}`}>
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-yellow-400 opacity-90 transform -translate-y-1/2"></div>
                   </div>
                   
                   {/* Vertical road */}
-                  <div className={`absolute left-1/2 top-0 h-full bg-gray-700 transform -translate-x-1/2 shadow-inner ${isFullscreen ? 'w-40' : 'w-20'}`}>
-                    {/* Lane dividers */}
-                    <div className={`absolute top-0 w-0.5 h-full bg-yellow-300 ${isFullscreen ? 'left-12' : 'left-6'}`}></div>
-                    <div className={`absolute top-0 w-0.5 h-full bg-yellow-300 ${isFullscreen ? 'right-12' : 'right-6'}`}></div>
-                    <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 transform -translate-x-1/2 opacity-80"></div>
+                  <div className={`absolute left-1/2 top-0 h-full bg-[#364152] transform -translate-x-1/2 shadow-2xl ${isFullscreen ? 'w-40' : 'w-20'}`}>
+                    <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 opacity-90 transform -translate-x-1/2"></div>
                   </div>
                   
-                  {/* Intersection center */}
-                  <div className={`absolute top-1/2 left-1/2 bg-gray-800 transform -translate-x-1/2 -translate-y-1/2 shadow-lg ${isFullscreen ? 'w-40 h-40' : 'w-20 h-20'}`}>
-                    {/* Crosswalk patterns */}
-                    <div className="absolute inset-1 bg-white opacity-20 rounded-sm"></div>
+                  {/* Intersection center box */}
+                  <div className={`absolute top-1/2 left-1/2 bg-[#4B5461] rounded-lg transform -translate-x-1/2 -translate-y-1/2 shadow-2xl ${isFullscreen ? 'w-40 h-40' : 'w-20 h-20'}`}>
                   </div>
                 </div>
 
@@ -306,11 +298,11 @@ const Dashboard = () => {
                   )}
                 </AnimatePresence>
 
-                {/* Queue length indicators */}
+                {/* Queue Indicators matching Image 2 */}
                 {state?.queues && Object.entries(state.queues).map(([lane, count]) => (
                   <div
                     key={lane}
-                    className={`absolute text-xs font-bold text-white bg-gray-800 px-2 py-1 rounded shadow ${
+                    className={`absolute text-xs font-bold text-white bg-[#1E2939] px-2.5 py-1 rounded-md shadow-sm ${
                       lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
                       lane === 'S' ? 'bottom-2 right-1/2 transform translate-x-1/2' :
                       lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
