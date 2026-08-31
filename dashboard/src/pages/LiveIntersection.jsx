@@ -262,7 +262,6 @@ const LiveIntersection = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">🧠 Mumbai Smart Traffic Management System</h1>
-              <p className="text-gray-600 mt-2">AI-Powered Dynamic Signal Management</p>
               <p className="text-sm text-blue-600 mt-1">📍 Bandra-Kurla Complex, Mumbai - Junction 12A</p>
               
               {/* Target Achievement Indicator */}
@@ -281,9 +280,11 @@ const LiveIntersection = () => {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-500">
-                {overrideActive ? 'Manual Override' : 'AI Intelligent Mode'}
-              </div>
+              {overrideActive && (
+                <div className="text-sm text-gray-500">
+                  Manual Override
+                </div>
+              )}
               <div className="flex items-center space-x-2 mt-1">
                 <div className={`w-3 h-3 rounded-full animate-pulse ${
                   overrideActive ? 'bg-red-500' : 'bg-green-500'
