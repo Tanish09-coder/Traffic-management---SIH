@@ -275,8 +275,16 @@ export class VehicleManager {
       return { ...this.emergencyVehicle };
     }
 
-    // Preserve the existing open active signal way (do not revert/disrupt existing open route)
-    const direction = targetDirection || currentActiveSignal || 'N';
+    // Fully randomized approach direction:
+    // Randomly picks from different approaches (conflicting / different from current active signal)
+    // so that the emergency vehicle arrives from a randomized different way without any manual user input!
+    let direction = targetDirection;
+    if (!direction) {
+      const allDirections = ['N', 'E', 'S', 'W'];
+      const otherDirections = allDirections.filter(d => d !== currentActiveSignal);
+      const candidates = otherDirections.length > 0 ? otherDirections : allDirections;
+      direction = candidates[Math.floor(Math.random() * candidates.length)];
+    }
 
     const emergencyType = targetType || (Math.random() > 0.5 ? 'ambulance' : 'firetruck');
 

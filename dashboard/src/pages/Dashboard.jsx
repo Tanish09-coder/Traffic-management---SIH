@@ -460,11 +460,11 @@ const Dashboard = () => {
                 {state?.queues && Object.entries(state.queues).map(([lane, count]) => (
                   <div
                     key={lane}
-                    className={`absolute text-xs font-bold text-white bg-[#1E2939] px-2.5 py-1 rounded-md shadow-sm ${
+                    className={`absolute text-xs font-bold text-white bg-[#1E2939] px-2.5 py-1 rounded-md shadow-sm z-30 ${
                       lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
-                      lane === 'S' ? 'bottom-2 right-1/2 transform translate-x-1/2' :
+                      lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
                       lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
-                      'left-2 bottom-1/2 transform translate-y-1/2'
+                      'left-2 top-1/2 transform -translate-y-1/2'
                     }`}
                   >
                     {lane}: {count}
@@ -506,8 +506,9 @@ const Dashboard = () => {
                           ? 'bg-red-700 animate-pulse cursor-default'
                           : 'bg-red-600 hover:bg-red-700 active:scale-95'
                       }`}
+                      title="Dispatch emergency vehicle (Random approach)"
                     >
-                      <span>{state?.emergencyActive ? '🚨 EMERGENCY ACTIVE' : 'EMERGENCY MODE'}</span>
+                      <span>{state?.emergencyActive ? `🚨 EMERGENCY ACTIVE (${state?.emergencyDirection || ''})` : 'EMERGENCY MODE'}</span>
                     </button>
                     <button
                       onClick={toggleFullscreen}
@@ -536,8 +537,9 @@ const Dashboard = () => {
                         ? 'bg-red-700 animate-pulse cursor-default'
                         : 'bg-red-600 hover:bg-red-700 active:scale-95'
                     }`}
+                    title="Dispatch emergency vehicle (Random approach)"
                   >
-                    <span>{state?.emergencyActive ? '🚨 EMERGENCY ACTIVE' : 'EMERGENCY MODE'}</span>
+                    <span>{state?.emergencyActive ? `🚨 EMERGENCY ACTIVE (${state?.emergencyDirection || ''})` : 'EMERGENCY MODE'}</span>
                   </button>
                 </div>
               )}

@@ -611,61 +611,40 @@ const LiveIntersection = () => {
           </div>
 
           {/* Intersection Container */}
-          <div className="relative w-full h-[600px] bg-[#E5E7EB] rounded-xl overflow-hidden border-4 border-gray-500 shadow-inner">
-            {/* Enhanced Road Infrastructure */}
+          <div className="relative w-full h-[540px] bg-[#EAECEF] rounded-2xl overflow-hidden border-2 border-[#1E293B] shadow-sm">
+            {/* Road lanes with improved styling */}
             <div className="absolute inset-0">
-              {/* Horizontal Road */}
-              <div className="absolute top-1/2 left-0 w-full h-24 bg-[#364152] transform -translate-y-1/2 shadow-2xl">
-                <div className="absolute top-4 left-0 w-full h-1 bg-yellow-400 opacity-80"></div>
-                <div className="absolute bottom-4 left-0 w-full h-1 bg-yellow-400 opacity-80"></div>
-                <div className="absolute top-1/2 left-0 w-full h-2 bg-yellow-300 transform -translate-y-1/2 opacity-90"></div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-white"></div>
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-white"></div>
+              {/* Horizontal road */}
+              <div className="absolute top-1/2 left-0 w-full bg-[#364152] transform -translate-y-1/2 shadow-2xl h-20">
+                <div className="absolute top-1/2 left-0 w-full h-1 bg-yellow-400 opacity-90 transform -translate-y-1/2"></div>
               </div>
               
-              {/* Vertical Road */}
-              <div className="absolute left-1/2 top-0 w-24 h-full bg-[#364152] transform -translate-x-1/2 shadow-2xl">
-                <div className="absolute left-4 top-0 w-1 h-full bg-yellow-400 opacity-80"></div>
-                <div className="absolute right-4 top-0 w-1 h-full bg-yellow-400 opacity-80"></div>
-                <div className="absolute left-1/2 top-0 w-2 h-full bg-yellow-300 transform -translate-x-1/2 opacity-90"></div>
-                <div className="absolute left-0 top-0 w-1 h-full bg-white"></div>
-                <div className="absolute right-0 top-0 w-1 h-full bg-white"></div>
+              {/* Vertical road */}
+              <div className="absolute left-1/2 top-0 h-full bg-[#364152] transform -translate-x-1/2 shadow-2xl w-20">
+                <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 opacity-90 transform -translate-x-1/2"></div>
               </div>
               
-              {/* Intersection Center with Smart Indicators */}
-              <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-[#4B5461] transform -translate-x-1/2 -translate-y-1/2 shadow-2xl border-4 border-yellow-400">
-                <div className="absolute inset-2">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="absolute bg-white opacity-40" style={{
-                      width: '2px',
-                      height: '100%',
-                      left: `${i * 12}%`,
-                      top: 0
-                    }}></div>
-                  ))}
-                </div>
-                {/* Status indicator in center */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-yellow-400 text-xs font-bold">
-                  {overrideActive ? 'MAN' : 'AI'}
-                </div>
+              {/* Intersection center box */}
+              <div className="absolute top-1/2 left-1/2 bg-[#4B5461] rounded-lg transform -translate-x-1/2 -translate-y-1/2 shadow-2xl w-20 h-20">
               </div>
 
               {/* 🚶‍♂️ Minimalist Compact Zebra Crossings & High-Visibility Pedestrian Walkers */}
+              
               {/* North Crosswalk */}
               {(() => {
                 const pN = state?.pedestrian_signals?.N || 'STOP';
                 const isWalk = pN === 'WALK';
                 return (
                   <>
-                    <div className="absolute left-1/2 top-[calc(50%-92px)] w-20 h-7 transform -translate-x-1/2 z-10 pointer-events-none">
+                    <div className="absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none top-[calc(50%-78px)] w-16 h-6.5">
                       <div className="w-full h-full flex justify-between px-0.5">
                         {[...Array(8)].map((_, i) => (
-                          <div key={i} className="w-[2.5px] h-full rounded-[0.5px] bg-white shadow-sm" />
+                          <div key={i} className="h-full rounded-[0.5px] bg-white shadow-sm w-[2px]" />
                         ))}
                       </div>
                       {isWalk && (
                         <motion.div
-                          className="absolute -top-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -top-3"
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
@@ -674,7 +653,7 @@ const LiveIntersection = () => {
                       )}
                     </div>
                     {/* North Pedestrian Signal Light (Right Curb) */}
-                    <div className="absolute left-[calc(50%+52px)] top-[calc(50%-94px)] z-20">
+                    <div className="absolute z-20 left-[calc(50%+42px)] top-[calc(50%-80px)]">
                       <PedestrianLight status={pN} />
                     </div>
                   </>
@@ -687,15 +666,15 @@ const LiveIntersection = () => {
                 const isWalk = pS === 'WALK';
                 return (
                   <>
-                    <div className="absolute left-1/2 top-[calc(50%+68px)] w-20 h-7 transform -translate-x-1/2 z-10 pointer-events-none">
+                    <div className="absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none top-[calc(50%+55px)] w-16 h-6.5">
                       <div className="w-full h-full flex justify-between px-0.5">
                         {[...Array(8)].map((_, i) => (
-                          <div key={i} className="w-[2.5px] h-full rounded-[0.5px] bg-white shadow-sm" />
+                          <div key={i} className="h-full rounded-[0.5px] bg-white shadow-sm w-[2px]" />
                         ))}
                       </div>
                       {isWalk && (
                         <motion.div
-                          className="absolute -top-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -top-3"
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
@@ -704,7 +683,7 @@ const LiveIntersection = () => {
                       )}
                     </div>
                     {/* South Pedestrian Signal Light (Left Curb) */}
-                    <div className="absolute left-[calc(50%-64px)] top-[calc(50%+68px)] z-20">
+                    <div className="absolute z-20 left-[calc(50%-52px)] top-[calc(50%+55px)]">
                       <PedestrianLight status={pS} />
                     </div>
                   </>
@@ -717,13 +696,13 @@ const LiveIntersection = () => {
                 const isWalk = pW === 'WALK';
                 return (
                   <>
-                    <div className="absolute top-1/2 left-[calc(50%-92px)] w-7 h-20 transform -translate-y-1/2 z-10 flex flex-col justify-between py-0.5 pointer-events-none">
+                    <div className="absolute top-1/2 transform -translate-y-1/2 z-10 flex flex-col justify-between pointer-events-none left-[calc(50%-78px)] w-6.5 h-16 py-0.5">
                       {[...Array(8)].map((_, i) => (
-                        <div key={i} className="w-full h-[2.5px] rounded-[0.5px] bg-white shadow-sm" />
+                        <div key={i} className="w-full rounded-[0.5px] bg-white shadow-sm h-[2px]" />
                       ))}
                       {isWalk && (
                         <motion.div
-                          className="absolute -left-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -left-3"
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
@@ -732,7 +711,7 @@ const LiveIntersection = () => {
                       )}
                     </div>
                     {/* West Pedestrian Signal Light (Top Curb) */}
-                    <div className="absolute left-[calc(50%-94px)] top-[calc(50%-64px)] z-20">
+                    <div className="absolute z-20 left-[calc(50%-80px)] top-[calc(50%-52px)]">
                       <PedestrianLight status={pW} />
                     </div>
                   </>
@@ -745,13 +724,13 @@ const LiveIntersection = () => {
                 const isWalk = pE === 'WALK';
                 return (
                   <>
-                    <div className="absolute top-1/2 left-[calc(50%+68px)] w-7 h-20 transform -translate-y-1/2 z-10 flex flex-col justify-between py-0.5 pointer-events-none">
+                    <div className="absolute top-1/2 transform -translate-y-1/2 z-10 flex flex-col justify-between pointer-events-none left-[calc(50%+55px)] w-6.5 h-16 py-0.5">
                       {[...Array(8)].map((_, i) => (
-                        <div key={i} className="w-full h-[2.5px] rounded-[0.5px] bg-white shadow-sm" />
+                        <div key={i} className="w-full rounded-[0.5px] bg-white shadow-sm h-[2px]" />
                       ))}
                       {isWalk && (
                         <motion.div
-                          className="absolute -right-3.5 z-30 select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -right-3"
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
@@ -760,7 +739,7 @@ const LiveIntersection = () => {
                       )}
                     </div>
                     {/* East Pedestrian Signal Light (Bottom Curb) */}
-                    <div className="absolute left-[calc(50%+68px)] top-[calc(50%+52px)] z-20">
+                    <div className="absolute z-20 left-[calc(50%+55px)] top-[calc(50%+42px)]">
                       <PedestrianLight status={pE} />
                     </div>
                   </>
@@ -806,25 +785,18 @@ const LiveIntersection = () => {
               )}
             </AnimatePresence>
 
-            {/* Enhanced queue indicators with priority highlighting */}
+            {/* Queue Indicators matching Dashboard */}
             {state?.queues && Object.entries(state.queues).map(([lane, count]) => (
               <div
                 key={lane}
-                className={`absolute text-white px-3 py-2 rounded-lg font-bold text-sm ${
-                  lane === highestQueueLane && !overrideActive
-                    ? 'bg-yellow-600 animate-pulse' 
-                    : state?.signal === lane 
-                      ? 'bg-green-600'
-                      : 'bg-[#1E2939]'
-                } ${
-                  lane === 'N' ? 'top-4 left-1/2 transform -translate-x-1/2' :
-                  lane === 'S' ? 'bottom-4 right-1/2 transform translate-x-1/2' :
-                  lane === 'E' ? 'right-4 top-1/2 transform -translate-y-1/2' :
-                  'left-4 bottom-1/2 transform translate-y-1/2'
+                className={`absolute text-xs font-bold text-white bg-[#1E2939] px-2.5 py-1 rounded-md shadow-sm z-30 ${
+                  lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
+                  lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
+                  lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
+                  'left-2 top-1/2 transform -translate-y-1/2'
                 }`}
               >
-                {lane}: {count} vehicles
-                {lane === highestQueueLane && count > 5 && !overrideActive && <span className="ml-1">⚡</span>}
+                {lane}: {count}
               </div>
             ))}
           </div>
@@ -995,10 +967,11 @@ const LiveIntersection = () => {
                 className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-all ${
                   state?.emergencyActive
                     ? 'bg-red-700 animate-pulse cursor-default'
-                    : 'bg-red-600 hover:bg-red-700'
+                    : 'bg-red-600 hover:bg-red-700 active:scale-95'
                 }`}
+                title="Dispatch emergency vehicle (Random approach)"
               >
-                {state?.emergencyActive ? '🚨 Emergency Active' : '🚨 Emergency Mode'}
+                {state?.emergencyActive ? `🚨 Emergency Active (${state?.emergencyDirection || ''})` : '🚨 Emergency Mode'}
               </button>
             )}
             
