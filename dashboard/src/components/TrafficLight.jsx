@@ -1,19 +1,19 @@
 import { motion } from 'framer-motion';
 
 const TrafficLight = ({ direction, signal, emergencyActive = false, isFullscreen = false }) => {
-  // Exact signal alignment matching Photo 2
+  // Exact positions matching the requested layout
   const positions = isFullscreen
     ? {
-      N: { top: 'calc(50% - 170px)', left: 'calc(50% - 28px)' }, // North
-      S: { top: 'calc(50% + 75px)',  left: 'calc(50% + 28px)' }, // South
-      E: { top: 'calc(50% + 20px)',  left: 'calc(50% + 210px)' }, // East
-      W: { top: 'calc(50% - 48px)',  left: 'calc(50% - 230px)' }  // West
+      N: { top: 'calc(50% - 210px)', left: 'calc(50% - 50px)' }, // North (left hand side)
+      S: { top: 'calc(50% + 120px)', left: 'calc(50% + 28px)' }, // South
+      E: { top: 'calc(50% - 30px)', left: 'calc(50% + 275px)' }, // East (middle on yellow line)
+      W: { top: 'calc(50% - 100px)', left: 'calc(50% - 290px)' }  // West (on lane 1 top curb)
     }
     : {
-      N: { top: 'calc(50% - 100px)', left: 'calc(50% - 18px)' }, // North
-      S: { top: 'calc(50% + 45px)',  left: 'calc(50% + 18px)' }, // South
-      E: { top: 'calc(50% + 12px)',  left: 'calc(50% + 125px)' }, // East
-      W: { top: 'calc(50% - 28px)',  left: 'calc(50% - 135px)' }  // West
+      N: { top: 'calc(50% - 135px)', left: 'calc(50% - 32px)' }, // North (left hand side)
+      S: { top: 'calc(50% + 75px)', left: 'calc(50% + 16px)' }, // South
+      E: { top: 'calc(50% - 18px)', left: 'calc(50% + 175px)' }, // East (middle on yellow line)
+      W: { top: 'calc(50% - 58px)', left: 'calc(50% - 185px)' }  // West (on lane 1 top curb)
     };
 
   const position = positions[direction];
