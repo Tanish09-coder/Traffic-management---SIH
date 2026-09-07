@@ -34,7 +34,7 @@ export const AIDecisionPanel = () => {
           </div>
         </div>
 
-        {/* Fixed / Adaptive Toggle */}
+        {/* Fixed / Adaptive / Predictive Adaptive Toggle */}
         <div className="flex items-center bg-gray-900/90 p-1 rounded-lg border border-gray-800">
           <button
             onClick={() => setStrategy('fixed')}
@@ -54,8 +54,36 @@ export const AIDecisionPanel = () => {
           >
             Adaptive Heuristic
           </button>
+          <button
+            onClick={() => setStrategy('predictive')}
+            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${strategy === 'predictive'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-200'
+              }`}
+          >
+            Predictive Adaptive
+          </button>
         </div>
       </div>
+
+      {/* Predictive Demand Status Indicator */}
+      {strategy === 'predictive' && (
+        <div className="mb-3 text-[11px] bg-purple-950/40 border border-purple-800/70 text-purple-300 px-2.5 py-1.5 rounded-md flex items-center justify-between">
+          <div className="flex items-center space-x-1.5">
+            <span className={`w-2 h-2 rounded-full ${state?.predictiveStatus === 'fallback' ? 'bg-amber-400' : 'bg-purple-400 animate-pulse'}`}></span>
+            <span className="font-semibold">
+              {state?.predictiveStatus === 'fallback'
+                ? 'Predictive Demand: Fallback to Current PCU'
+                : 'Predictive Demand: Active'}
+            </span>
+          </div>
+          {state?.predictiveTimestamp && (
+            <span className="text-[10px] text-purple-400/80 font-mono">
+              Demo: {state.predictiveDemoDate || '2023-01-17'} {state.predictiveTimestamp}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Staging warning if strategy changed mid-cycle */}
       {isStaged && (

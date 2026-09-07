@@ -13,6 +13,19 @@ import {
   resetBackendSimulation
 } from '../utils/api';
 import { runComparisonPair } from '../utils/comparisonEngine';
+import { SignalOptimizer } from '../utils/SignalOptimizer';
+import { calculateEffectivePredictivePCU } from '../utils/PredictiveDemandFusion';
+
+// Historical Pune direction mapping is used only to demonstrate predictive-control integration. It does not imply the live simulation represents the same physical intersection or timestamp.
+const PUNE_TO_SIM_DIRECTION_MAP = {
+  UP: 'N',
+  RIGHT: 'E',
+  DOWN: 'S',
+  LEFT: 'W'
+};
+
+const PREDICTION_DEMO_DATE = '2023-01-17';
+const PREDICTION_API_BASE = 'http://localhost:5000/api/prediction';
 
 const DEFAULT_BELLEVUE_EVENTS = [
   { eventId: 'bellevue-0', videoTimeSec: 11.2, vehicleType: 'car', mappedDirection: 'S' },
@@ -55,12 +68,103 @@ export const SimulationProvider = ({ children }) => {
   const [useMock, setUseMock] = useState(true);
   const [simulationSpeed, setSimulationSpeedState] = useState(1.0);
   const [weatherMode, setWeatherModeState] = useState('normal');
-  const [strategy, setStrategyState] = useState('adaptive'); // 'adaptive' | 'fixed'
+  const [strategy, setStrategyState] = useState('adaptive'); // 'adaptive' | 'fixed' | 'predictive'
   const [generatedDemand, setGeneratedDemandState] = useState(0.5);
   const [stagedDemand, setStagedDemandState] = useState(0.5);
   const [dataSource, setDataSource] = useState('simulation'); // 'simulation' | 'recorded_video'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Predictive Demand State & Cache (Phase 2B)
+  const availableTimesRef = useRef([
+    '08:55:00', '09:00:00', '09:05:00', '09:10:00', '09:15:00', '09:20:00',
+    '09:25:00', '09:30:00', '09:35:00', '09:40:00', '09:45:00', '09:50:00'
+  ]);
+  const forecastCacheRef = useRef({});
+  const predictiveForecastsRef = useRef({
+    N: { forecast5: null, forecast10: null, forecast15: null },
+    E: { forecast5: null, forecast10: null, forecast15: null },
+    S: { forecast5: null, forecast10: null, forecast15: null },
+    W: { forecast5: null, forecast10: null, forecast15: null }
+  });
+  const [predictiveStatus, setPredictiveStatus] = useState('active'); // 'active' | 'fallback'
+  const [predictiveTimestamp, setPredictiveTimestamp] = useState('09:00:00');
+  const lastFetchedTimeRef = useRef(null);
+  const currentPredictiveDemandRef = useRef({
+    N: { actualPCU: 0, effectivePredictivePCU: 0, predictiveBoostPCU: 0, predictiveBoostPercent: 0 },
+    E: { actualPCU: 0, effectivePredictivePCU: 0, predictiveBoostPCU: 0, predictiveBoostPercent: 0 },
+    S: { actualPCU: 0, effectivePredictivePCU: 0, predictiveBoostPCU: 0, predictiveBoostPercent: 0 },
+    W: { actualPCU: 0, effectivePredictivePCU: 0, predictiveBoostPCU: 0, predictiveBoostPercent: 0 }
+  });
+
+  const fetchForecastForTime = useCallback(async (targetTime) => {
+    if (!targetTime) return;
+
+    if (forecastCacheRef.current[targetTime]) {
+      predictiveForecastsRef.current = forecastCacheRef.current[targetTime];
+      setPredictiveStatus('active');
+      setPredictiveTimestamp(targetTime);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${PREDICTION_API_BASE}/forecast?date=${PREDICTION_DEMO_DATE}&time=${targetTime}`);
+      if (!res.ok) throw new Error(`Forecast status ${res.status}`);
+      const data = await res.json();
+
+      const newForecasts = {
+        N: { forecast5: null, forecast10: null, forecast15: null },
+        E: { forecast5: null, forecast10: null, forecast15: null },
+        S: { forecast5: null, forecast10: null, forecast15: null },
+        W: { forecast5: null, forecast10: null, forecast15: null }
+      };
+
+      const dirs = data.directions || {};
+      Object.entries(PUNE_TO_SIM_DIRECTION_MAP).forEach(([puneDir, simDir]) => {
+        const pData = dirs[puneDir];
+        if (pData && pData.forecasts) {
+          newForecasts[simDir] = {
+            forecast5: pData.forecasts.min5 ?? null,
+            forecast10: pData.forecasts.min10 ?? null,
+            forecast15: pData.forecasts.min15 ?? null
+          };
+        }
+      });
+
+      forecastCacheRef.current[targetTime] = newForecasts;
+      predictiveForecastsRef.current = newForecasts;
+      setPredictiveStatus('active');
+      setPredictiveTimestamp(targetTime);
+    } catch (err) {
+      console.warn('Prediction forecast fetch error (falling back to current PCU):', err.message);
+      setPredictiveStatus('fallback');
+      predictiveForecastsRef.current = {
+        N: { forecast5: null, forecast10: null, forecast15: null },
+        E: { forecast5: null, forecast10: null, forecast15: null },
+        S: { forecast5: null, forecast10: null, forecast15: null },
+        W: { forecast5: null, forecast10: null, forecast15: null }
+      };
+      setPredictiveTimestamp(targetTime);
+    }
+  }, []);
+
+  // Fetch available prediction timestamps on initialization
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${PREDICTION_API_BASE}/times?date=${PREDICTION_DEMO_DATE}`)
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (isMounted && data && Array.isArray(data.times) && data.times.length > 0) {
+          availableTimesRef.current = data.times;
+        }
+      })
+      .catch(err => {
+        console.warn('Prediction available times fetch warning:', err.message);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Consolidated session state & metrics
   const [state, setState] = useState(() => {
@@ -166,6 +270,20 @@ export const SimulationProvider = ({ children }) => {
       const { totalDt, subSteps } = clock.tick();
       const currentSimTime = clock.getSimTime();
 
+      // Progress through 5-minute dataset timestamps according to simulation time
+      const times = availableTimesRef.current;
+      if (times && times.length > 0) {
+        const startIdx = times.indexOf('09:00:00') !== -1 ? times.indexOf('09:00:00') : 0;
+        const step = Math.floor(currentSimTime / 300);
+        const timeIdx = Math.min(times.length - 1, startIdx + step);
+        const currentTimeStr = times[timeIdx] || '09:00:00';
+
+        if (currentTimeStr !== lastFetchedTimeRef.current) {
+          lastFetchedTimeRef.current = currentTimeStr;
+          fetchForecastForTime(currentTimeStr);
+        }
+      }
+
       // If video replay is active, dispatch pending arrival events up to currentSimTime
       if (videoReplayActive && videoReplayConfig && videoReplayConfig.arrivalEvents) {
         const events = videoReplayConfig.arrivalEvents;
@@ -197,6 +315,36 @@ export const SimulationProvider = ({ children }) => {
           activeEmergency,
           totalQueues
         );
+
+        // Predictive Demand Calculation (Control input only, vehicle queues are never mutated)
+        if (strategy === 'predictive') {
+          const demandOverrides = {};
+          const diagnostics = {};
+
+          ['N', 'E', 'S', 'W'].forEach(dir => {
+            const currentPCU = queuedPCUs[dir] || 0;
+            const f = predictiveForecastsRef.current[dir] || {};
+            const fusion = calculateEffectivePredictivePCU({
+              currentPCU,
+              forecast5: f.forecast5,
+              forecast10: f.forecast10,
+              forecast15: f.forecast15
+            });
+
+            demandOverrides[dir] = fusion.effectivePredictivePCU;
+            diagnostics[dir] = {
+              actualPCU: currentPCU,
+              effectivePredictivePCU: fusion.effectivePredictivePCU,
+              predictiveBoostPCU: fusion.predictiveBoostPCU,
+              predictiveBoostPercent: fusion.predictiveBoostPercent
+            };
+          });
+
+          SignalOptimizer.setDemandOverrides(demandOverrides);
+          currentPredictiveDemandRef.current = diagnostics;
+        } else {
+          SignalOptimizer.clearDemandOverrides();
+        }
 
         // Advance signal controller with clearance occupancy check
         signalManager.updateSignal(totalQueues, stoppedQueues, queuedPCUs, oldestWaitTimes, subDt, isIntersectionOccupied);
@@ -246,7 +394,12 @@ export const SimulationProvider = ({ children }) => {
         simTime: currentSimTime,
         approachSources: vehicleManager.approachSources,
         empty_roads: ['N', 'S', 'E', 'W'].filter(d => (vState.queues[d] || 0) === 0),
-        roads_with_traffic: ['N', 'S', 'E', 'W'].filter(d => (vState.queues[d] || 0) > 0)
+        roads_with_traffic: ['N', 'S', 'E', 'W'].filter(d => (vState.queues[d] || 0) > 0),
+        predictiveDemand: currentPredictiveDemandRef.current,
+        predictiveForecasts: predictiveForecastsRef.current,
+        predictiveStatus,
+        predictiveDemoDate: PREDICTION_DEMO_DATE,
+        predictiveTimestamp
       };
 
 
@@ -423,11 +576,18 @@ export const SimulationProvider = ({ children }) => {
   }, [useMock, signalManager]);
 
   const setStrategy = useCallback((newStrategy) => {
-    if (['adaptive', 'fixed'].includes(newStrategy)) {
+    if (['adaptive', 'fixed', 'predictive'].includes(newStrategy)) {
       setStrategyState(newStrategy);
-      signalManager.setStrategy(newStrategy);
+      if (newStrategy === 'predictive') {
+        signalManager.stagedStrategy = 'predictive';
+        const target = lastFetchedTimeRef.current || '09:00:00';
+        fetchForecastForTime(target);
+      } else {
+        signalManager.setStrategy(newStrategy);
+        SignalOptimizer.clearDemandOverrides();
+      }
     }
-  }, [signalManager]);
+  }, [signalManager, fetchForecastForTime]);
 
   const setGeneratedDemandMultiplier = useCallback((multiplier) => {
     const val = multiplier === 1.0 ? 1.0 : 0.5;
@@ -435,6 +595,9 @@ export const SimulationProvider = ({ children }) => {
   }, []);
 
   const resetSimulation = useCallback(() => {
+    SignalOptimizer.clearDemandOverrides();
+    lastFetchedTimeRef.current = null;
+    fetchForecastForTime('09:00:00');
     analyticsManager.reset();
     clock.reset();
     videoEventCursorRef.current = 0;
@@ -451,7 +614,7 @@ export const SimulationProvider = ({ children }) => {
     } else {
       resetBackendSimulation().catch(err => console.warn('Backend reset error:', err));
     }
-  }, [useMock, vehicleManager, signalManager, clock, weatherMode, stagedDemand]);
+  }, [useMock, vehicleManager, signalManager, clock, weatherMode, stagedDemand, fetchForecastForTime]);
 
   const startVideoDrivenSimulation = useCallback(({ videoId, arrivalEvents, mappedDirection, durationSec }) => {
     if (!useMock) {
@@ -551,6 +714,11 @@ export const SimulationProvider = ({ children }) => {
     weatherMode,
     strategy,
     stagedStrategy: signalManager.stagedStrategy,
+    predictiveDemand: currentPredictiveDemandRef.current,
+    predictiveForecasts: predictiveForecastsRef.current,
+    predictiveStatus,
+    predictiveDemoDate: PREDICTION_DEMO_DATE,
+    predictiveTimestamp,
     generatedDemand,
     stagedDemand,
     demandPendingReset: stagedDemand !== generatedDemand,

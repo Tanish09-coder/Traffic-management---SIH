@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const { PythonShell } = require('python-shell');
 
 const videoRoutes = require('./routes/videoRoutes');
+const predictionRoutes = require('./routes/prediction');
 
 dotenv.config();
 
@@ -15,6 +16,9 @@ app.use(express.json());
 
 // Mount Video Intelligence routes
 app.use('/api/video', videoRoutes);
+
+// Mount Prediction routes
+app.use('/api/prediction', predictionRoutes);
 
 
 // Initialize Python simulation

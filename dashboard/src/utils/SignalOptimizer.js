@@ -6,6 +6,17 @@ import { TRAFFIC_CONSTANTS } from './constants.js';
  * Enforces explicit maximum-red starvation rule and maximum continuous green bounds.
  */
 export class SignalOptimizer {
+  // Static registry for active predictive demand overrides
+  static activeDemandOverrides = null;
+
+  static setDemandOverrides(overrides) {
+    SignalOptimizer.activeDemandOverrides = overrides;
+  }
+
+  static clearDemandOverrides() {
+    SignalOptimizer.activeDemandOverrides = null;
+  }
+
   static calculateGreenDurationDetails(approach, queuedPCU = 0, strategy = 'adaptive', policy = TRAFFIC_CONSTANTS.SIGNAL_POLICY) {
     if (strategy === 'fixed') {
       const fixedDur = (policy.FIXED_DURATIONS && policy.FIXED_DURATIONS[approach]) || 45;
@@ -29,7 +40,8 @@ export class SignalOptimizer {
     const maxG = policy.MAX_GREEN !== undefined ? policy.MAX_GREEN : 60;
     const duration = Math.min(maxG, Math.max(minG, unclamped));
 
-    let explanation = `Allocated from ${pcu} PCU: ${base}s base + ${pcu} × ${coeff}s = ${unclamped}s`;
+    const pcuLabel = strategy === 'predictive' ? `${pcu} effective predictive PCU` : `${pcu} PCU`;
+    let explanation = `Allocated from ${pcuLabel}: ${base}s base + ${pcu} × ${coeff}s = ${unclamped}s`;
     if (unclamped > maxG) {
       explanation += ` (Maximum green limit reached, capped at ${maxG}s).`;
     } else if (unclamped < minG) {
@@ -61,7 +73,8 @@ export class SignalOptimizer {
     strategy = 'adaptive',
     signalSequence = ['N', 'E', 'S', 'W'],
     forceOptimal = false,
-    policy = TRAFFIC_CONSTANTS.SIGNAL_POLICY
+    policy = TRAFFIC_CONSTANTS.SIGNAL_POLICY,
+    demandOverrides = null
   }) {
     if (strategy === 'fixed') {
       const currentIndex = signalSequence.indexOf(currentSignal);
@@ -83,7 +96,13 @@ export class SignalOptimizer {
       };
     }
 
-    // --- Adaptive Strategy Evaluation (Configurable Heuristic) ---
+    // Resolve effective demand overrides (used when strategy is 'predictive')
+    const activeOverrides = strategy === 'predictive'
+      ? (demandOverrides || SignalOptimizer.activeDemandOverrides)
+      : (demandOverrides || null);
+    const effectiveDemand = activeOverrides || queuedPCUs;
+
+    // --- Adaptive / Predictive Strategy Evaluation (Configurable Heuristic) ---
     const scores = {};
     const starvationThreshold = policy.STARVATION_THRESHOLD_SEC || 45;
     const starvationBoostRate = policy.STARVATION_BOOST_PER_SEC || 0.5;
@@ -98,12 +117,14 @@ export class SignalOptimizer {
 
     // 1. Calculate effective demand score per approach
     signalSequence.forEach(dir => {
-      const rawPCU = queuedPCUs[dir] || 0;
+      const demandPCU = (effectiveDemand && effectiveDemand[dir] !== undefined)
+        ? effectiveDemand[dir]
+        : (queuedPCUs[dir] || 0);
       const waitSec = waitingSeconds[dir] || 0;
       const starvedSec = Math.max(0, waitSec - starvationThreshold);
       const boost = starvedSec * starvationBoostRate;
 
-      scores[dir] = rawPCU + boost;
+      scores[dir] = demandPCU + boost;
 
       if (dir !== currentSignal && waitSec > maxWaitTimeSec) {
         maxWaitTimeSec = waitSec;
@@ -113,18 +134,22 @@ export class SignalOptimizer {
 
     // Hard starvation rule: force serving direction if waiting time exceeds MAX_RED_WAIT_SEC
     if (maxStarvedDir && maxWaitTimeSec >= maxRedWait && (queuedPCUs[maxStarvedDir] > 0 || stoppedCounts[maxStarvedDir] > 0)) {
-      const details = SignalOptimizer.calculateGreenDurationDetails(maxStarvedDir, queuedPCUs[maxStarvedDir], 'adaptive', policy);
+      const targetPCU = (effectiveDemand && effectiveDemand[maxStarvedDir] !== undefined)
+        ? effectiveDemand[maxStarvedDir]
+        : queuedPCUs[maxStarvedDir];
+      const details = SignalOptimizer.calculateGreenDurationDetails(maxStarvedDir, targetPCU, strategy, policy);
       return {
         nextSignal: maxStarvedDir,
         proposedGreen: details.duration,
         snapshotPCU: details.snapshotPCU,
         coefficient: details.coefficient,
         allocationExplanation: details.explanation,
-        strategy: 'adaptive',
+        strategy,
         reason: `Starvation rule enforced: ${maxStarvedDir} waiting ${Math.round(maxWaitTimeSec)}s (exceeded max red wait limit of ${maxRedWait}s).`,
         scores,
         queuedPCUs: { ...queuedPCUs },
-        stoppedCounts: { ...stoppedCounts }
+        stoppedCounts: { ...stoppedCounts },
+        demandOverrides: activeOverrides ? { ...activeOverrides } : null
       };
     }
 
@@ -143,18 +168,22 @@ export class SignalOptimizer {
 
     // Forced yield due to continuous green limit
     if (mustYieldCurrent && bestDir !== currentSignal) {
-      const details = SignalOptimizer.calculateGreenDurationDetails(bestDir, queuedPCUs[bestDir], 'adaptive', policy);
+      const targetPCU = (effectiveDemand && effectiveDemand[bestDir] !== undefined)
+        ? effectiveDemand[bestDir]
+        : queuedPCUs[bestDir];
+      const details = SignalOptimizer.calculateGreenDurationDetails(bestDir, targetPCU, strategy, policy);
       return {
         nextSignal: bestDir,
         proposedGreen: details.duration,
         snapshotPCU: details.snapshotPCU,
         coefficient: details.coefficient,
         allocationExplanation: details.explanation,
-        strategy: 'adaptive',
+        strategy,
         reason: `Max continuous green limit (${maxContinuousGreen}s) reached on ${currentSignal}. Switching allocation to ${bestDir}.`,
         scores,
         queuedPCUs: { ...queuedPCUs },
-        stoppedCounts: { ...stoppedCounts }
+        stoppedCounts: { ...stoppedCounts },
+        demandOverrides: activeOverrides ? { ...activeOverrides } : null
       };
     }
 
@@ -165,18 +194,23 @@ export class SignalOptimizer {
     if (bestDir !== currentSignal) {
       const margin = bestScore - currentScore;
       if (margin >= switchMargin || forceOptimal) {
-        const details = SignalOptimizer.calculateGreenDurationDetails(bestDir, queuedPCUs[bestDir], 'adaptive', policy);
+        const targetPCU = (effectiveDemand && effectiveDemand[bestDir] !== undefined)
+          ? effectiveDemand[bestDir]
+          : queuedPCUs[bestDir];
+        const details = SignalOptimizer.calculateGreenDurationDetails(bestDir, targetPCU, strategy, policy);
+        const stratLabel = strategy === 'predictive' ? 'Predictive demand' : 'Demand';
         return {
           nextSignal: bestDir,
           proposedGreen: details.duration,
           snapshotPCU: details.snapshotPCU,
           coefficient: details.coefficient,
           allocationExplanation: details.explanation,
-          strategy: 'adaptive',
-          reason: `Demand heuristic: ${bestDir} score (${bestScore.toFixed(1)} PCUs) exceeds ${currentSignal} (${currentScore.toFixed(1)}) by margin ${margin.toFixed(1)} >= ${switchMargin}.`,
+          strategy,
+          reason: `${stratLabel} heuristic: ${bestDir} score (${bestScore.toFixed(1)} PCUs) exceeds ${currentSignal} (${currentScore.toFixed(1)}) by margin ${margin.toFixed(1)} >= ${switchMargin}.`,
           scores,
           queuedPCUs: { ...queuedPCUs },
-          stoppedCounts: { ...stoppedCounts }
+          stoppedCounts: { ...stoppedCounts },
+          demandOverrides: activeOverrides ? { ...activeOverrides } : null
         };
       }
     }
@@ -187,7 +221,10 @@ export class SignalOptimizer {
       const currentIndex = signalSequence.indexOf(currentSignal);
       const nextIndex = (currentIndex + 1) % signalSequence.length;
       const nextSignal = signalSequence[nextIndex];
-      const details = SignalOptimizer.calculateGreenDurationDetails(nextSignal, queuedPCUs[nextSignal], 'adaptive', policy);
+      const targetPCU = (effectiveDemand && effectiveDemand[nextSignal] !== undefined)
+        ? effectiveDemand[nextSignal]
+        : queuedPCUs[nextSignal];
+      const details = SignalOptimizer.calculateGreenDurationDetails(nextSignal, targetPCU, strategy, policy);
 
       return {
         nextSignal,
@@ -195,27 +232,32 @@ export class SignalOptimizer {
         snapshotPCU: details.snapshotPCU,
         coefficient: details.coefficient,
         allocationExplanation: details.explanation,
-        strategy: 'adaptive',
+        strategy,
         reason: `Low traffic demand: fallback round-robin phase selection to ${nextSignal} (${details.duration}s).`,
         scores,
         queuedPCUs: { ...queuedPCUs },
-        stoppedCounts: { ...stoppedCounts }
+        stoppedCounts: { ...stoppedCounts },
+        demandOverrides: activeOverrides ? { ...activeOverrides } : null
       };
     }
 
     // Keep current green allocation
-    const details = SignalOptimizer.calculateGreenDurationDetails(currentSignal, queuedPCUs[currentSignal], 'adaptive', policy);
+    const targetPCU = (effectiveDemand && effectiveDemand[currentSignal] !== undefined)
+      ? effectiveDemand[currentSignal]
+      : queuedPCUs[currentSignal];
+    const details = SignalOptimizer.calculateGreenDurationDetails(currentSignal, targetPCU, strategy, policy);
     return {
       nextSignal: currentSignal,
       proposedGreen: details.duration,
       snapshotPCU: details.snapshotPCU,
       coefficient: details.coefficient,
       allocationExplanation: details.explanation,
-      strategy: 'adaptive',
+      strategy,
       reason: `Demand maintained: ${currentSignal} continues green allocation (${details.duration}s).`,
       scores,
       queuedPCUs: { ...queuedPCUs },
-      stoppedCounts: { ...stoppedCounts }
+      stoppedCounts: { ...stoppedCounts },
+      demandOverrides: activeOverrides ? { ...activeOverrides } : null
     };
   }
 }

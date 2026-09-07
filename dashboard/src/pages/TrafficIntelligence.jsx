@@ -18,6 +18,7 @@ import {
   Eye,
   Info
 } from 'lucide-react';
+import PredictiveTrafficPanel from '../components/PredictiveTrafficPanel';
 
 const API_BASE = 'http://localhost:5000/api/video';
 
@@ -808,6 +809,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
         </div>
       </div>
+
+      {/* Predictive Traffic Intelligence Section */}
+      <PredictiveTrafficPanel />
     </div>
   );
 };
