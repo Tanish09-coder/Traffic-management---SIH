@@ -29,6 +29,7 @@ export class VehicleManager {
     this.emergencyVehicle = null;
     this.emergencyCooldown = 0;
     this.carIdCounter = 1;
+    this.historicalDeparturesCount = 0;
 
     this.approachSources = { N: 'simulation', E: 'simulation', S: 'simulation', W: 'simulation' };
     this._queueHistory = [];
@@ -42,7 +43,7 @@ export class VehicleManager {
   }
 
   setApproachSource(direction, source) {
-    if (['N', 'S', 'E', 'W'].includes(direction) && ['simulation', 'recorded_video'].includes(source)) {
+    if (['N', 'S', 'E', 'W'].includes(direction) && ['simulation', 'recorded_video', 'pune_historical'].includes(source)) {
       this.approachSources[direction] = source;
     }
   }
@@ -59,18 +60,37 @@ export class VehicleManager {
   }
 
   /**
-   * Inject a single deduplicated external arrival from recorded video analysis
+   * Safely purge pending unspawned historical arrivals from backlog
+   * when transitioning traffic sources, while leaving vehicles already on the road.
    */
+  clearHistoricalBacklog(direction = null) {
+    const dirs = direction ? [direction] : ['N', 'S', 'E', 'W'];
+    dirs.forEach(d => {
+      if (this.backlog[d]) {
+        this.backlog[d] = this.backlog[d].filter(v => v.source !== 'pune_historical');
+      }
+    });
+  }
 
+  /**
+   * Inject a single deduplicated external arrival from recorded video or Pune historical replay.
+   * Conserves arrival demand by safely queueing into backlog if entry line is blocked.
+   * Returns an acceptance receipt.
+   */
   injectExternalArrival(direction, event) {
-    if (!['N', 'S', 'E', 'W'].includes(direction)) return;
+    if (!['N', 'S', 'E', 'W'].includes(direction) || !event) {
+      return { accepted: false, spawnedImmediately: false, queuedInBacklog: false };
+    }
 
     const vType = event.vehicleType || 'car';
     const speed = vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : vType === 'truck' ? 4.0 : 6.0;
-    const vehId = event.eventId || `vid-${direction}-${this.carIdCounter++}`;
+    const vehId = event.eventId || `ext-${direction}-${this.carIdCounter++}`;
+    const source = event.source || (event.eventId?.startsWith('pune') ? 'pune_historical' : 'recorded_video');
 
     const newVeh = {
       id: vehId,
+      eventId: event.eventId || null,
+      source,
       position: 0,
       speed,
       type: vType,
@@ -84,7 +104,10 @@ export class VehicleManager {
       id: vehId,
       direction,
       type: vType,
-      timeSec: typeof event.videoTimeSec === 'number' ? event.videoTimeSec : this.sessionDurationSeconds
+      source,
+      timeSec: typeof event.videoTimeSec === 'number'
+        ? event.videoTimeSec
+        : (typeof event.simTimeSec === 'number' ? event.simTimeSec : this.sessionDurationSeconds)
     });
 
     const sortedLane = this.cars[direction];
@@ -93,8 +116,10 @@ export class VehicleManager {
     if (!rearCar || rearCar.position >= MIN_VEHICLE_GAP) {
       this.cars[direction].push(newVeh);
       this.cars[direction].sort((a, b) => b.position - a.position);
+      return { accepted: true, spawnedImmediately: true, queuedInBacklog: false };
     } else {
       this.backlog[direction].push(newVeh);
+      return { accepted: true, spawnedImmediately: false, queuedInBacklog: true };
     }
   }
 
@@ -346,8 +371,8 @@ export class VehicleManager {
       const event = this.arrivalSchedule[this.nextArrivalIndex++];
       const direction = event.direction;
 
-      // Skip generated arrival if approach is set to recorded_video source
-      if (this.approachSources[direction] === 'recorded_video') {
+      // Skip generated arrival if approach is set to recorded_video or pune_historical source
+      if (this.approachSources[direction] !== 'simulation') {
         continue;
       }
 
@@ -410,9 +435,14 @@ export class VehicleManager {
             this._completedWaitTimes.push(wt);
             if (this._completedWaitTimes.length > 300) this._completedWaitTimes.shift();
 
+            if (car.source === 'pune_historical') {
+              this.historicalDeparturesCount++;
+            }
+
             const depObj = {
               id: car.id,
               type: car.type || 'car',
+              source: car.source || 'simulation',
               direction,
               delay: wt,
               totalWaitTime: wt,
@@ -617,6 +647,7 @@ export class VehicleManager {
     this.emergencyVehicle = null;
     this.emergencyCooldown = 0;
     this.carIdCounter = 1;
+    this.historicalDeparturesCount = 0;
     this._queueHistory = [];
     this._completedWaitTimes = [];
     this._completedArrivals = [];
@@ -649,6 +680,32 @@ export class VehicleManager {
       avg_wait_time: this.calculateAverageWaitTime(),
       throughput: this.calculateThroughput(),
       generated_demand_multiplier: this.demandMultiplier
+    };
+  }
+
+  getHistoricalConservationMetrics() {
+    let currentlyOnRoad = 0;
+    Object.values(this.cars).forEach(lane => {
+      lane.forEach(c => {
+        if (c.source === 'pune_historical') currentlyOnRoad++;
+      });
+    });
+
+    let pendingBacklog = 0;
+    Object.values(this.backlog).forEach(bList => {
+      bList.forEach(c => {
+        if (c.source === 'pune_historical') pendingBacklog++;
+      });
+    });
+
+    const completed = this.historicalDeparturesCount || 0;
+    const accepted = currentlyOnRoad + pendingBacklog + completed;
+
+    return {
+      currentlyOnRoad,
+      pendingBacklog,
+      completed,
+      accepted
     };
   }
 }

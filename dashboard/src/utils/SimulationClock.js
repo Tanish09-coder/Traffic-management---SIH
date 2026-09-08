@@ -64,4 +64,9 @@ export class SimulationClock {
   getSimTime() {
     return this.simTime;
   }
+
+  setSimTime(time) {
+    this.simTime = Math.max(0, time);
+    this.lastWallTime = Date.now();
+  }
 }

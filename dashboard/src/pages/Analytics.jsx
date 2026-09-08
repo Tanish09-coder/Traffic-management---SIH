@@ -300,7 +300,13 @@ const Analytics = ({ onNavigate }) => {
       </div>
 
       {/* ── Saved Benchmark Comparison Section (Phase 3B) ──────── */}
-      <BenchmarkComparison />
+      <BenchmarkComparison 
+        data={comparisonResult} 
+        status={comparisonStatus} 
+        error={comparisonError}
+        onRerun={rerunComparison} 
+        isLiveRun={videoReplayActive} 
+      />
 
       {/* ── 3. Empty State Guard if No Traffic Generated Yet ────── */}
 
@@ -750,16 +756,6 @@ const Analytics = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* Fixed 45s vs Adaptive Computed Benchmark Comparison (Always accessible) */}
-      <div className="mt-8">
-        <BenchmarkComparison 
-          data={comparisonResult} 
-          status={comparisonStatus} 
-          error={comparisonError}
-          onRerun={rerunComparison} 
-          isLiveRun={videoReplayActive} 
-        />
-      </div>
 
     </div>
   );

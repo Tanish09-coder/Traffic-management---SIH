@@ -15,6 +15,7 @@ import {
 import { runComparisonPair } from '../utils/comparisonEngine';
 import { SignalOptimizer } from '../utils/SignalOptimizer';
 import { calculateEffectivePredictivePCU } from '../utils/PredictiveDemandFusion';
+import { generateBucketArrivals, calculateBucketPCU } from '../utils/HistoricalDemandScheduler';
 
 // Historical Pune direction mapping is used only to demonstrate predictive-control integration. It does not imply the live simulation represents the same physical intersection or timestamp.
 const PUNE_TO_SIM_DIRECTION_MAP = {
@@ -28,17 +29,24 @@ const PREDICTION_DEMO_DATE = '2023-01-17';
 const PREDICTION_API_BASE = 'http://localhost:5000/api/prediction';
 
 const DEFAULT_BELLEVUE_EVENTS = [
-  { eventId: 'bellevue-0', videoTimeSec: 11.2, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-1', videoTimeSec: 18.5, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-2', videoTimeSec: 25.1, vehicleType: 'truck', mappedDirection: 'S' },
-  { eventId: 'bellevue-3', videoTimeSec: 32.8, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-4', videoTimeSec: 45.4, vehicleType: 'bus', mappedDirection: 'S' },
-  { eventId: 'bellevue-5', videoTimeSec: 58.0, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-6', videoTimeSec: 72.3, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-7', videoTimeSec: 89.6, vehicleType: 'truck', mappedDirection: 'S' },
-  { eventId: 'bellevue-8', videoTimeSec: 104.2, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-9', videoTimeSec: 120.1, vehicleType: 'car', mappedDirection: 'S' },
-  { eventId: 'bellevue-10', videoTimeSec: 142.7, vehicleType: 'car', mappedDirection: 'S' }
+  { eventId: 'bellevue-1', videoTimeSec: 9.6, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-2', videoTimeSec: 11.8, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-3', videoTimeSec: 12.6, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-4', videoTimeSec: 14.8, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-5', videoTimeSec: 15.0, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-6', videoTimeSec: 17.2, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-7', videoTimeSec: 19.2, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-8', videoTimeSec: 21.0, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-9', videoTimeSec: 23.0, vehicleType: 'truck', mappedDirection: 'S' },
+  { eventId: 'bellevue-10', videoTimeSec: 93.2, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-11', videoTimeSec: 114.2, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-12', videoTimeSec: 116.8, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-13', videoTimeSec: 118.8, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-14', videoTimeSec: 120.6, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-15', videoTimeSec: 124.2, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-16', videoTimeSec: 136.4, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-17', videoTimeSec: 139.0, vehicleType: 'car', mappedDirection: 'S' },
+  { eventId: 'bellevue-18', videoTimeSec: 139.6, vehicleType: 'car', mappedDirection: 'S' }
 ];
 
 const SimulationContext = createContext(null);
@@ -72,6 +80,7 @@ export const SimulationProvider = ({ children }) => {
   const [generatedDemand, setGeneratedDemandState] = useState(0.5);
   const [stagedDemand, setStagedDemandState] = useState(0.5);
   const [dataSource, setDataSource] = useState('simulation'); // 'simulation' | 'recorded_video'
+  const [trafficSource, setTrafficSourceState] = useState('simulation'); // 'simulation' | 'pune_historical' | 'recorded_video'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -96,6 +105,52 @@ export const SimulationProvider = ({ children }) => {
     S: { actualPCU: 0, effectivePredictivePCU: 0, predictiveBoostPCU: 0, predictiveBoostPercent: 0 },
     W: { actualPCU: 0, effectivePredictivePCU: 0, predictiveBoostPCU: 0, predictiveBoostPercent: 0 }
   });
+
+  // Pune Historical Demand Replay State & Refs (Phase 2C)
+  const actualDemandCacheRef = useRef({});
+  const scheduledPuneEventsRef = useRef([]);
+  const processedPuneEventIdsRef = useRef(new Set());
+  const lastFetchedActualBucketRef = useRef(null);
+  const [historicalDemand, setHistoricalDemand] = useState(null);
+  const [historicalReplayStats, setHistoricalReplayStats] = useState({
+    scheduled: 0,
+    accepted: 0,
+    spawned: 0,
+    pendingBacklog: 0
+  });
+
+  const fetchActualDemandForTime = useCallback(async (targetTime, baseSimTimeSec = 0) => {
+    if (!targetTime) return;
+
+    let bucketData = actualDemandCacheRef.current[targetTime];
+    if (!bucketData) {
+      try {
+        const res = await fetch(`${PREDICTION_API_BASE}/actual?date=${PREDICTION_DEMO_DATE}&time=${targetTime}`);
+        if (res.ok) {
+          bucketData = await res.json();
+          actualDemandCacheRef.current[targetTime] = bucketData;
+        }
+      } catch (err) {
+        console.warn('Actual traffic demand fetch warning:', err.message);
+      }
+    }
+
+    if (bucketData && bucketData.directions) {
+      const arrivals = generateBucketArrivals({
+        date: PREDICTION_DEMO_DATE,
+        time: targetTime,
+        baseSimTimeSec,
+        intervalSeconds: 300,
+        directions: bucketData.directions
+      });
+
+      const existingIds = new Set(scheduledPuneEventsRef.current.map(e => e.eventId));
+      const newArrivals = arrivals.filter(e => !existingIds.has(e.eventId));
+      scheduledPuneEventsRef.current = [...scheduledPuneEventsRef.current, ...newArrivals];
+      setHistoricalDemand({ timestamp: targetTime, directions: bucketData.directions });
+    }
+  }, []);
+
 
   const fetchForecastForTime = useCallback(async (targetTime) => {
     if (!targetTime) return;
@@ -197,6 +252,12 @@ export const SimulationProvider = ({ children }) => {
   // Video replay session state
   const [videoReplayActive, setVideoReplayActive] = useState(false);
   const [videoReplayConfig, setVideoReplayConfig] = useState(null); // { videoId, arrivalEvents, mappedDirection, durationSec }
+  const [videoReplayStats, setVideoReplayStats] = useState({
+    totalEvents: 0,
+    dispatchedCount: 0,
+    lastDispatchedEvent: null,
+    dispatchedByClass: { car: 0, bike: 0, bus: 0, truck: 0 }
+  });
   const videoEventCursorRef = useRef(0);
   const processedEventIdsRef = useRef(new Set());
 
@@ -282,12 +343,23 @@ export const SimulationProvider = ({ children }) => {
           lastFetchedTimeRef.current = currentTimeStr;
           fetchForecastForTime(currentTimeStr);
         }
+
+        // When trafficSource is pune_historical, fetch/schedule actual bucket for this interval
+        if (trafficSource === 'pune_historical') {
+          const bucketKey = `${currentTimeStr}_${step}`;
+          if (bucketKey !== lastFetchedActualBucketRef.current) {
+            lastFetchedActualBucketRef.current = bucketKey;
+            fetchActualDemandForTime(currentTimeStr, step * 300);
+          }
+        }
       }
 
       // If video replay is active, dispatch pending arrival events up to currentSimTime
       if (videoReplayActive && videoReplayConfig && videoReplayConfig.arrivalEvents) {
         const events = videoReplayConfig.arrivalEvents;
         const mappedDir = videoReplayConfig.mappedDirection || 'S';
+        let newlyDispatched = false;
+        let lastEvt = null;
 
         while (
           videoEventCursorRef.current < events.length &&
@@ -297,8 +369,52 @@ export const SimulationProvider = ({ children }) => {
           if (event && !processedEventIdsRef.current.has(event.eventId)) {
             processedEventIdsRef.current.add(event.eventId);
             vehicleManager.injectExternalArrival(mappedDir, event);
+            newlyDispatched = true;
+            lastEvt = event;
           }
         }
+
+        if (newlyDispatched) {
+          const processedList = events.slice(0, videoEventCursorRef.current);
+          setVideoReplayStats({
+            totalEvents: events.length,
+            dispatchedCount: videoEventCursorRef.current,
+            lastDispatchedEvent: lastEvt,
+            dispatchedByClass: {
+              car: processedList.filter(e => e.vehicleType === 'car').length,
+              bike: processedList.filter(e => e.vehicleType === 'bike').length,
+              bus: processedList.filter(e => e.vehicleType === 'bus').length,
+              truck: processedList.filter(e => e.vehicleType === 'truck').length
+            }
+          });
+        }
+      }
+
+      // If Pune historical replay is active, dispatch scheduled arrival events up to currentSimTime
+      if (trafficSource === 'pune_historical') {
+        const scheduled = scheduledPuneEventsRef.current;
+        for (let i = 0; i < scheduled.length; i++) {
+          const event = scheduled[i];
+          if (event.simTimeSec <= currentSimTime) {
+            if (!processedPuneEventIdsRef.current.has(event.eventId)) {
+              const receipt = vehicleManager.injectExternalArrival(event.direction, event);
+              if (receipt && receipt.accepted) {
+                processedPuneEventIdsRef.current.add(event.eventId);
+              }
+            }
+          }
+        }
+
+        const metrics = vehicleManager.getHistoricalConservationMetrics();
+        const scheduledDue = scheduled.filter(e => e.simTimeSec <= currentSimTime).length;
+        setHistoricalReplayStats({
+          scheduledTotal: scheduled.length,
+          scheduledDue,
+          accepted: metrics.accepted,
+          currentlyOnRoad: metrics.currentlyOnRoad,
+          pendingBacklog: metrics.pendingBacklog,
+          completed: metrics.completed
+        });
       }
 
       subSteps.forEach(subDt => {
@@ -389,6 +505,9 @@ export const SimulationProvider = ({ children }) => {
         demandPendingReset: stagedDemand !== generatedDemand,
         decision: sState.decision,
         dataSource,
+        trafficSource,
+        historicalDemand,
+        historicalReplayStats,
         videoReplayActive,
         videoReplayConfig,
         simTime: currentSimTime,
@@ -428,7 +547,7 @@ export const SimulationProvider = ({ children }) => {
       console.error('Simulation tick error:', err);
       setError(`Simulation tick error: ${err.message}`);
     }
-  }, [useMock, dataSource, videoReplayActive, videoReplayConfig, generatedDemand, stagedDemand]);
+  }, [useMock, dataSource, videoReplayActive, videoReplayConfig, generatedDemand, stagedDemand, trafficSource, strategy]);
 
 
   // Single central simulation loop protected against StrictMode duplicates
@@ -589,6 +708,36 @@ export const SimulationProvider = ({ children }) => {
     }
   }, [signalManager, fetchForecastForTime]);
 
+  const setTrafficSource = useCallback((newSource) => {
+    if (!['simulation', 'pune_historical', 'recorded_video'].includes(newSource)) return;
+    if (newSource === trafficSource) return;
+
+    if (newSource === 'pune_historical') {
+      setVideoReplayActive(false);
+      setDataSource('simulation');
+      ['N', 'S', 'E', 'W'].forEach(d => vehicleManager.setApproachSource(d, 'pune_historical'));
+      setTrafficSourceState('pune_historical');
+
+      const times = availableTimesRef.current;
+      const target = lastFetchedTimeRef.current || (times.includes('09:00:00') ? '09:00:00' : times[0] || '09:00:00');
+      fetchActualDemandForTime(target, 0);
+    } else if (newSource === 'simulation') {
+      setVideoReplayActive(false);
+      setDataSource('simulation');
+      vehicleManager.clearHistoricalBacklog();
+      ['N', 'S', 'E', 'W'].forEach(d => vehicleManager.setApproachSource(d, 'simulation'));
+      setTrafficSourceState('simulation');
+    } else if (newSource === 'recorded_video') {
+      vehicleManager.clearHistoricalBacklog();
+      setTrafficSourceState('recorded_video');
+    }
+  }, [trafficSource, vehicleManager, fetchActualDemandForTime]);
+
+  const activatePredictivePuneDemo = useCallback(() => {
+    setTrafficSource('pune_historical');
+    setStrategy('predictive');
+  }, [setTrafficSource, setStrategy]);
+
   const setGeneratedDemandMultiplier = useCallback((multiplier) => {
     const val = multiplier === 1.0 ? 1.0 : 0.5;
     setStagedDemandState(val);
@@ -597,13 +746,34 @@ export const SimulationProvider = ({ children }) => {
   const resetSimulation = useCallback(() => {
     SignalOptimizer.clearDemandOverrides();
     lastFetchedTimeRef.current = null;
+    lastFetchedActualBucketRef.current = null;
     fetchForecastForTime('09:00:00');
     analyticsManager.reset();
     clock.reset();
     videoEventCursorRef.current = 0;
     processedEventIdsRef.current.clear();
+    processedPuneEventIdsRef.current.clear();
+    scheduledPuneEventsRef.current = [];
+    actualDemandCacheRef.current = {};
+    vehicleManager.clearHistoricalBacklog();
     setVideoReplayActive(false);
+    setVideoReplayStats({
+      totalEvents: 0,
+      dispatchedCount: 0,
+      lastDispatchedEvent: null,
+      dispatchedByClass: { car: 0, bike: 0, bus: 0, truck: 0 }
+    });
     setDataSource('simulation');
+    setTrafficSourceState('simulation');
+    setHistoricalDemand(null);
+    setHistoricalReplayStats({
+      scheduledTotal: 0,
+      scheduledDue: 0,
+      accepted: 0,
+      currentlyOnRoad: 0,
+      pendingBacklog: 0,
+      completed: 0
+    });
     const newDemand = stagedDemand;
     setGeneratedDemandState(newDemand);
     if (useMock) {
@@ -627,6 +797,10 @@ export const SimulationProvider = ({ children }) => {
     clock.reset();
     videoEventCursorRef.current = 0;
     processedEventIdsRef.current.clear();
+    processedPuneEventIdsRef.current.clear();
+    scheduledPuneEventsRef.current = [];
+    vehicleManager.clearHistoricalBacklog();
+    setTrafficSourceState('recorded_video');
 
     const newDemand = stagedDemand;
     setGeneratedDemandState(newDemand);
@@ -658,6 +832,12 @@ export const SimulationProvider = ({ children }) => {
     setDataSource('recorded_video');
     setVideoReplayActive(true);
     setVideoReplayConfig(replayCfg);
+    setVideoReplayStats({
+      totalEvents: (arrivalEvents || []).length,
+      dispatchedCount: 0,
+      lastDispatchedEvent: null,
+      dispatchedByClass: { car: 0, bike: 0, bus: 0, truck: 0 }
+    });
 
     // Automatically start isolated comparison run on valid video analysis start
     runComparison(replayCfg);
@@ -668,6 +848,13 @@ export const SimulationProvider = ({ children }) => {
     setDataSource('simulation');
     ['N', 'S', 'E', 'W'].forEach(d => vehicleManager.setApproachSource(d, 'simulation'));
   }, [vehicleManager]);
+
+  const syncVideoReplayTime = useCallback((videoTimeSec) => {
+    if (!videoReplayActive) return;
+    if (typeof videoTimeSec === 'number' && !isNaN(videoTimeSec)) {
+      clock.setSimTime(videoTimeSec);
+    }
+  }, [videoReplayActive, clock]);
 
 
   const triggerEmergencyVehicle = useCallback((direction = null, type = null) => {
@@ -724,8 +911,15 @@ export const SimulationProvider = ({ children }) => {
     demandPendingReset: stagedDemand !== generatedDemand,
     setGeneratedDemandMultiplier,
     dataSource,
+    trafficSource,
+    setTrafficSource,
+    activatePredictivePuneDemo,
+    historicalDemand,
+    historicalReplayStats,
     videoReplayActive,
     videoReplayConfig,
+    videoReplayStats,
+    syncVideoReplayTime,
     comparisonResult,
     comparisonStatus,
     comparisonError,

@@ -23,15 +23,15 @@ import PredictiveTrafficPanel from '../components/PredictiveTrafficPanel';
 const API_BASE = 'http://localhost:5000/api/video';
 
 const DEFAULT_REGION = [
-  [0.25, 0.40],
-  [0.65, 0.40],
-  [0.85, 0.90],
-  [0.10, 0.90]
+  [0.01, 0.35],
+  [0.85, 0.35],
+  [0.98, 0.95],
+  [0.01, 0.95]
 ];
 
 const DEFAULT_LINE = {
-  start: [0.20, 0.65],
-  end: [0.80, 0.65],
+  start: [0.02, 0.65],
+  end: [0.85, 0.65],
   incomingDirection: 'positive'
 };
 
@@ -41,6 +41,8 @@ const TrafficIntelligence = ({ onNavigate }) => {
     stopVideoDrivenSimulation, 
     videoReplayActive, 
     videoReplayConfig,
+    videoReplayStats,
+    syncVideoReplayTime,
     state: simState,
     simulationSpeed,
     setSpeed,
@@ -83,7 +85,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
     }
   }, [simulationSpeed]);
 
-  // Load bundled video config on mount
+  // Load bundled video config on mount and auto-load pre-computed analysis
   useEffect(() => {
     fetch(`${API_BASE}/bundled`)
       .then(res => res.json())
@@ -92,6 +94,27 @@ const TrafficIntelligence = ({ onNavigate }) => {
           setRegionPoints(data.defaultConfig.region);
           setLineConfig(data.defaultConfig.line);
           setMappedDirection(data.defaultConfig.mappedDirection);
+
+          // Auto-load pre-computed analysis for default bundled video
+          fetch(`${API_BASE}/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              videoId: 'bellevue_trial',
+              region: data.defaultConfig.region,
+              line: data.defaultConfig.line,
+              mappedDirection: data.defaultConfig.mappedDirection,
+              sampleFps: 5
+            })
+          })
+            .then(res => res.json())
+            .then(analyzeData => {
+              if (analyzeData.jobId) {
+                setCurrentJobId(analyzeData.jobId);
+                fetchAnalysisResults(analyzeData.jobId);
+              }
+            })
+            .catch(err => console.warn('Auto analysis load notice:', err));
         }
       })
       .catch(err => console.warn('Could not fetch bundled video config:', err));
@@ -291,18 +314,29 @@ const TrafficIntelligence = ({ onNavigate }) => {
       const lx2 = lineConfig.end[0] * w;
       const ly2 = lineConfig.end[1] * h;
 
+      const curSec = video.currentTime;
+      // Check if an arrival event is actively crossing the line (within 0.7s)
+      const crossingEvent = (analysisResults?.arrivalEvents || []).find(
+        e => Math.abs(e.videoTimeSec - curSec) < 0.7
+      );
+
       ctx.beginPath();
       ctx.moveTo(lx1, ly1);
       ctx.lineTo(lx2, ly2);
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = crossingEvent ? '#10b981' : '#ef4444';
+      ctx.lineWidth = crossingEvent ? 6 : 3;
+      if (crossingEvent) {
+        ctx.shadowColor = '#10b981';
+        ctx.shadowBlur = 14;
+      }
       ctx.stroke();
+      ctx.shadowBlur = 0; // reset shadow
 
       // Line Endpoints
       [ [lx1, ly1], [lx2, ly2] ].forEach(([x, y]) => {
         ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = '#dc2626';
+        ctx.arc(x, y, crossingEvent ? 8 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = crossingEvent ? '#10b981' : '#dc2626';
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
@@ -326,9 +360,20 @@ const TrafficIntelligence = ({ onNavigate }) => {
       ctx.beginPath();
       ctx.moveTo(mx, my);
       ctx.lineTo(ax, ay);
-      ctx.strokeStyle = '#f59e0b';
+      ctx.strokeStyle = crossingEvent ? '#10b981' : '#f59e0b';
       ctx.lineWidth = 3;
       ctx.stroke();
+
+      // If active crossing event, draw energetic crossing badge
+      if (crossingEvent) {
+        const badgeText = `⚡ CROSSING: ${(crossingEvent.vehicleType || 'car').toUpperCase()} #${crossingEvent.trackId}`;
+        ctx.font = 'bold 12px sans-serif';
+        const tw = ctx.measureText(badgeText).width;
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.95)';
+        ctx.fillRect(mx - tw / 2 - 8, my - 26, tw + 16, 22);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(badgeText, mx - tw / 2, my - 11);
+      }
     }
 
     // 3. Draw Detections for Current Video Timestamp (if analyzed)
@@ -366,7 +411,11 @@ const TrafficIntelligence = ({ onNavigate }) => {
   // Video timeupdate loop
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentTimeSec(videoRef.current.currentTime);
+      const cur = videoRef.current.currentTime;
+      setCurrentTimeSec(cur);
+      if (videoReplayActive && syncVideoReplayTime) {
+        syncVideoReplayTime(cur);
+      }
       renderCanvasOverlay();
     }
   };
@@ -409,6 +458,32 @@ const TrafficIntelligence = ({ onNavigate }) => {
       }
     }
   };
+
+  // Live Replay & Video Synchronization Metrics
+  const allEvents = analysisResults?.arrivalEvents || [];
+  const totalEventsCount = allEvents.length;
+  // Events that have crossed the counting line up to current video playback time
+  const pastEvents = allEvents.filter(e => e.videoTimeSec <= currentTimeSec);
+  const liveEventsCount = pastEvents.length;
+  const livePercent = totalEventsCount > 0 ? Math.round((liveEventsCount / totalEventsCount) * 100) : 0;
+
+  const liveCountsByClass = {
+    car: pastEvents.filter(e => (e.vehicleType || 'car') === 'car').length,
+    bike: pastEvents.filter(e => e.vehicleType === 'bike').length,
+    bus: pastEvents.filter(e => e.vehicleType === 'bus').length,
+    truck: pastEvents.filter(e => e.vehicleType === 'truck').length,
+  };
+
+  const totalCountsByClass = analysisResults?.analysisStats?.countsByClass || {
+    car: allEvents.filter(e => (e.vehicleType || 'car') === 'car').length,
+    bike: allEvents.filter(e => e.vehicleType === 'bike').length,
+    bus: allEvents.filter(e => e.vehicleType === 'bus').length,
+    truck: allEvents.filter(e => e.vehicleType === 'truck').length,
+  };
+
+  // Recent vehicle crossing event (within the last 2.0s of playback)
+  const recentCrossing = pastEvents.length > 0 ? pastEvents[pastEvents.length - 1] : null;
+  const isCrossingJustNow = recentCrossing && Math.abs(currentTimeSec - recentCrossing.videoTimeSec) < 2.0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -737,47 +812,138 @@ const TrafficIntelligence = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Analysis Results Summary Panel */}
+          {/* Analysis & Live Replay Stream Panel */}
           {analysisResults && (
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5 animate-in fade-in duration-300">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Activity size={18} className="text-emerald-600" />
-                  Detection Results
-                </h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
-                  {analysisResults.analysisStats?.totalIncomingCrossings || 0} Arrivals Counted
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Activity size={18} className="text-emerald-600" />
+                    Detection & Arrival Stream
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    {videoReplayActive ? `Streaming video arrivals into approach ${mappedDirection}` : isPlaying ? 'Playback active — tracking line crossings' : 'Ready to stream into simulation'}
+                  </p>
+                </div>
+                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all flex-shrink-0 ${
+                  videoReplayActive 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-400/20' 
+                    : isPlaying && liveEventsCount > 0
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}>
+                  {videoReplayActive ? '🟢 Live Injected' : isPlaying ? '▶ Live Playback' : 'Offline Scan'}: {liveEventsCount} / {totalEventsCount}
                 </span>
               </div>
 
-              {/* Class Breakdown Grid */}
-              <div className="grid grid-cols-4 gap-2 text-center">
-                {Object.entries(analysisResults.analysisStats?.countsByClass || { car: 0, bike: 0, bus: 0, truck: 0 }).map(([cls, cnt]) => (
-                  <div key={cls} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <div className="text-[10px] text-slate-400 uppercase font-bold">{cls}</div>
-                    <div className="text-base font-extrabold text-slate-800">{cnt}</div>
+              {/* Real-time Streaming Progress Bar */}
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                    {videoReplayActive ? (
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                      </span>
+                    ) : isPlaying ? (
+                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    ) : (
+                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                    )}
+                    <span>{liveEventsCount} of {totalEventsCount} Vehicles Crossed Line</span>
+                  </span>
+                  <span className="font-mono font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
+                    {livePercent}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full transition-all duration-300 shadow-sm"
+                    style={{ width: `${livePercent}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Class Breakdown Grid: Live Crossed / Total in Video */}
+              <div className="space-y-1">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex justify-between px-1">
+                  <span>Vehicle Breakdown</span>
+                  <span className="text-[10px] text-slate-400">Crossed / Total Detected</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {['car', 'bike', 'bus', 'truck'].map(cls => {
+                    const liveCnt = liveCountsByClass[cls] || 0;
+                    const totalCnt = totalCountsByClass[cls] || 0;
+                    const hasActive = liveCnt > 0;
+                    return (
+                      <div 
+                        key={cls} 
+                        className={`p-2.5 rounded-xl border transition-all ${
+                          hasActive ? 'bg-emerald-50/50 border-emerald-200 shadow-sm' : 'bg-slate-50 border-slate-100'
+                        }`}
+                      >
+                        <div className="text-[10px] text-slate-400 uppercase font-bold">{cls}</div>
+                        <div className="flex items-baseline justify-center gap-1 mt-0.5">
+                          <span className={`text-base font-extrabold ${hasActive ? 'text-emerald-700' : 'text-slate-800'}`}>
+                            {liveCnt}
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-semibold">
+                            / {totalCnt}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Active Crossing Alert / Recent Crossing Toast */}
+              {recentCrossing ? (
+                <div className={`p-3 rounded-2xl border text-xs flex items-center justify-between transition-all ${
+                  isCrossingJustNow 
+                    ? 'bg-emerald-100/80 border-emerald-300 text-emerald-900 shadow-sm ring-2 ring-emerald-400/20' 
+                    : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={15} className={isCrossingJustNow ? 'text-emerald-600 animate-bounce' : 'text-slate-400'} />
+                    <span>
+                      <strong>{(recentCrossing.vehicleType || 'car').toUpperCase()} #{recentCrossing.trackId}</strong> crossed at {recentCrossing.videoTimeSec.toFixed(1)}s
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700">
+                    → Approach {recentCrossing.mappedDirection || mappedDirection}
+                  </span>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-xs flex items-center gap-2">
+                  <Info size={13} className="text-slate-400 flex-shrink-0" />
+                  <span className="text-[11px]">As vehicles cross the counting line, arrivals stream in real-time to Approach {mappedDirection}.</span>
+                </div>
+              )}
 
-              {/* Stats Metadata */}
-              <div className="text-xs space-y-1.5 text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100 font-mono">
-                <div className="flex justify-between">
-                  <span>Unique Tracks:</span>
-                  <span className="font-bold">{analysisResults.analysisStats?.totalUniqueTracks}</span>
+              {/* Active Simulator Stream Status */}
+              {videoReplayActive && (
+                <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs animate-in fade-in duration-300">
+                  <div className="space-y-0.5">
+                    <div className="font-bold text-blue-900 flex items-center gap-1.5">
+                      <Activity size={14} className="text-blue-600" />
+                      Approach {mappedDirection} Active Queue: <span className="text-blue-700 font-black">{simState?.queues?.[mappedDirection] || 0}</span> vehicles
+                    </div>
+                    <div className="text-[11px] text-blue-700">
+                      Adaptive signal controller optimizing green time for incoming stream
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onNavigate && onNavigate('live-intersection')}
+                    className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold text-[11px] hover:bg-blue-700 transition-all flex items-center gap-1 shadow-sm flex-shrink-0"
+                  >
+                    View Simulator <ArrowRight size={12} />
+                  </button>
                 </div>
-                <div className="flex justify-between">
-                  <span>Processing FPS:</span>
-                  <span className="font-bold">{analysisResults.analysisStats?.fpsAchieved} FPS</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Wall Time:</span>
-                  <span className="font-bold">{analysisResults.analysisStats?.wallTimeSec}s</span>
-                </div>
-              </div>
+              )}
 
-              {/* Start Video Simulation Action */}
-              <div className="pt-2">
+              {/* Start Video Simulation Action Button */}
+              <div className="pt-1">
                 {videoReplayActive ? (
                   <button
                     onClick={handleStopSimulation}
@@ -794,6 +960,33 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   </button>
                 )}
               </div>
+
+              {/* Offline Full Video Pre-Scan Details */}
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <span>Offline YOLOv8 Pre-Scan Info</span>
+                  <span className="text-slate-600 font-mono">{analysisResults.videoMetadata?.durationSec || 158.6}s duration</span>
+                </div>
+                <div className="text-xs space-y-1.5 text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100 font-mono">
+                  <div className="flex justify-between">
+                    <span>Total Crossings Detected:</span>
+                    <span className="font-bold text-slate-800">{totalEventsCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Unique Tracks:</span>
+                    <span className="font-bold text-slate-800">{analysisResults.analysisStats?.totalUniqueTracks}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Processing FPS:</span>
+                    <span className="font-bold text-slate-800">{analysisResults.analysisStats?.fpsAchieved} FPS</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Wall Time:</span>
+                    <span className="font-bold text-slate-800">{analysisResults.analysisStats?.wallTimeSec}s</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           )}
 

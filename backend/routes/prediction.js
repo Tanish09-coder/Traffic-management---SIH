@@ -152,4 +152,73 @@ router.get('/validation', (req, res) => {
   }
 });
 
+/**
+ * GET /api/prediction/actual?date=YYYY-MM-DD&time=HH:MM:SS
+ * Returns empirical vehicle counts and calculated PCU from the cleaned Pune dataset.
+ */
+router.get('/actual', (req, res) => {
+  try {
+    const { date, time } = req.query;
+    if (!date || !time) {
+      return res.status(400).json({ error: "Query parameters 'date' and 'time' are required." });
+    }
+
+    const availableDates = defaultLoader.getAvailableDates();
+    if (!availableDates.includes(date)) {
+      return res.status(400).json({
+        error: `Date '${date}' not found in dataset. Available dates: ${availableDates.join(', ')}`
+      });
+    }
+
+    const availableTimes = defaultLoader.getAvailableTimesForDate(date);
+    if (!availableTimes.includes(time)) {
+      return res.status(400).json({
+        error: `Timestamp '${time}' not found for date '${date}'. Available range: ${availableTimes[0]} to ${availableTimes[availableTimes.length - 1]}`
+      });
+    }
+
+    const directions = {};
+
+    for (const dir of SUPPORTED_DIRECTIONS) {
+      const rec = defaultLoader.getRecord(date, time, dir);
+      if (rec) {
+        const car = typeof rec.car === 'number' ? rec.car : 0;
+        const motorbike = typeof rec.motorbike === 'number' ? rec.motorbike : 0;
+        const bus = typeof rec.bus === 'number' ? rec.bus : 0;
+        const truck = typeof rec.truck === 'number' ? rec.truck : 0;
+        const vehicleCount = car + motorbike + bus + truck;
+        const totalPCU = typeof rec.pcu === 'number' ? Number(rec.pcu.toFixed(2)) : 0;
+
+        directions[dir] = {
+          car,
+          motorbike,
+          bus,
+          truck,
+          vehicleCount,
+          totalPCU
+        };
+      } else {
+        directions[dir] = {
+          car: 0,
+          motorbike: 0,
+          bus: 0,
+          truck: 0,
+          vehicleCount: 0,
+          totalPCU: 0
+        };
+      }
+    }
+
+    return res.json({
+      date,
+      time,
+      directions
+    });
+  } catch (err) {
+    console.error('Error fetching actual traffic demand:', err);
+    return res.status(500).json({ error: 'Internal server error while fetching actual demand.' });
+  }
+});
+
 module.exports = router;
+

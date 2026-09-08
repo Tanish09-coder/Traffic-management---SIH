@@ -1,9 +1,18 @@
 import React from 'react';
-import { Cpu, Layers, AlertCircle, Clock } from 'lucide-react';
+import { Cpu, Layers, AlertCircle, Clock, Database, PlayCircle } from 'lucide-react';
 import { useSimulation } from '../context/SimulationContext';
 
 export const AIDecisionPanel = () => {
-  const { state, strategy, setStrategy, useMock } = useSimulation();
+  const {
+    state,
+    strategy,
+    setStrategy,
+    useMock,
+    trafficSource,
+    setTrafficSource,
+    activatePredictivePuneDemo,
+    historicalReplayStats
+  } = useSimulation();
   const {
     signal,
     pending_signal,
@@ -24,47 +33,114 @@ export const AIDecisionPanel = () => {
 
   return (
     <div className="bg-[#18181B]/95 backdrop-blur-md border border-gray-800 rounded-xl p-4 shadow-xl text-white select-none">
-      {/* Header & Strategy Switcher */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-gray-800">
-        <div className="flex items-center space-x-2">
-          <Cpu className="w-5 h-5 text-emerald-400" />
-          <div>
-            <h3 className="text-sm font-bold text-gray-100">Signal Optimization Strategy</h3>
-            <p className="text-[11px] text-gray-400">Configurable adaptive demand heuristic</p>
+      {/* Header & Controls */}
+      <div className="flex flex-col gap-3 mb-3 pb-3 border-b border-gray-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <Cpu className="w-5 h-5 text-emerald-400" />
+            <div>
+              <h3 className="text-sm font-bold text-gray-100">Signal Optimization & Demand Control</h3>
+              <p className="text-[11px] text-gray-400">Independent control strategy and empirical demand replay</p>
+            </div>
           </div>
+
+          {/* Quick SIH Demo Action */}
+          <button
+            onClick={activatePredictivePuneDemo}
+            className="flex items-center space-x-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md transition-all"
+            title="Preset: Set Traffic Source to Pune Historical & Strategy to Predictive Adaptive"
+          >
+            <PlayCircle className="w-3.5 h-3.5" />
+            <span>Preset: Predictive + Pune Replay</span>
+          </button>
         </div>
 
-        {/* Fixed / Adaptive / Predictive Adaptive Toggle */}
-        <div className="flex items-center bg-gray-900/90 p-1 rounded-lg border border-gray-800">
-          <button
-            onClick={() => setStrategy('fixed')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${strategy === 'fixed'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'text-gray-400 hover:text-gray-200'
-              }`}
-          >
-            Fixed Plan
-          </button>
-          <button
-            onClick={() => setStrategy('adaptive')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${strategy === 'adaptive'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-gray-400 hover:text-gray-200'
-              }`}
-          >
-            Adaptive Heuristic
-          </button>
-          <button
-            onClick={() => setStrategy('predictive')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${strategy === 'predictive'
-                ? 'bg-purple-600 text-white shadow-sm'
-                : 'text-gray-400 hover:text-gray-200'
-              }`}
-          >
-            Predictive Adaptive
-          </button>
+        {/* Two Independent Control Bars */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+          {/* 1. Control Strategy */}
+          <div className="flex items-center justify-between bg-gray-900/90 px-2.5 py-1.5 rounded-lg border border-gray-800">
+            <span className="text-[11px] font-semibold text-gray-400 mr-2">Strategy:</span>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => setStrategy('fixed')}
+                className={`px-2.5 py-1 font-semibold rounded transition-colors ${strategy === 'fixed'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                Fixed
+              </button>
+              <button
+                onClick={() => setStrategy('adaptive')}
+                className={`px-2.5 py-1 font-semibold rounded transition-colors ${strategy === 'adaptive'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                Adaptive
+              </button>
+              <button
+                onClick={() => setStrategy('predictive')}
+                className={`px-2.5 py-1 font-semibold rounded transition-colors ${strategy === 'predictive'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                Predictive
+              </button>
+            </div>
+          </div>
+
+          {/* 2. Demand / Traffic Source */}
+          <div className="flex items-center justify-between bg-gray-900/90 px-2.5 py-1.5 rounded-lg border border-gray-800">
+            <span className="text-[11px] font-semibold text-gray-400 mr-2">Demand Source:</span>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => setTrafficSource('simulation')}
+                className={`px-2.5 py-1 font-semibold rounded transition-colors ${trafficSource === 'simulation'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                Synthetic
+              </button>
+              <button
+                onClick={() => setTrafficSource('pune_historical')}
+                className={`px-2.5 py-1 font-semibold rounded transition-colors ${trafficSource === 'pune_historical'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                Pune Jan 17
+              </button>
+              {trafficSource === 'recorded_video' && (
+                <span className="px-2.5 py-1 font-semibold rounded bg-amber-600 text-white shadow-sm">
+                  Recorded Video
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Pune Historical Replay Status Bar */}
+      {trafficSource === 'pune_historical' && (
+        <div className="mb-3 text-[11px] bg-emerald-950/40 border border-emerald-800/70 text-emerald-300 px-2.5 py-2 rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+          <div className="flex items-center space-x-2">
+            <Database className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-bold">Traffic Source: Pune Historical Replay (Deterministic)</span>
+            <span className="text-[10px] bg-emerald-900/70 text-emerald-200 px-1.5 py-0.5 rounded font-mono">
+              Jan 17, 2023 ({state?.predictiveTimestamp || '09:00:00'})
+            </span>
+          </div>
+          <div className="text-[10px] font-mono text-emerald-200/90 flex items-center space-x-2">
+            <span>Due: {historicalReplayStats?.scheduledDue ?? 0}</span>
+            <span>Accepted: {historicalReplayStats?.accepted ?? 0}</span>
+            <span className="text-gray-400">(Road: {historicalReplayStats?.currentlyOnRoad ?? 0}, Backlog: {historicalReplayStats?.pendingBacklog ?? 0}, Exited: {historicalReplayStats?.completed ?? 0})</span>
+            <span className="text-emerald-400 font-bold bg-emerald-900/50 px-1 rounded">Loss: 0</span>
+          </div>
+        </div>
+      )}
 
       {/* Predictive Demand Status Indicator */}
       {strategy === 'predictive' && (

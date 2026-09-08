@@ -62,14 +62,14 @@ router.get('/bundled', (req, res) => {
     isBundled: true,
     defaultConfig: {
       region: [
-        [0.01, 0.50],
-        [0.40, 0.40],
-        [0.60, 0.85],
-        [0.01, 0.99]
+        [0.01, 0.35],
+        [0.85, 0.35],
+        [0.98, 0.95],
+        [0.01, 0.95]
       ],
       line: {
-        start: [0.02, 0.70],
-        end: [0.45, 0.70],
+        start: [0.02, 0.65],
+        end: [0.85, 0.65],
         incomingDirection: 'positive'
       },
       mappedDirection: 'S'
