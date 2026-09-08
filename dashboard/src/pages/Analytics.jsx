@@ -115,19 +115,19 @@ const Analytics = ({ onNavigate }) => {
           
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                 <BarChart3 className="text-[#F59E0B]" size={28} />
                 <span>Traffic Analytics</span>
               </h1>
 
               {/* Strict Data Source Indicator */}
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5">
+              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Data Source: Current Simulation
               </span>
 
               {/* Status Pill */}
-              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+              <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full border ${
                 isSimulationActive 
                   ? 'bg-blue-50 text-blue-700 border-blue-200' 
                   : 'bg-amber-50 text-amber-700 border-amber-200'
@@ -136,7 +136,7 @@ const Analytics = ({ onNavigate }) => {
               </span>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-sm sm:text-base text-slate-500 mt-1">
               Real-time analytics from the current simulation session. Zero mocked or fabricated numbers.
             </p>
           </div>
@@ -145,7 +145,7 @@ const Analytics = ({ onNavigate }) => {
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               onClick={() => setSpeed(isSimulationActive ? 0 : 1)}
-              className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
             >
               {isSimulationActive ? <Pause size={14} /> : <Play size={14} />}
               <span>{isSimulationActive ? 'Pause Sim' : 'Resume Sim'}</span>
@@ -153,7 +153,7 @@ const Analytics = ({ onNavigate }) => {
 
             <button
               onClick={resetSimulation}
-              className="px-3.5 py-2 text-xs font-bold rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 text-sm font-bold rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 flex items-center gap-1.5 transition cursor-pointer"
               title="Clear all session data and start fresh"
             >
               <RotateCcw size={14} />
@@ -162,7 +162,7 @@ const Analytics = ({ onNavigate }) => {
 
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-4 py-2 text-sm font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Compass size={14} />
               <span>Live Intersection</span>
@@ -172,7 +172,7 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Session Metadata Strip */}
-        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-xs text-slate-600">
+        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-sm text-slate-600">
           <div>
             <span className="text-slate-400 block font-medium text-[11px]">Session ID</span>
             <span className="font-mono font-bold text-slate-800">{session.sessionId}</span>
@@ -206,7 +206,7 @@ const Analytics = ({ onNavigate }) => {
             <Car size={16} className="text-blue-500" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               {session.totalVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">Generated in session</p>
@@ -220,7 +220,7 @@ const Analytics = ({ onNavigate }) => {
             <CheckCircle2 size={16} className="text-emerald-500" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-extrabold text-emerald-600 tracking-tight">
               {session.vehiclesProcessed}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">Cleared intersection</p>
@@ -234,7 +234,7 @@ const Analytics = ({ onNavigate }) => {
             <Activity size={16} className="text-indigo-500" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               {session.activeVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">In approach lanes</p>
@@ -249,11 +249,11 @@ const Analytics = ({ onNavigate }) => {
           </div>
           <div className="mt-2">
             {session.hasWaitTimeData ? (
-              <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 tracking-tight">
+              <span className="text-3xl sm:text-4xl font-extrabold text-amber-600 tracking-tight">
                 {session.averageWaitTime}s
               </span>
             ) : (
-              <span className="text-xs font-semibold text-slate-400 block py-1.5">
+              <span className="text-sm font-semibold text-slate-400 block py-1.5">
                 Insufficient data
               </span>
             )}
@@ -269,11 +269,11 @@ const Analytics = ({ onNavigate }) => {
           </div>
           <div className="mt-2">
             {session.peakActiveVehicles > 0 ? (
-              <span className="text-2xl sm:text-3xl font-extrabold text-purple-600 tracking-tight">
+              <span className="text-3xl sm:text-4xl font-extrabold text-purple-600 tracking-tight">
                 {session.peakActiveVehicles}
               </span>
             ) : (
-              <span className="text-xs font-semibold text-slate-400 block py-1.5">
+              <span className="text-sm font-semibold text-slate-400 block py-1.5">
                 Insufficient data
               </span>
             )}
@@ -288,7 +288,7 @@ const Analytics = ({ onNavigate }) => {
             <ShieldAlert size={16} className="text-red-500" />
           </div>
           <div className="mt-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-red-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-extrabold text-red-600 tracking-tight">
               {session.emergencyVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">
@@ -297,6 +297,64 @@ const Analytics = ({ onNavigate }) => {
           </div>
         </div>
 
+      </div>
+
+      {/* Derived Environmental & Commuter Benefit Audit */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Derived Environmental & Commuter Impact</h3>
+            <p className="text-sm text-slate-500">
+              Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: 45.0s)
+            </p>
+          </div>
+          <span className="text-xs bg-teal-50 text-teal-700 font-bold px-2.5 py-0.5 rounded-full">
+            DERIVED MATRIX
+          </span>
+        </div>
+
+        {session.sustainability.hasData ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
+              <div className="flex items-center justify-between text-emerald-700 text-sm font-bold">
+                <span>Fuel Conserved</span>
+                <Fuel size={16} />
+              </div>
+              <div className="text-3xl font-black text-emerald-800">
+                {session.sustainability.fuelSavedLiters} L
+              </div>
+              <p className="text-[10px] text-slate-500">Rate: 0.00028 L/sec delay reduction</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-100 space-y-1">
+              <div className="flex items-center justify-between text-teal-700 text-sm font-bold">
+                <span>CO₂ Avoided</span>
+                <Leaf size={16} />
+              </div>
+              <div className="text-3xl font-black text-teal-800">
+                {session.sustainability.co2ReducedKg} kg
+              </div>
+              <p className="text-[10px] text-slate-500">Factor: 2.31 kg CO₂ per liter</p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-100 space-y-1">
+              <div className="flex items-center justify-between text-amber-700 text-sm font-bold">
+                <span>Economic Value</span>
+                <IndianRupee size={16} />
+              </div>
+              <div className="text-3xl font-black text-amber-800">
+                ₹{session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}
+              </div>
+              <p className="text-[10px] text-slate-500">Retail fuel + commuter time value</p>
+            </div>
+          </div>
+        ) : (
+          <div className="py-8 text-center text-sm text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+            <AlertCircle size={24} className="mx-auto mb-1.5 text-slate-300" />
+            <p className="font-semibold text-slate-600">Insufficient Data for Environmental Audit</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Vehicles must pass through the intersection to compute measured fuel & emissions savings.</p>
+          </div>
+        )}
       </div>
 
       {/* ── Saved Benchmark Comparison Section (Phase 3B) ──────── */}
@@ -312,17 +370,17 @@ const Analytics = ({ onNavigate }) => {
 
       {!hasData && (
         <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-2xl">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-3xl">
             🚦
           </div>
-          <h3 className="text-lg font-bold text-slate-900">No traffic data yet</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-slate-900">No traffic data yet</h3>
+          <p className="text-sm text-slate-500 max-w-md mx-auto">
             Start the simulation or allow the current session to spawn vehicles. Analytics will automatically record and visualize live telemetry.
           </p>
           <div className="pt-2">
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-5 py-2.5 rounded-xl bg-[#07172E] text-white text-xs font-bold hover:bg-[#0D2E5C] transition"
+              className="px-5 py-2.5 rounded-xl bg-[#07172E] text-white text-sm font-bold hover:bg-[#0D2E5C] transition"
             >
               Open Live Intersection
             </button>
@@ -341,10 +399,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Traffic Volume Over Time</h3>
-                  <p className="text-[11px] text-slate-500">Active vs Processed vehicle counts across simulation ticks</p>
+                  <h3 className="text-base font-bold text-slate-900">Traffic Volume Over Time</h3>
+                  <p className="text-sm text-slate-500">Active vs Processed vehicle counts across simulation ticks</p>
                 </div>
-                <span className="text-[10px] bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full">
                   LINE CHART
                 </span>
               </div>
@@ -354,8 +412,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
@@ -385,7 +443,7 @@ const Analytics = ({ onNavigate }) => {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
                     Insufficient time-series data
                   </div>
                 )}
@@ -396,10 +454,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Traffic Throughput (Cars / Min)</h3>
-                  <p className="text-[11px] text-slate-500">Real processing velocity derived from actual passed vehicles</p>
+                  <h3 className="text-base font-bold text-slate-900">Traffic Throughput (Cars / Min)</h3>
+                  <p className="text-sm text-slate-500">Real processing velocity derived from actual passed vehicles</p>
                 </div>
-                <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">
                   RATE TREND
                 </span>
               </div>
@@ -409,8 +467,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} unit=" c/m" />
+                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} unit=" c/m" />
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
@@ -430,7 +488,7 @@ const Analytics = ({ onNavigate }) => {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
                     Insufficient throughput data
                   </div>
                 )}
@@ -446,10 +504,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Traffic by Lane / Direction</h3>
-                  <p className="text-[11px] text-slate-500">Actual vehicle counts generated vs processed per approach</p>
+                  <h3 className="text-base font-bold text-slate-900">Traffic by Lane / Direction</h3>
+                  <p className="text-sm text-slate-500">Actual vehicle counts generated vs processed per approach</p>
                 </div>
-                <span className="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-indigo-50 text-indigo-700 font-bold px-2.5 py-0.5 rounded-full">
                   BAR CHART
                 </span>
               </div>
@@ -459,8 +517,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={session.laneData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="label" stroke="#94A3B8" fontSize={10} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} />
+                      <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
@@ -473,7 +531,7 @@ const Analytics = ({ onNavigate }) => {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
                     No lane data recorded yet
                   </div>
                 )}
@@ -484,10 +542,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Vehicle Type Distribution</h3>
-                  <p className="text-[11px] text-slate-500">Actual classification breakdown from current session traffic</p>
+                  <h3 className="text-base font-bold text-slate-900">Vehicle Type Distribution</h3>
+                  <p className="text-sm text-slate-500">Actual classification breakdown from current session traffic</p>
                 </div>
-                <span className="text-[10px] bg-purple-50 text-purple-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-purple-50 text-purple-700 font-bold px-2.5 py-0.5 rounded-full">
                   PIE CHART
                 </span>
               </div>
@@ -519,7 +577,7 @@ const Analytics = ({ onNavigate }) => {
                       </PieChart>
                     </div>
 
-                    <div className="space-y-1.5 text-xs text-slate-600 sm:ml-4 flex-1">
+                    <div className="space-y-1.5 text-sm text-slate-600 sm:ml-4 flex-1">
                       {session.vehicleTypeData.map(item => (
                         <div key={item.type} className="flex items-center justify-between py-1 border-b border-slate-100">
                           <div className="flex items-center gap-2">
@@ -535,7 +593,7 @@ const Analytics = ({ onNavigate }) => {
                     </div>
                   </>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
                     No vehicle distribution data recorded
                   </div>
                 )}
@@ -551,10 +609,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Signal State Distribution</h3>
-                  <p className="text-[11px] text-slate-500">Actual time allocated to green phase per direction</p>
+                  <h3 className="text-base font-bold text-slate-900">Signal State Distribution</h3>
+                  <p className="text-sm text-slate-500">Actual time allocated to green phase per direction</p>
                 </div>
-                <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-amber-50 text-amber-700 font-bold px-2.5 py-0.5 rounded-full">
                   PHASE TIME
                 </span>
               </div>
@@ -586,7 +644,7 @@ const Analytics = ({ onNavigate }) => {
                       </PieChart>
                     </div>
 
-                    <div className="space-y-2 text-xs text-slate-600 sm:ml-4 flex-1">
+                    <div className="space-y-2 text-sm text-slate-600 sm:ml-4 flex-1">
                       {session.signalStateData.map(item => (
                         <div key={item.direction} className="flex items-center justify-between py-1 border-b border-slate-100">
                           <div className="flex items-center gap-2">
@@ -606,7 +664,7 @@ const Analytics = ({ onNavigate }) => {
                     </div>
                   </>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
                     No signal phase data recorded yet
                   </div>
                 )}
@@ -617,10 +675,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Queue & Congestion Trend</h3>
-                  <p className="text-[11px] text-slate-500">Real cumulative queue sizes observed in all 4 approaches</p>
+                  <h3 className="text-base font-bold text-slate-900">Queue & Congestion Trend</h3>
+                  <p className="text-sm text-slate-500">Real cumulative queue sizes observed in all 4 approaches</p>
                 </div>
-                <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-red-50 text-red-700 font-bold px-2.5 py-0.5 rounded-full">
                   QUEUE SIZES
                 </span>
               </div>
@@ -630,8 +688,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={10} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
+                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
                       />
@@ -642,7 +700,7 @@ const Analytics = ({ onNavigate }) => {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                  <div className="h-full flex items-center justify-center text-sm text-slate-400">
                     No queue trend data recorded yet
                   </div>
                 )}
@@ -651,106 +709,43 @@ const Analytics = ({ onNavigate }) => {
 
           </div>
 
-          {/* Row 4: Emergency Events Log & Derived ROI Matrix */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Emergency Vehicle Priority Log */}
-            <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Emergency Priority Log</h3>
-                  <p className="text-[11px] text-slate-500">Actual priority pre-emption activations</p>
-                </div>
-                <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full">
-                  {session.emergencyEvents.length} Events
-                </span>
+          {/* Row 4: Emergency Vehicle Priority Log */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Emergency Priority Log</h3>
+                <p className="text-sm text-slate-500">Actual priority pre-emption activations</p>
               </div>
-
-              <div className="space-y-2.5 max-h-[200px] overflow-y-auto pt-1">
-                {session.emergencyEvents.length > 0 ? (
-                  session.emergencyEvents.map(evt => (
-                    <div key={evt.id} className="p-2.5 rounded-xl bg-red-50/60 border border-red-100 flex items-center justify-between text-xs">
-                      <div>
-                        <div className="flex items-center gap-1.5 font-bold text-red-900">
-                          <span>🚨</span>
-                          <span>Lane {evt.direction} Preemption</span>
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-mono">{evt.timestamp} • {evt.id}</span>
-                      </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                        evt.resolved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-200 text-red-900 animate-pulse'
-                      }`}>
-                        {evt.resolved ? 'CLEARED' : 'ACTIVE'}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-8 text-center text-xs text-slate-400">
-                    <ShieldAlert size={28} className="mx-auto mb-2 text-slate-300" />
-                    No emergency vehicles detected in this session
-                  </div>
-                )}
-              </div>
+              <span className="text-xs bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full">
+                {session.emergencyEvents.length} Events
+              </span>
             </div>
 
-            {/* Derived Environmental & Commuter Benefit Audit */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Derived Environmental & Commuter Impact</h3>
-                  <p className="text-[11px] text-slate-500">
-                    Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: 45.0s)
-                  </p>
-                </div>
-                <span className="text-[10px] bg-teal-50 text-teal-700 font-bold px-2.5 py-0.5 rounded-full">
-                  DERIVED MATRIX
-                </span>
-              </div>
-
-              {session.sustainability.hasData ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
-                    <div className="flex items-center justify-between text-emerald-700 text-xs font-bold">
-                      <span>Fuel Conserved</span>
-                      <Fuel size={16} />
+            <div className="space-y-2.5 max-h-[200px] overflow-y-auto pt-1">
+              {session.emergencyEvents.length > 0 ? (
+                session.emergencyEvents.map(evt => (
+                  <div key={evt.id} className="p-2.5 rounded-xl bg-red-50/60 border border-red-100 flex items-center justify-between text-sm">
+                    <div>
+                      <div className="flex items-center gap-1.5 font-bold text-red-900">
+                        <span>🚨</span>
+                        <span>Lane {evt.direction} Preemption</span>
+                      </div>
+                      <span className="text-xs text-slate-500 font-mono">{evt.timestamp} • {evt.id}</span>
                     </div>
-                    <div className="text-2xl font-black text-emerald-800">
-                      {session.sustainability.fuelSavedLiters} L
-                    </div>
-                    <p className="text-[10px] text-slate-500">Rate: 0.00028 L/sec delay reduction</p>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      evt.resolved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-200 text-red-900 animate-pulse'
+                    }`}>
+                      {evt.resolved ? 'CLEARED' : 'ACTIVE'}
+                    </span>
                   </div>
-
-                  <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-100 space-y-1">
-                    <div className="flex items-center justify-between text-teal-700 text-xs font-bold">
-                      <span>CO₂ Avoided</span>
-                      <Leaf size={16} />
-                    </div>
-                    <div className="text-2xl font-black text-teal-800">
-                      {session.sustainability.co2ReducedKg} kg
-                    </div>
-                    <p className="text-[10px] text-slate-500">Factor: 2.31 kg CO₂ per liter</p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-100 space-y-1">
-                    <div className="flex items-center justify-between text-amber-700 text-xs font-bold">
-                      <span>Economic Value</span>
-                      <IndianRupee size={16} />
-                    </div>
-                    <div className="text-2xl font-black text-amber-800">
-                      ₹{session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}
-                    </div>
-                    <p className="text-[10px] text-slate-500">Retail fuel + commuter time value</p>
-                  </div>
-                </div>
+                ))
               ) : (
-                <div className="py-8 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
-                  <AlertCircle size={24} className="mx-auto mb-1.5 text-slate-300" />
-                  <p className="font-semibold text-slate-600">Insufficient Data for Environmental Audit</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Vehicles must pass through the intersection to compute measured fuel & emissions savings.</p>
+                <div className="py-8 text-center text-sm text-slate-400">
+                  <ShieldAlert size={28} className="mx-auto mb-2 text-slate-300" />
+                  No emergency vehicles detected in this session
                 </div>
               )}
             </div>
-
           </div>
 
         </div>
