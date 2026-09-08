@@ -3,6 +3,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { PythonShell } = require('python-shell');
 
+const videoRoutes = require('./routes/videoRoutes');
+const predictionRoutes = require('./routes/prediction');
+
 dotenv.config();
 
 const app = express();
@@ -10,6 +13,13 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+// Mount Video Intelligence routes
+app.use('/api/video', videoRoutes);
+
+// Mount Prediction routes
+app.use('/api/prediction', predictionRoutes);
+
 
 // Initialize Python simulation
 let pyshell = null;
@@ -80,6 +90,17 @@ app.post('/api/simulation/speed', (req, res) => {
   if (pyshell) {
     pyshell.send(`set_speed ${speed}`);
     res.json({ status: 'Speed updated' });
+  } else {
+    res.status(400).json({ error: 'Simulation not running' });
+  }
+});
+
+// Set simulation weather
+app.post('/api/simulation/weather', (req, res) => {
+  const { weather } = req.body;
+  if (pyshell) {
+    pyshell.send(`set_weather ${weather}`);
+    res.json({ status: 'Weather updated' });
   } else {
     res.status(400).json({ error: 'Simulation not running' });
   }
