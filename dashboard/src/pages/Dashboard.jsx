@@ -9,6 +9,7 @@ import ParkEnvironment from '../components/ParkEnvironment';
 import AIDecisionPanel from '../components/AIDecisionPanel';
 import StatCard from '../components/StatCard';
 import ChartPanel from '../components/ChartPanel';
+import WeatherEffects from '../components/WeatherEffects';
 import Loader from '../components/Loader';
 import { calculateEnvironmentalImpact } from '../utils/environmentalImpact';
 
@@ -543,6 +544,9 @@ const Dashboard = () => {
                 )}
             </AnimatePresence>
 
+            {/* Weather Visual Effects Layer (Rain & Fog) */}
+            <WeatherEffects weatherMode={state?.weather_mode || weatherMode || 'normal'} isFullscreen={isFullscreen} />
+
             {/* Queue counts per lane */}
             {state?.queues &&
               Object.entries(state.queues).map(([lane, count]) => (
@@ -561,6 +565,42 @@ const Dashboard = () => {
                   {lane}: {count}
                 </div>
               ))}
+
+            {/* Fullscreen Floating Controls (Weather & Exit) */}
+            {isFullscreen && (
+              <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#172333]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
+                {[
+                  { mode: 'normal', label: 'Clear', icon: Sun },
+                  { mode: 'rain', label: 'Rain', icon: CloudRain },
+                  { mode: 'fog', label: 'Fog', icon: CloudFog }
+                ].map(({ mode, label, icon: Icon }) => {
+                  const currentMode = (state?.weather_mode || weatherMode || 'normal').toLowerCase();
+                  const isActive = (mode === 'normal' && (currentMode === 'normal' || currentMode === 'clear')) || currentMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setWeather && setWeather(mode)}
+                      className={`px-3 py-1 text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer ${
+                        isActive
+                          ? 'bg-[#13B8B2] text-white shadow-xs'
+                          : 'text-slate-300 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <Icon size={12} />
+                      <span>{label}</span>
+                    </button>
+                  );
+                })}
+                <div className="w-[1px] h-4 bg-white/20 mx-1" />
+                <button
+                  onClick={toggleFullscreen}
+                  className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  title="Exit Fullscreen"
+                >
+                  <Minimize size={14} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Status & Control Rows directly below the intersection canvas */}
@@ -575,11 +615,12 @@ const Dashboard = () => {
               {/* Weather selector pills */}
               <div className="flex items-center p-0.5 rounded-full bg-[#F1F5F9] border border-[#E3EAF0]">
                 {[
-                  { mode: 'normal', label: 'Normal', icon: Sun },
+                  { mode: 'normal', label: 'Clear', icon: Sun },
                   { mode: 'rain', label: 'Rain', icon: CloudRain },
                   { mode: 'fog', label: 'Fog', icon: CloudFog }
                 ].map(({ mode, label, icon: Icon }) => {
-                  const isActive = (state?.weather_mode || weatherMode || 'normal') === mode;
+                  const currentMode = (state?.weather_mode || weatherMode || 'normal').toLowerCase();
+                  const isActive = (mode === 'normal' && (currentMode === 'normal' || currentMode === 'clear')) || currentMode === mode;
                   return (
                     <button
                       key={mode}
