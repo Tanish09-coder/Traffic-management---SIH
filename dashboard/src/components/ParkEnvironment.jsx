@@ -11,10 +11,44 @@ export const ParkEnvironment = ({ isFullscreen = false }) => {
   // Fullscreen: road width 160px (w-40), center box is 160px x 160px -> quadrants span 0 to calc(50% - 80px)
   const roadHalf = isFullscreen ? '80px' : '40px';
 
-  // Tree sizes: Big tree ~38-40px, Slightly larger small tree ~28px, Smaller tree ~24px
-  const bigTreeClass = isFullscreen ? 'w-14 h-14' : 'w-9.5 h-9.5';
-  const mediumSmallTreeClass = isFullscreen ? 'w-10 h-10' : 'w-7 h-7'; // slightly bigger (~28px)
-  const smallTreeClass = isFullscreen ? 'w-8 h-8' : 'w-6 h-6'; // compact (~24px)
+  // Sidewalk dimensions scaled proportionally:
+  // Normal: 14px (w-3.5), corner 20px (w-5)
+  // Fullscreen (2x): 28px (w-7), corner 40px (w-10)
+  const sidewalkWidth = isFullscreen ? 'w-7' : 'w-3.5';
+  const sidewalkHeight = isFullscreen ? 'h-7' : 'h-3.5';
+  const cornerSize = isFullscreen ? 'w-10 h-10' : 'w-5 h-5';
+  const cornerRadiusTL = isFullscreen ? 'rounded-br-3xl' : 'rounded-br-2xl';
+  const cornerRadiusTR = isFullscreen ? 'rounded-bl-3xl' : 'rounded-bl-2xl';
+  const cornerRadiusBL = isFullscreen ? 'rounded-tr-3xl' : 'rounded-tr-2xl';
+  const cornerRadiusBR = isFullscreen ? 'rounded-tl-3xl' : 'rounded-tl-2xl';
+
+  // Tree sizes scaled proportionally (maintains exact ~48% road width ratio):
+  // Normal: Big ~38px (w-9.5), Medium-Small ~28px (w-7), Small ~24px (w-6)
+  // Fullscreen (2x): Big ~80px (w-20), Medium-Small ~56px (w-14), Small ~48px (w-12)
+  const bigTreeClass = isFullscreen ? 'w-20 h-20' : 'w-9.5 h-9.5';
+  const mediumSmallTreeClass = isFullscreen ? 'w-14 h-14' : 'w-7 h-7';
+  const smallTreeClass = isFullscreen ? 'w-12 h-12' : 'w-6 h-6';
+
+  // Proportional horizontal distance of East & West trees from intersection center:
+  // Normal: 240px (~57% of quadrant length)
+  // Fullscreen: 480px (~55% of quadrant length)
+  const horizontalDist = isFullscreen ? '480px' : '240px';
+
+  // Distance of big trees from the horizontal road curb:
+  // Normal: 12px
+  // Fullscreen: 24px
+  const roadMargin = isFullscreen ? '24px' : '12px';
+
+  // Coordinates for the small trees along vertical roads:
+  // First tree:
+  const t1Offset = isFullscreen ? '90px' : '44px';
+  const t1Curb = isFullscreen ? '48px' : '24px';
+  // Second tree:
+  const t2Offset = isFullscreen ? '150px' : '72px';
+  const t2Curb = isFullscreen ? '52px' : '26px';
+  // Bottom-right tree:
+  const brOffset = isFullscreen ? '110px' : '56px';
+  const brCurb = isFullscreen ? '48px' : '24px';
 
   return (
     <div className="absolute inset-0 pointer-events-none select-none z-0 bg-[#D9DEE3]">
@@ -28,27 +62,30 @@ export const ParkEnvironment = ({ isFullscreen = false }) => {
         }}
       >
         {/* Sidewalks along road edges */}
-        <div className="absolute right-0 top-0 w-3.5 h-full bg-[#CBD2D9] border-l border-[#B4BDC5]" />
-        <div className="absolute bottom-0 left-0 w-full h-3.5 bg-[#CBD2D9] border-t border-[#B4BDC5]" />
-        <div className="absolute bottom-0 right-0 w-5 h-5 bg-[#CBD2D9] rounded-br-2xl" />
+        <div className={`absolute right-0 top-0 ${sidewalkWidth} h-full bg-[#CBD2D9] border-l border-[#B4BDC5]`} />
+        <div className={`absolute bottom-0 left-0 w-full ${sidewalkHeight} bg-[#CBD2D9] border-t border-[#B4BDC5]`} />
+        <div className={`absolute bottom-0 right-0 ${cornerSize} bg-[#CBD2D9] ${cornerRadiusTL}`} />
 
-        {/* Big Tree along West road - shifted further left (negative x direction) */}
+        {/* Big Tree along West road */}
         <img
           src={tree1}
           alt=""
-          className={`absolute bottom-2.5 right-48 sm:right-72 object-contain select-none pointer-events-none ${bigTreeClass}`}
+          style={{ right: horizontalDist, bottom: roadMargin }}
+          className={`absolute object-contain select-none pointer-events-none ${bigTreeClass}`}
         />
 
-        {/* Two small trees beside it along North road: shifted slightly left as well */}
+        {/* Two small trees beside it along North road */}
         <img
           src={tree4}
           alt=""
-          className={`absolute bottom-11 right-6 sm:right-7 object-contain select-none pointer-events-none ${mediumSmallTreeClass}`}
+          style={{ bottom: t1Offset, right: t1Curb }}
+          className={`absolute object-contain select-none pointer-events-none ${mediumSmallTreeClass}`}
         />
         <img
           src={tree4}
           alt=""
-          className={`absolute bottom-18 right-6.5 sm:right-7.5 object-contain select-none pointer-events-none ${smallTreeClass}`}
+          style={{ bottom: t2Offset, right: t2Curb }}
+          className={`absolute object-contain select-none pointer-events-none ${smallTreeClass}`}
         />
       </div>
 
@@ -61,15 +98,16 @@ export const ParkEnvironment = ({ isFullscreen = false }) => {
         }}
       >
         {/* Sidewalks along road edges */}
-        <div className="absolute left-0 top-0 w-3.5 h-full bg-[#CBD2D9] border-r border-[#B4BDC5]" />
-        <div className="absolute bottom-0 right-0 w-full h-3.5 bg-[#CBD2D9] border-t border-[#B4BDC5]" />
-        <div className="absolute bottom-0 left-0 w-5 h-5 bg-[#CBD2D9] rounded-bl-2xl" />
+        <div className={`absolute left-0 top-0 ${sidewalkWidth} h-full bg-[#CBD2D9] border-r border-[#B4BDC5]`} />
+        <div className={`absolute bottom-0 right-0 w-full ${sidewalkHeight} bg-[#CBD2D9] border-t border-[#B4BDC5]`} />
+        <div className={`absolute bottom-0 left-0 ${cornerSize} bg-[#CBD2D9] ${cornerRadiusTR}`} />
 
         {/* Tree along East road */}
         <img
           src={tree2}
           alt=""
-          className={`absolute bottom-3.5 left-48 sm:left-57 object-contain select-none pointer-events-none ${bigTreeClass}`}
+          style={{ left: horizontalDist, bottom: roadMargin }}
+          className={`absolute object-contain select-none pointer-events-none ${bigTreeClass}`}
         />
       </div>
 
@@ -82,27 +120,30 @@ export const ParkEnvironment = ({ isFullscreen = false }) => {
         }}
       >
         {/* Sidewalks along road edges */}
-        <div className="absolute right-0 bottom-0 w-3.5 h-full bg-[#CBD2D9] border-l border-[#B4BDC5]" />
-        <div className="absolute top-0 left-0 w-full h-3.5 bg-[#CBD2D9] border-b border-[#B4BDC5]" />
-        <div className="absolute top-0 right-0 w-5 h-5 bg-[#CBD2D9] rounded-tr-2xl" />
+        <div className={`absolute right-0 bottom-0 ${sidewalkWidth} h-full bg-[#CBD2D9] border-l border-[#B4BDC5]`} />
+        <div className={`absolute top-0 left-0 w-full ${sidewalkHeight} bg-[#CBD2D9] border-b border-[#B4BDC5]`} />
+        <div className={`absolute top-0 right-0 ${cornerSize} bg-[#CBD2D9] ${cornerRadiusBL}`} />
 
-        {/* Big Tree along West road - shifted further left (negative x direction) */}
+        {/* Big Tree along West road */}
         <img
           src={tree3}
           alt=""
-          className={`absolute top-2.5 right-48 sm:right-52 object-contain select-none pointer-events-none ${bigTreeClass}`}
+          style={{ right: horizontalDist, top: roadMargin }}
+          className={`absolute object-contain select-none pointer-events-none ${bigTreeClass}`}
         />
 
-        {/* Two small trees beside it along South road: shifted slightly left as well */}
+        {/* Two small trees beside it along South road */}
         <img
           src={tree4}
           alt=""
-          className={`absolute top-11 right-6 sm:right-7 object-contain select-none pointer-events-none ${mediumSmallTreeClass}`}
+          style={{ top: t1Offset, right: t1Curb }}
+          className={`absolute object-contain select-none pointer-events-none ${mediumSmallTreeClass}`}
         />
         <img
           src={tree4}
           alt=""
-          className={`absolute top-18 right-6.5 sm:right-7.5 object-contain select-none pointer-events-none ${smallTreeClass}`}
+          style={{ top: t2Offset, right: t2Curb }}
+          className={`absolute object-contain select-none pointer-events-none ${smallTreeClass}`}
         />
       </div>
 
@@ -115,22 +156,24 @@ export const ParkEnvironment = ({ isFullscreen = false }) => {
         }}
       >
         {/* Sidewalks along road edges */}
-        <div className="absolute left-0 bottom-0 w-3.5 h-full bg-[#CBD2D9] border-r border-[#B4BDC5]" />
-        <div className="absolute top-0 right-0 w-full h-3.5 bg-[#CBD2D9] border-b border-[#B4BDC5]" />
-        <div className="absolute top-0 left-0 w-5 h-5 bg-[#CBD2D9] rounded-tl-2xl" />
+        <div className={`absolute left-0 bottom-0 ${sidewalkWidth} h-full bg-[#CBD2D9] border-r border-[#B4BDC5]`} />
+        <div className={`absolute top-0 right-0 w-full ${sidewalkHeight} bg-[#CBD2D9] border-b border-[#B4BDC5]`} />
+        <div className={`absolute top-0 left-0 ${cornerSize} bg-[#CBD2D9] ${cornerRadiusBR}`} />
 
         {/* Small tree along South road */}
         <img
           src={tree5}
           alt=""
-          className={`absolute top-14 left-6 object-contain select-none pointer-events-none ${smallTreeClass}`}
+          style={{ top: brOffset, left: brCurb }}
+          className={`absolute object-contain select-none pointer-events-none ${smallTreeClass}`}
         />
 
         {/* Tree along East road */}
         <img
           src={tree2}
           alt=""
-          className={`absolute top-2.5 left-48 sm:left-52 object-contain select-none pointer-events-none ${bigTreeClass}`}
+          style={{ left: horizontalDist, top: roadMargin }}
+          className={`absolute object-contain select-none pointer-events-none ${bigTreeClass}`}
         />
       </div>
 
