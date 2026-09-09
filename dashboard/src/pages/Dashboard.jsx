@@ -304,19 +304,6 @@ const Dashboard = () => {
                 E →
               </div>
 
-              {/* Solid White Stop Bars right before crosswalks */}
-              <div className={`absolute left-1/2 transform -translate-x-1/2 bg-white/95 ${
-                isFullscreen ? 'top-[calc(50%-152px)] w-36 h-1' : 'top-[calc(50%-82px)] w-18 h-[2.5px]'
-              }`} />
-              <div className={`absolute left-1/2 transform -translate-x-1/2 bg-white/95 ${
-                isFullscreen ? 'top-[calc(50%+152px)] w-36 h-1' : 'top-[calc(50%+80px)] w-18 h-[2.5px]'
-              }`} />
-              <div className={`absolute top-1/2 transform -translate-y-1/2 bg-white/95 ${
-                isFullscreen ? 'left-[calc(50%-152px)] h-36 w-1' : 'left-[calc(50%-82px)] h-18 w-[2.5px]'
-              }`} />
-              <div className={`absolute top-1/2 transform -translate-y-1/2 bg-white/95 ${
-                isFullscreen ? 'left-[calc(50%+152px)] h-36 w-1' : 'left-[calc(50%+80px)] h-18 w-[2.5px]'
-              }`} />
 
               {/* Zebra Crosswalks */}
               {/* North Crosswalk */}
