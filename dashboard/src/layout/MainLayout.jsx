@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MoreVertical, ChevronRight } from 'lucide-react';
+import { MoreVertical, ChevronRight, Bell, ChevronDown } from 'lucide-react';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const [timeString, setTimeString] = useState('');
@@ -39,46 +39,69 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   }, []);
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊', desc: 'System Overview & Analytics' },
+    { id: 'dashboard', label: 'Dashboard', icon: '📊', desc: 'System Overview & Control' },
     { id: 'live-intersection', label: 'Live Intersection', icon: '🚦', desc: 'Real-time Simulation & Overrides' },
-    { id: 'traffic-intelligence', label: 'Traffic Intelligence', icon: '📹', desc: 'Video Vehicle Detection & Tracking' },
-    { id: 'analytics', label: 'Analytics', icon: '📈', desc: 'Efficiency & Sustainability Metrics' },
-    { id: 'about', label: 'About', icon: 'ℹ️', desc: 'Architecture & Features' }
+    { id: 'traffic-intelligence', label: 'Traffic Intelligence', icon: '📹', desc: 'Video Detection & Tracking' },
+    { id: 'analytics', label: 'Analytics', icon: '📈', desc: 'Efficiency & Sustainability' },
+    { id: 'about', label: 'About', icon: 'ℹ️', desc: 'Architecture & Docs' }
   ];
-
 
   const activeItem = navItems.find(item => item.id === currentPage) || navItems[0];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
-      {/* Top Header & Navigation Bar */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
+    <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: '#F5F8FA', color: '#172333' }}>
+      {/* Top Header matching reference screenshot */}
+      <header className="sticky top-0 z-50 bg-white shadow-xs" style={{ borderBottom: '1px solid #E3EAF0' }}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Left Section: 3-Dot Navigation Menu + Brand / Logo + Active Page */}
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              {/* 3-Dot Menu Button on Far Left Corner */}
-              <div className="relative" ref={menuRef}>
+          <div className="flex justify-between items-center h-14">
+            {/* Left Section: Green Dot + Traffic Light Icon + Title & Subtitle */}
+            <div className="flex items-center space-x-3">
+              {/* Green System Online Dot */}
+              <div className="w-2.5 h-2.5 rounded-full bg-[#22C55E] shadow-sm animate-pulse flex-shrink-0" />
+
+              {/* Traffic Signal Icon (Black Capsule with 3 Dots) */}
+              <div className="w-5 h-9 bg-[#172333] rounded-md flex flex-col items-center justify-between py-1 shadow-sm flex-shrink-0">
+                <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+                <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+                <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+              </div>
+
+              {/* Title & Subtitle */}
+              <div className="cursor-pointer select-none" onClick={() => onNavigate && onNavigate('dashboard')}>
+                <div className="flex items-center space-x-2">
+                  <h1 className="font-bold text-base sm:text-lg tracking-tight text-[#172333] leading-tight">
+                    Smart Traffic Management System
+                  </h1>
+                </div>
+                <p className="text-[11px] text-[#64748B] font-medium leading-none mt-0.5">
+                  Mumbai BKC Junction
+                </p>
+              </div>
+
+              {/* Navigation Menu Trigger */}
+              <div className="relative ml-2" ref={menuRef}>
                 <button
                   onClick={() => setIsMenuOpen(prev => !prev)}
-                  className={`p-2.5 rounded-xl border transition-all flex items-center justify-center ${
-                    isMenuOpen 
-                      ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-sm ring-2 ring-blue-100' 
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 shadow-sm'
+                  className={`p-1.5 rounded-lg border transition-all flex items-center justify-center cursor-pointer ${
+                    isMenuOpen
+                      ? 'border-[#13B8B2] ring-2 ring-[#13B8B2]/20 bg-[#F0FDFA] text-[#13B8B2]'
+                      : 'border-[#E3EAF0] hover:border-[#CBD5E1] text-[#64748B]'
                   }`}
                   aria-label="Navigation Menu"
-                  title="Navigation Menu"
+                  title="Switch Views"
                 >
-                  <MoreVertical size={20} className="stroke-[2.5]" />
+                  <MoreVertical size={16} />
                 </button>
 
-                {/* Floating Dropdown Menu (Left Aligned) */}
+                {/* Navigation Dropdown */}
                 {isMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-3.5 py-2 border-b border-slate-100">
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Navigation Menu</p>
+                  <div className="absolute left-0 mt-2 w-64 rounded-xl shadow-xl py-2 z-50 bg-white border border-[#E3EAF0]">
+                    <div className="px-3.5 py-1.5 border-b border-[#F1F5F9]">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+                        Dashboard Modules
+                      </p>
                     </div>
-                    <div className="p-1.5 space-y-1">
+                    <div className="p-1 space-y-0.5">
                       {navItems.map((item) => {
                         const isActive = currentPage === item.id;
                         return (
@@ -88,25 +111,25 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                               onNavigate && onNavigate(item.id);
                               setIsMenuOpen(false);
                             }}
-                            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center justify-between group ${
-                              isActive
-                                ? 'bg-blue-50/90 text-blue-700 font-semibold border border-blue-200/80 shadow-sm'
-                                : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
-                            }`}
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex items-center justify-between group cursor-pointer"
+                            style={{
+                              backgroundColor: isActive ? '#F0FDFA' : 'transparent',
+                              color: isActive ? '#0E8E89' : '#475569',
+                              fontWeight: isActive ? 600 : 400
+                            }}
                           >
-                            <div className="flex items-center space-x-3">
-                              <span className="text-lg">{item.icon}</span>
+                            <div className="flex items-center space-x-2.5">
+                              <span className="text-base">{item.icon}</span>
                               <div>
-                                <div className="text-sm font-medium text-slate-900 leading-tight flex items-center space-x-1.5">
-                                  <span>{item.label}</span>
-                                  {isActive && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                                  )}
+                                <div className="font-semibold text-[#172333] leading-tight">
+                                  {item.label}
                                 </div>
-                                <div className="text-[11px] text-slate-400 font-normal leading-tight mt-0.5">{item.desc}</div>
+                                <div className="text-[10px] text-[#94A3B8] leading-tight">
+                                  {item.desc}
+                                </div>
                               </div>
                             </div>
-                            <ChevronRight size={14} className={`transition-transform text-slate-400 group-hover:translate-x-0.5 ${isActive ? 'text-blue-600' : ''}`} />
+                            <ChevronRight size={12} className="text-[#94A3B8] group-hover:text-[#13B8B2] group-hover:translate-x-0.5 transition-transform" />
                           </button>
                         );
                       })}
@@ -114,37 +137,34 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                   </div>
                 )}
               </div>
-
-              {/* Logo / Brand */}
-              <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onNavigate && onNavigate('dashboard')}>
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 text-xl font-bold">
-                  🚦
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold text-lg text-slate-900 tracking-tight">Mumbai STMS</span>
-
-                  </div>
-                  <p className="text-xs text-slate-500 hidden md:block">Smart Traffic Management System • BKC Junction</p>
-                </div>
-              </div>
-
-              {/* Current Active Page Pill */}
-              <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50/80 border border-blue-200/80 text-xs font-semibold text-blue-700 shadow-sm">
-                <span>{activeItem.icon}</span>
-                <span>{activeItem.label}</span>
-              </div>
             </div>
 
-            {/* Live System Status & Clock */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-xs font-mono font-medium text-slate-600">{timeString || 'LIVE'}</div>
-                <div className="text-[10px] text-slate-400">IST (Mumbai)</div>
-              </div>
-              <div className="flex items-center space-x-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-xs font-semibold text-emerald-700 tracking-wide">SYSTEM ACTIVE</span>
+            {/* Right Section: Bell Notification + Admin Avatar/Profile */}
+            <div className="flex items-center space-x-4">
+              {/* Notification Bell */}
+              <button
+                className="relative p-1.5 text-[#64748B] hover:text-[#172333] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                title="Notifications"
+                onClick={() => {}}
+              >
+                <Bell size={18} />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#EF4444] rounded-full" />
+              </button>
+
+              {/* Admin Profile Area matching screenshot */}
+              <div className="flex items-center space-x-2 pl-2 border-l border-[#E3EAF0]">
+                <div className="w-8 h-8 rounded-full bg-[#13B8B2] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                  SA
+                </div>
+                <div className="hidden sm:block text-left select-none leading-tight">
+                  <div className="text-xs font-bold text-[#172333] flex items-center space-x-1">
+                    <span>System Admin</span>
+                    <ChevronDown size={12} className="text-[#94A3B8]" />
+                  </div>
+                  <div className="text-[10px] text-[#64748B]">
+                    Traffic Control
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -157,17 +177,17 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-auto py-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <footer className="mt-auto py-3 bg-white border-t border-[#E3EAF0]">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#94A3B8]">
           <div className="flex items-center space-x-2">
-            <span>🚦 Smart Traffic Management System (SIH Edition)</span>
+            <span>🚦 Smart Traffic Management System</span>
             <span>•</span>
             <span>AI Adaptive Signal Control</span>
           </div>
-          <div className="flex items-center space-x-4">
-            <span>Bandra-Kurla Complex (Junction 12A)</span>
+          <div className="flex items-center space-x-3">
+            <span className="font-semibold text-[#13B8B2]">System Online</span>
             <span>•</span>
-            <span className="text-emerald-600 font-medium">99.9% Sensor Uptime</span>
+            <span>{timeString}</span>
           </div>
         </div>
       </footer>

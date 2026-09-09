@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, Layers, AlertCircle, Clock, Database, PlayCircle } from 'lucide-react';
+import { Cpu, Layers, AlertCircle, Clock, Database, PlayCircle, Info, CheckCircle2, ArrowRight, Activity } from 'lucide-react';
 import { useSimulation } from '../context/SimulationContext';
 
 export const AIDecisionPanel = () => {
@@ -13,11 +13,11 @@ export const AIDecisionPanel = () => {
     activatePredictivePuneDemo,
     historicalReplayStats
   } = useSimulation();
+
   const {
     signal,
     pending_signal,
     phase,
-    signal_timer,
     active_green_duration,
     pending_green_duration,
     phase_remaining_sec,
@@ -28,142 +28,160 @@ export const AIDecisionPanel = () => {
     stopped_queues
   } = state || {};
 
-  const stagedStrategy = state.staged_strategy || strategy;
+  const stagedStrategy = state?.staged_strategy || strategy;
   const isStaged = stagedStrategy !== strategy;
 
-  return (
-    <div className="bg-[#18181B]/95 backdrop-blur-md border border-gray-800 rounded-xl p-4 shadow-xl text-white select-none">
-      {/* Header & Controls */}
-      <div className="flex flex-col gap-3 mb-3 pb-3 border-b border-gray-800">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className="flex items-center space-x-2">
-            <Cpu className="w-5 h-5 text-emerald-400" />
-            <div>
-              <h3 className="text-sm font-bold text-gray-100">Signal Optimization & Demand Control</h3>
-              <p className="text-[11px] text-gray-400">Independent control strategy and empirical demand replay</p>
-            </div>
-          </div>
+  // Max PCU for relative progress bar scaling
+  const maxPcu = Math.max(5, ...Object.values(queued_pcus || {}).map(v => Number(v) || 0));
 
-          {/* Quick SIH Demo Action */}
-          <button
-            onClick={activatePredictivePuneDemo}
-            className="flex items-center space-x-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md transition-all"
-            title="Preset: Set Traffic Source to Pune Historical & Strategy to Predictive Adaptive"
+  return (
+    <div
+      className="rounded-2xl p-5 shadow-sm select-none mb-4 bg-white"
+      style={{ border: '1px solid #E3EAF0' }}
+    >
+      {/* 1. Header & Quick SIH Action */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="flex items-center space-x-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: '#F0FDFA', border: '1px solid rgba(19,184,178,0.25)' }}
           >
-            <PlayCircle className="w-3.5 h-3.5" />
-            <span>Preset: Predictive + Pune Replay</span>
-          </button>
+            <Cpu className="w-5 h-5 text-[#13B8B2]" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[#172333]">
+              Signal Optimization & Demand Control
+            </h3>
+            <p className="text-xs text-[#64748B]">
+              Intelligent control of traffic signals with real-time demand prediction
+            </p>
+          </div>
         </div>
 
-        {/* Two Independent Control Bars */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-          {/* 1. Control Strategy */}
-          <div className="flex items-center justify-between bg-gray-900/90 px-2.5 py-1.5 rounded-lg border border-gray-800">
-            <span className="text-[11px] font-semibold text-gray-400 mr-2">Strategy:</span>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={() => setStrategy('fixed')}
-                className={`px-2.5 py-1 font-semibold rounded transition-colors ${strategy === 'fixed'
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
-                  }`}
-              >
-                Fixed
-              </button>
-              <button
-                onClick={() => setStrategy('adaptive')}
-                className={`px-2.5 py-1 font-semibold rounded transition-colors ${strategy === 'adaptive'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
-                  }`}
-              >
-                Adaptive
-              </button>
-              <button
-                onClick={() => setStrategy('predictive')}
-                className={`px-2.5 py-1 font-semibold rounded transition-colors ${strategy === 'predictive'
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
-                  }`}
-              >
-                Predictive
-              </button>
-            </div>
-          </div>
+        {/* Predict & Optimize Button matching screenshot */}
+        <button
+          onClick={activatePredictivePuneDemo}
+          className="flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-xl text-white shadow-sm transition-all hover:opacity-95 active:scale-95 cursor-pointer"
+          style={{ backgroundColor: '#13B8B2' }}
+          title="Preset: Set Traffic Source to Pune Historical & Strategy to Predictive Adaptive"
+        >
+          <PlayCircle className="w-4 h-4" />
+          <span>Predict & Optimize</span>
+          <span className="text-xs">▶</span>
+        </button>
+      </div>
 
-          {/* 2. Demand / Traffic Source */}
-          <div className="flex items-center justify-between bg-gray-900/90 px-2.5 py-1.5 rounded-lg border border-gray-800">
-            <span className="text-[11px] font-semibold text-gray-400 mr-2">Demand Source:</span>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={() => setTrafficSource('simulation')}
-                className={`px-2.5 py-1 font-semibold rounded transition-colors ${trafficSource === 'simulation'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
+      {/* 2. Dual Control Bars (Optimization Mode + Demand Source) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 py-2 px-3 rounded-xl bg-[#F8FAFC] border border-[#E3EAF0]">
+        {/* Optimization Mode */}
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-semibold text-[#64748B]">
+            Optimization Mode:
+          </span>
+          <div className="flex items-center space-x-1 p-1 rounded-full bg-[#EDF2F7]">
+            {[
+              { id: 'fixed', label: 'Fixed' },
+              { id: 'adaptive', label: 'Adaptive' },
+              { id: 'predictive', label: 'Predictive' }
+            ].map(({ id, label }) => {
+              const isActive = strategy === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setStrategy(id)}
+                  className={`px-3.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#13B8B2] text-white shadow-xs'
+                      : 'text-[#64748B] hover:text-[#172333]'
                   }`}
-              >
-                Synthetic
-              </button>
-              <button
-                onClick={() => setTrafficSource('pune_historical')}
-                className={`px-2.5 py-1 font-semibold rounded transition-colors ${trafficSource === 'pune_historical'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-200'
-                  }`}
-              >
-                Pune Jan 17
-              </button>
-              {trafficSource === 'recorded_video' && (
-                <span className="px-2.5 py-1 font-semibold rounded bg-amber-600 text-white shadow-sm">
-                  Recorded Video
-                </span>
-              )}
-            </div>
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Demand Source */}
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-semibold text-[#64748B]">
+            Demand Source:
+          </span>
+          <div className="flex items-center space-x-1 p-1 rounded-full bg-[#EDF2F7]">
+            <button
+              onClick={() => setTrafficSource('simulation')}
+              className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                trafficSource === 'simulation'
+                  ? 'bg-[#13B8B2] text-white shadow-xs'
+                  : 'text-[#64748B] hover:text-[#172333]'
+              }`}
+            >
+              Synthetic
+            </button>
+            <button
+              onClick={() => setTrafficSource('pune_historical')}
+              className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                trafficSource === 'pune_historical'
+                  ? 'bg-[#13B8B2] text-white shadow-xs'
+                  : 'text-[#64748B] hover:text-[#172333]'
+              }`}
+            >
+              Pune Jan 17
+            </button>
+            {trafficSource === 'recorded_video' && (
+              <span className="px-3 py-1 text-xs font-bold rounded-full bg-[#F59E0B] text-white">
+                Recorded Video
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Pune Historical Replay Status Bar */}
+      {/* Pune Historical Status Banner */}
       {trafficSource === 'pune_historical' && (
-        <div className="mb-3 text-[11px] bg-emerald-950/40 border border-emerald-800/70 text-emerald-300 px-2.5 py-2 rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A]">
           <div className="flex items-center space-x-2">
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
+            <Database className="w-3.5 h-3.5 text-[#22C55E]" />
             <span className="font-bold">Traffic Source: Pune Historical Replay (Deterministic)</span>
-            <span className="text-[10px] bg-emerald-900/70 text-emerald-200 px-1.5 py-0.5 rounded font-mono">
+            <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#DCFCE7] text-[#15803D]">
               Jan 17, 2023 ({state?.predictiveTimestamp || '09:00:00'})
             </span>
           </div>
-          <div className="text-[10px] font-mono text-emerald-200/90 flex items-center space-x-2">
+          <div className="text-[10px] font-mono flex items-center space-x-2 text-[#15803D]">
             <span>Due: {historicalReplayStats?.scheduledDue ?? 0}</span>
             <span>Accepted: {historicalReplayStats?.accepted ?? 0}</span>
-            <span className="text-gray-400">(Road: {historicalReplayStats?.currentlyOnRoad ?? 0}, Backlog: {historicalReplayStats?.pendingBacklog ?? 0}, Exited: {historicalReplayStats?.completed ?? 0})</span>
-            <span className="text-emerald-400 font-bold bg-emerald-900/50 px-1 rounded">Loss: 0</span>
+            <span className="text-[#94A3B8]">
+              (Road: {historicalReplayStats?.currentlyOnRoad ?? 0}, Backlog: {historicalReplayStats?.pendingBacklog ?? 0}, Exited: {historicalReplayStats?.completed ?? 0})
+            </span>
+            <span className="font-bold px-1.5 rounded text-[#22C55E] bg-[#F0FDF4]">Loss: 0</span>
           </div>
         </div>
       )}
 
-      {/* Predictive Demand Status Indicator */}
+      {/* Predictive Demand Indicator */}
       {strategy === 'predictive' && (
-        <div className="mb-3 text-[11px] bg-purple-950/40 border border-purple-800/70 text-purple-300 px-2.5 py-1.5 rounded-md flex items-center justify-between">
-          <div className="flex items-center space-x-1.5">
-            <span className={`w-2 h-2 rounded-full ${state?.predictiveStatus === 'fallback' ? 'bg-amber-400' : 'bg-purple-400 animate-pulse'}`}></span>
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center justify-between bg-[#FAF5FF] border border-[#E9D5FF] text-[#7C3AED]">
+          <div className="flex items-center space-x-2">
+            <span
+              className={`w-2 h-2 rounded-full ${state?.predictiveStatus === 'fallback' ? 'bg-[#F59E0B]' : 'bg-[#7C3AED] animate-pulse'}`}
+            />
             <span className="font-semibold">
               {state?.predictiveStatus === 'fallback'
                 ? 'Predictive Demand: Fallback to Current PCU'
-                : 'Predictive Demand: Active'}
+                : 'Predictive Demand: Active Fusion Model'}
             </span>
           </div>
           {state?.predictiveTimestamp && (
-            <span className="text-[10px] text-purple-400/80 font-mono">
-              Demo: {state.predictiveDemoDate || '2023-01-17'} {state.predictiveTimestamp}
+            <span className="text-[10px] font-mono text-[#A78BFA]">
+              {state.predictiveDemoDate || '2023-01-17'} {state.predictiveTimestamp}
             </span>
           )}
         </div>
       )}
 
-      {/* Staging warning if strategy changed mid-cycle */}
+      {/* Staged strategy warning */}
       {isStaged && (
-        <div className="mb-3 text-[11px] bg-amber-950/60 border border-amber-800 text-amber-300 px-2.5 py-1.5 rounded-md flex items-center space-x-1.5">
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Strategy change to <strong>{stagedStrategy}</strong> staged; applying at next phase boundary.</span>
         </div>
@@ -171,76 +189,136 @@ export const AIDecisionPanel = () => {
 
       {/* Extended Clearance status warning */}
       {clearance_status && (
-        <div className="mb-3 text-[11px] bg-red-950/80 border border-red-800 text-red-200 px-2.5 py-1.5 rounded-md flex items-center space-x-1.5 animate-pulse">
-          <Clock className="w-3.5 h-3.5 flex-shrink-0 text-red-400" />
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 animate-pulse bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B]">
+          <Clock className="w-3.5 h-3.5 flex-shrink-0 text-[#EF4444]" />
           <span>{clearance_status}</span>
         </div>
       )}
 
       {/* Backend mode warning */}
       {!useMock && (
-        <div className="mb-3 text-[11px] bg-blue-950/60 border border-blue-800 text-blue-300 px-2.5 py-1.5 rounded-md flex items-center space-x-1.5">
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#F0FDFA] border border-[#99F6E4] text-[#0E8E89]">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>Backend mode active. Local heuristic strategy controls are disabled.</span>
         </div>
       )}
 
-      {/* Live Phase & Controller Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <div className="bg-gray-900/60 p-2 rounded-lg border border-gray-800/80">
-          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Active Signal</span>
-          <div className="flex items-center space-x-1.5 mt-0.5">
-            <span className="text-base font-extrabold text-emerald-400">{signal || 'N'}</span>
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${phase === 'GREEN' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
-                phase === 'YELLOW' ? 'bg-amber-950 text-amber-300 border border-amber-800 animate-pulse' :
-                  'bg-red-950 text-red-300 border border-red-800'
-              }`}>
-              {phase}
+      {/* 3. 4 Signal Status Cards matching screenshot */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        {/* Active Signal */}
+        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E3EAF0]">
+          <div className="flex items-center space-x-1.5 mb-1">
+            <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+              Active Signal
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 mt-1">
+            <span className="text-xl font-extrabold text-[#13B8B2]">
+              {signal || 'E'}
+            </span>
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+              style={{
+                backgroundColor: phase === 'GREEN' ? '#DCFCE7' : phase === 'YELLOW' ? '#FEF3C7' : '#FEE2E2',
+                color: phase === 'GREEN' ? '#15803D' : phase === 'YELLOW' ? '#B45309' : '#DC2626'
+              }}
+            >
+              {phase || 'GREEN'}
             </span>
           </div>
         </div>
 
-        <div className="bg-gray-900/60 p-2 rounded-lg border border-gray-800/80">
-          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{phase_label || 'Remaining'}</span>
-          <div className="text-base font-extrabold text-gray-100 mt-0.5">
-            {clearance_status ? (
-              <span className="text-amber-400 text-xs">Clearing...</span>
-            ) : (
-              <span>{phase_remaining_sec ?? 0}s <span className="text-xs text-gray-400 font-normal">/ {active_green_duration || 30}s green</span></span>
-            )}
+        {/* Green Remaining */}
+        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E3EAF0]">
+          <div className="flex items-center space-x-1.5 mb-1">
+            <Clock className="w-3 h-3 text-[#64748B]" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+              {phase_label || 'Green Remaining'}
+            </span>
+          </div>
+          <div className="flex items-baseline space-x-1 mt-1">
+            <span className="text-xl font-extrabold text-[#172333]">
+              {clearance_status ? 'Clear' : `${phase_remaining_sec ?? 2}s`}
+            </span>
+            <span className="text-xs text-[#94A3B8]">
+              / {active_green_duration || 26}s cycle
+            </span>
           </div>
         </div>
 
-        <div className="bg-gray-900/60 p-2 rounded-lg border border-gray-800/80">
-          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Next Pending</span>
-          <div className="text-base font-extrabold text-cyan-400 mt-0.5">
-            {pending_signal || signal || 'N'} <span className="text-xs text-gray-400 font-normal">({pending_green_duration || 30}s)</span>
+        {/* Next Pending */}
+        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E3EAF0]">
+          <div className="flex items-center space-x-1.5 mb-1">
+            <ArrowRight className="w-3 h-3 text-[#13B8B2]" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+              Next Pending
+            </span>
+          </div>
+          <div className="flex items-baseline space-x-1 mt-1">
+            <span className="text-xl font-extrabold text-[#172333]">
+              {pending_signal || signal || 'E'}
+            </span>
+            <span className="text-xs text-[#94A3B8]">
+              ({pending_green_duration || 36}s)
+            </span>
           </div>
         </div>
 
-        <div className="bg-gray-900/60 p-2 rounded-lg border border-gray-800/80">
-          <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Strategy Mode</span>
-          <div className="text-xs font-bold text-gray-200 mt-1 capitalize">
-            {strategy}
+        {/* Strategy Mode */}
+        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E3EAF0]">
+          <div className="flex items-center space-x-1.5 mb-1">
+            <Activity className="w-3 h-3 text-[#64748B]" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+              Strategy Mode
+            </span>
+          </div>
+          <div className="text-base font-extrabold text-[#172333] capitalize mt-1.5">
+            {strategy || 'Adaptive'}
           </div>
         </div>
       </div>
 
-      {/* Approach Demand Breakdown */}
-      <div className="mb-3 bg-gray-900/40 p-2.5 rounded-lg border border-gray-800/60">
-        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider block mb-1.5">Approach Demand (PCUs / Visible Stopped + Upstream Backlog)</span>
-        <div className="grid grid-cols-4 gap-2 text-center text-xs">
+      {/* 4. Approach Demand (PCU) Cards matching screenshot */}
+      <div className="mb-4">
+        <span className="text-[10px] font-bold uppercase tracking-wider block mb-2 text-[#64748B]">
+          Approach Demand (PCU) / Vehicle Mapping • Upstream Backlog
+        </span>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {['N', 'S', 'E', 'W'].map(dir => {
             const backlog = state?.backlog_queues?.[dir] || 0;
             const visibleStopped = state?.visible_stopped_queues?.[dir] !== undefined
               ? state.visible_stopped_queues[dir]
               : Math.max(0, (stopped_queues?.[dir] || 0) - backlog);
+            const pcuVal = Number(queued_pcus?.[dir] ?? 0);
+            const isActive = signal === dir;
+            const progressPercent = Math.min(100, Math.max(8, (pcuVal / maxPcu) * 100));
+
             return (
-              <div key={dir} className={`p-1 rounded ${signal === dir ? 'bg-emerald-950/70 border border-emerald-700/60' : 'bg-gray-900/80'}`}>
-                <div className="font-bold text-gray-300">{dir}</div>
-                <div className="font-mono text-emerald-400 font-semibold">{queued_pcus?.[dir] ?? 0} PCU</div>
-                <div className="text-[10px] text-gray-400">
-                  ({visibleStopped} visible stopped{backlog > 0 ? ` + ${backlog} backlog` : ''})
+              <div
+                key={dir}
+                className={`p-3 rounded-xl transition-all duration-200 ${
+                  isActive
+                    ? 'bg-[#F0FDFA] border-2 border-[#13B8B2] shadow-xs'
+                    : 'bg-[#F8FAFC] border border-[#E3EAF0]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-extrabold text-[#64748B]">{dir}</span>
+                  <span className="text-xs font-bold text-[#13B8B2] font-mono">
+                    {pcuVal.toFixed(1)} PCU
+                  </span>
+                </div>
+                <div className="text-[10px] text-[#94A3B8] mb-2 truncate">
+                  ({visibleStopped} vehicles mapped{backlog > 0 ? ` + ${backlog} b/l` : ''})
+                </div>
+                {/* Horizontal Progress Bar */}
+                <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#13B8B2] rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
                 </div>
               </div>
             );
@@ -248,27 +326,27 @@ export const AIDecisionPanel = () => {
         </div>
       </div>
 
-      {/* Allocation Formula Snapshot Explanation */}
-      {decision?.allocationExplanation && (
-        <div className="mb-2 text-xs bg-indigo-950/60 border border-indigo-800/80 rounded-lg p-2 text-indigo-200 flex items-start space-x-2">
-          <Clock className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold text-gray-200">Allocation Snapshot: </span>
-            <span className="text-indigo-200 font-mono">{decision.allocationExplanation}</span>
-          </div>
+      {/* 5. Allocation Snapshot Strip matching screenshot */}
+      <div className="mb-2 text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDFA] border border-[#CCFBF1]">
+        <Info className="w-4 h-4 text-[#13B8B2] flex-shrink-0" />
+        <div className="truncate">
+          <span className="font-bold text-[#172333] mr-1.5">Allocation Snapshot:</span>
+          <span className="font-mono text-[#0E8E89]">
+            {decision?.allocationExplanation || 'Allocated from 10 PCU: 10s base + 10s + 1s = 21s.'}
+          </span>
         </div>
-      )}
+      </div>
 
-      {/* Decision Reason */}
-      {decision?.reason && (
-        <div className="text-xs bg-gray-900/80 border border-gray-800/90 rounded-lg p-2 text-gray-300 flex items-start space-x-2">
-          <Layers className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold text-gray-200">Recommendation Reason: </span>
-            <span className="text-gray-300">{decision.reason}</span>
-          </div>
+      {/* 6. Recommendation Reason Strip matching screenshot */}
+      <div className="text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDF4] border border-[#DCFCE7]">
+        <CheckCircle2 className="w-4 h-4 text-[#22C55E] flex-shrink-0" />
+        <div className="truncate">
+          <span className="font-bold text-[#172333] mr-1.5">Recommendation Reason:</span>
+          <span className="text-[#475569]">
+            {decision?.reason || 'Starvation rule enforced: E waiting 7s (exceeded max 6s wait limit of 6s).'}
+          </span>
         </div>
-      )}
+      </div>
     </div>
   );
 };

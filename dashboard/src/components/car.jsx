@@ -12,40 +12,42 @@ const getDeterministicHash = (str = '') => {
   return Math.abs(hash);
 };
 
-// Sedan color variations
+// Clean sedan palettes matching reference screenshot (Blue, White, Orange/Red, Light Blue, Slate)
 const SEDAN_PALETTES = [
-  { body: '#2563EB', roof: '#1D4ED8', window: '#93C5FD' }, // Blue (default)
-  { body: '#DC2626', roof: '#B91C1C', window: '#FECDD3' }, // Red
-  { body: '#16A34A', roof: '#15803D', window: '#BBF7D0' }, // Green
-  { body: '#D97706', roof: '#B45309', window: '#FDE68A' }, // Amber
-  { body: '#475569', roof: '#334155', window: '#CBD5E1' }, // Slate Grey
+  { body: '#2563EB', roof: '#1D4ED8', window: '#BFDBFE' }, // Blue
+  { body: '#FFFFFF', roof: '#E2E8F0', window: '#94A3B8' }, // White
+  { body: '#EA580C', roof: '#C2410C', window: '#FED7AA' }, // Orange
+  { body: '#3B82F6', roof: '#1D4ED8', window: '#DBEAFE' }, // Light Blue
+  { body: '#475569', roof: '#334155', window: '#CBD5E1' }, // Slate
 ];
 
 // Motorcycle color variations
 const BIKE_PALETTES = [
-  { color: '#0284C7', helmet: '#F8FAFC' }, // Blue / White helmet
-  { color: '#DC2626', helmet: '#1E293B' }, // Red / Dark helmet
-  { color: '#16A34A', helmet: '#FEF08A' }, // Green / Yellow helmet
-  { color: '#EA580C', helmet: '#F8FAFC' }, // Orange / White helmet
-  { color: '#9333EA', helmet: '#FDE047' }, // Purple / Hi-Vis helmet
-  { color: '#0F172A', helmet: '#EF4444' }, // Black / Red helmet
+  { color: '#0284C7', helmet: '#F8FAFC' },
+  { color: '#DC2626', helmet: '#1E293B' },
+  { color: '#16A34A', helmet: '#FEF08A' },
+  { color: '#EA580C', helmet: '#F8FAFC' },
+  { color: '#0F172A', helmet: '#EF4444' },
 ];
 
-// 1. Regular Sedan Car SVG
+// 1. Sleek, Compact Top-Down Sedan SVG
 const SedanSVG = ({ colorIndex = 0 }) => {
   const palette = SEDAN_PALETTES[colorIndex % SEDAN_PALETTES.length];
+  const isWhite = palette.body === '#FFFFFF';
+
   return (
     <svg
       viewBox="0 0 24 40"
-      className="w-full h-full drop-shadow-sm select-none"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 1.5px 2px rgba(0,0,0,0.35))' }}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* 4 Wheels */}
-      <rect x="0.2" y="6" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="6" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="0.2" y="28.5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="28.5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+      <rect x="0.5" y="6" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="6" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="0.5" y="29" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="29" width="2.4" height="5" rx="0.8" fill="#1E293B" />
 
       {/* Main Body */}
       <rect
@@ -55,81 +57,67 @@ const SedanSVG = ({ colorIndex = 0 }) => {
         height="36"
         rx="4.5"
         fill={palette.body}
-        stroke="#0F172A"
-        strokeWidth="0.8"
+        stroke={isWhite ? '#CBD5E1' : '#0F172A'}
+        strokeWidth="0.7"
       />
 
       {/* Side Mirrors */}
-      <rect x="0.8" y="11.5" width="1.8" height="2.8" rx="0.7" fill={palette.body} stroke="#0F172A" strokeWidth="0.4" />
-      <rect x="21.4" y="11.5" width="1.8" height="2.8" rx="0.7" fill={palette.body} stroke="#0F172A" strokeWidth="0.4" />
+      <rect x="0.8" y="11.5" width="1.8" height="2.5" rx="0.6" fill={palette.body} />
+      <rect x="21.4" y="11.5" width="1.8" height="2.5" rx="0.6" fill={palette.body} />
 
-      {/* Front Windshield with Center Divider */}
-      <rect x="4.5" y="10" width="15" height="5.5" rx="1.5" fill={palette.window} stroke="#0F172A" strokeWidth="0.5" />
-      <line x1="12" y1="10" x2="12" y2="15.5" stroke="#0F172A" strokeWidth="0.6" />
+      {/* Front Windshield */}
+      <rect x="4.5" y="9.5" width="15" height="5.5" rx="1.2" fill={palette.window} stroke="#334155" strokeWidth="0.4" />
 
       {/* Roof Section */}
-      <rect x="5" y="15.5" width="14" height="10" fill={palette.roof} />
+      <rect x="5.2" y="15" width="13.6" height="10.5" rx="0.8" fill={palette.roof} />
 
       {/* Rear Window */}
-      <rect x="4.5" y="25.5" width="15" height="4.5" rx="1.2" fill={palette.window} stroke="#0F172A" strokeWidth="0.5" />
+      <rect x="4.5" y="25.5" width="15" height="4.2" rx="1.2" fill={palette.window} stroke="#334155" strokeWidth="0.4" />
 
       {/* Headlights (Front / Top) */}
       <circle cx="5" cy="3.5" r="1.1" fill="#FEF08A" />
       <circle cx="19" cy="3.5" r="1.1" fill="#FEF08A" />
 
       {/* Taillights (Rear / Bottom) */}
-      <rect x="4" y="36.5" width="2.8" height="1.2" rx="0.5" fill="#EF4444" />
-      <rect x="17.2" y="36.5" width="2.8" height="1.2" rx="0.5" fill="#EF4444" />
+      <rect x="4" y="36.5" width="2.8" height="1.2" rx="0.4" fill="#EF4444" />
+      <rect x="17.2" y="36.5" width="2.8" height="1.2" rx="0.4" fill="#EF4444" />
     </svg>
   );
 };
 
-// 2. Bus / Larger Vehicle SVG
+// 2. Clean Top-Down Bus / Van SVG
 const BusSVG = () => {
   return (
     <svg
       viewBox="0 0 24 42"
-      className="w-full h-full drop-shadow-sm select-none"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.35))' }}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* 4 Wheels */}
-      <rect x="0.2" y="5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="0.2" y="31" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="31" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+      <rect x="0.5" y="5" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="5" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="0.5" y="31" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="31" width="2.4" height="5" rx="0.8" fill="#1E293B" />
 
-      {/* Main Bus Body */}
       <rect
         x="2.5"
         y="1.5"
         width="19"
         height="39"
         rx="3.5"
-        fill="#94A3B8"
-        stroke="#334155"
-        strokeWidth="0.8"
+        fill="#10B981"
+        stroke="#065F46"
+        strokeWidth="0.7"
       />
 
-      {/* Front & Rear Bumpers */}
-      <rect x="4.5" y="1.5" width="15" height="1.6" rx="0.5" fill="#475569" />
-      <rect x="4.5" y="38.9" width="15" height="1.6" rx="0.5" fill="#475569" />
-
-      {/* Front Windshield Strip */}
-      <rect x="4.5" y="4.8" width="15" height="5.2" rx="1.3" fill="#CBD5E1" stroke="#334155" strokeWidth="0.5" />
-      <line x1="12" y1="4.8" x2="12" y2="10" stroke="#334155" strokeWidth="0.6" />
-
-      {/* Roof Sunroof / Mullion Ribs */}
-      <rect x="5" y="11.8" width="14" height="20.5" rx="1" fill="#64748B" opacity="0.35" stroke="#475569" strokeWidth="0.5" />
-      <line x1="5" y1="16" x2="19" y2="16" stroke="#334155" strokeWidth="0.6" />
-      <line x1="5" y1="20.2" x2="19" y2="20.2" stroke="#334155" strokeWidth="0.6" />
-      <line x1="5" y1="24.4" x2="19" y2="24.4" stroke="#334155" strokeWidth="0.6" />
-      <line x1="5" y1="28.6" x2="19" y2="28.6" stroke="#334155" strokeWidth="0.6" />
-
+      {/* Front Windshield */}
+      <rect x="4.5" y="4.5" width="15" height="5.5" rx="1.2" fill="#E2E8F0" stroke="#065F46" strokeWidth="0.4" />
+      {/* Roof Body */}
+      <rect x="5" y="11.5" width="14" height="21" rx="1" fill="#059669" />
       {/* Rear Window */}
-      <rect x="4.5" y="34.5" width="15" height="3.2" rx="1" fill="#CBD5E1" stroke="#334155" strokeWidth="0.5" />
+      <rect x="4.5" y="34" width="15" height="3.5" rx="1" fill="#E2E8F0" stroke="#065F46" strokeWidth="0.4" />
 
-      {/* Headlights & Taillights */}
       <circle cx="4.8" cy="2.8" r="1.1" fill="#FEF08A" />
       <circle cx="19.2" cy="2.8" r="1.1" fill="#FEF08A" />
       <rect x="4" y="38.8" width="2.6" height="1.1" rx="0.4" fill="#EF4444" />
@@ -143,17 +131,16 @@ const AmbulanceSVG = () => {
   return (
     <svg
       viewBox="0 0 24 40"
-      className="w-full h-full drop-shadow-md select-none"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 2px 4px rgba(239,68,68,0.3))' }}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* 4 Wheels */}
-      <rect x="0.2" y="5.5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="5.5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="0.2" y="29" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="29" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+      <rect x="0.5" y="5.5" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="5.5" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="0.5" y="29" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="29" width="2.4" height="5" rx="0.8" fill="#1E293B" />
 
-      {/* White Body */}
       <rect
         x="2.5"
         y="1.5"
@@ -161,49 +148,25 @@ const AmbulanceSVG = () => {
         height="37"
         rx="4.5"
         fill="#FFFFFF"
-        stroke="#94A3B8"
-        strokeWidth="0.8"
+        stroke="#CBD5E1"
+        strokeWidth="0.7"
       />
 
-      {/* Side Mirrors */}
-      <rect x="0.8" y="11" width="1.8" height="2.8" rx="0.7" fill="#F8FAFC" stroke="#64748B" strokeWidth="0.4" />
-      <rect x="21.4" y="11" width="1.8" height="2.8" rx="0.7" fill="#F8FAFC" stroke="#64748B" strokeWidth="0.4" />
-
-      {/* Roof Light Bar with Alternating SVG <animate> Beacons */}
-      <rect x="6" y="2.5" width="12" height="3.2" rx="1" fill="#1E293B" />
-      <circle cx="8.5" cy="4.1" r="1.3" fill="#F59E0B">
-        <animate attributeName="opacity" values="1;0.2;1" dur="0.5s" repeatCount="indefinite" />
-        <animate attributeName="fill" values="#F59E0B;#EF4444;#F59E0B" dur="0.5s" repeatCount="indefinite" />
+      {/* Flashing Light Bar */}
+      <rect x="6" y="2.5" width="12" height="3" rx="1" fill="#1E293B" />
+      <circle cx="8.5" cy="4" r="1.2" fill="#EF4444">
+        <animate attributeName="opacity" values="1;0.2;1" dur="0.4s" repeatCount="indefinite" />
       </circle>
-      <circle cx="15.5" cy="4.1" r="1.3" fill="#EF4444">
-        <animate attributeName="opacity" values="0.2;1;0.2" dur="0.5s" repeatCount="indefinite" />
-        <animate attributeName="fill" values="#EF4444;#F59E0B;#EF4444" dur="0.5s" repeatCount="indefinite" />
+      <circle cx="15.5" cy="4" r="1.2" fill="#3B82F6">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="0.4s" repeatCount="indefinite" />
       </circle>
 
-      {/* Front Windshield */}
-      <rect x="4.5" y="7" width="15" height="5.2" rx="1.3" fill="#93C5FD" stroke="#3B82F6" strokeWidth="0.5" />
-      <line x1="12" y1="7" x2="12" y2="12.2" stroke="#1E40AF" strokeWidth="0.6" />
+      <rect x="4.5" y="7" width="15" height="5" rx="1.2" fill="#93C5FD" stroke="#3B82F6" strokeWidth="0.4" />
+      
+      {/* Red Cross */}
+      <rect x="7" y="16.5" width="10" height="2.8" rx="0.5" fill="#EF4444" />
+      <rect x="10.6" y="13" width="2.8" height="10" rx="0.5" fill="#EF4444" />
 
-      {/* Red Cross Marking on Roof */}
-      <rect x="7" y="16.5" width="10" height="3" rx="0.5" fill="#EF4444" />
-      <rect x="10.5" y="13" width="3" height="10" rx="0.5" fill="#EF4444" />
-
-      {/* AMBULANCE Text Label */}
-      <text
-        x="12"
-        y="27.5"
-        textAnchor="middle"
-        fill="#334155"
-        fontSize="2.5"
-        fontWeight="bold"
-        fontFamily="sans-serif"
-        letterSpacing="0.2"
-      >
-        AMBULANCE
-      </text>
-
-      {/* Rear Door Outline & Taillights */}
-      <line x1="12" y1="32" x2="12" y2="38" stroke="#CBD5E1" strokeWidth="0.6" />
       <rect x="3.8" y="37.2" width="2.4" height="1" rx="0.4" fill="#EF4444" />
       <rect x="17.8" y="37.2" width="2.4" height="1" rx="0.4" fill="#EF4444" />
     </svg>
@@ -215,17 +178,16 @@ const FireTruckSVG = () => {
   return (
     <svg
       viewBox="0 0 24 42"
-      className="w-full h-full drop-shadow-md select-none"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 2px 4px rgba(220,38,38,0.3))' }}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* 4 Wheels */}
-      <rect x="0.2" y="5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="0.2" y="31" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="31" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+      <rect x="0.5" y="5" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="5" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="0.5" y="31" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="31" width="2.4" height="5" rx="0.8" fill="#1E293B" />
 
-      {/* Red Body */}
       <rect
         x="2.5"
         y="1.5"
@@ -234,49 +196,24 @@ const FireTruckSVG = () => {
         rx="4"
         fill="#DC2626"
         stroke="#991B1B"
-        strokeWidth="0.8"
+        strokeWidth="0.7"
       />
 
-      {/* Side Mirrors */}
-      <rect x="0.8" y="11" width="1.8" height="2.8" rx="0.7" fill="#DC2626" stroke="#991B1B" strokeWidth="0.4" />
-      <rect x="21.4" y="11" width="1.8" height="2.8" rx="0.7" fill="#DC2626" stroke="#991B1B" strokeWidth="0.4" />
-
-      {/* Roof Light Bar with Alternating Beacons */}
-      <rect x="6" y="2.5" width="12" height="3.2" rx="1" fill="#1E293B" />
-      <circle cx="8.5" cy="4.1" r="1.3" fill="#EF4444">
-        <animate attributeName="opacity" values="1;0.2;1" dur="0.45s" repeatCount="indefinite" />
+      <rect x="5.5" y="2.5" width="13" height="3" rx="1" fill="#1E293B" />
+      <circle cx="8" cy="4" r="1.2" fill="#EF4444">
+        <animate attributeName="opacity" values="1;0.2;1" dur="0.3s" repeatCount="indefinite" />
       </circle>
-      <circle cx="15.5" cy="4.1" r="1.3" fill="#F59E0B">
-        <animate attributeName="opacity" values="0.2;1;0.2" dur="0.45s" repeatCount="indefinite" />
+      <circle cx="16" cy="4" r="1.2" fill="#F59E0B">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="0.3s" repeatCount="indefinite" />
       </circle>
 
-      {/* Front Windshield */}
-      <rect x="4.5" y="7" width="15" height="5.5" rx="1.3" fill="#FECDD3" stroke="#991B1B" strokeWidth="0.5" />
-      <line x1="12" y1="7" x2="12" y2="12.5" stroke="#991B1B" strokeWidth="0.6" />
-
-      {/* White Stripe with "FIRE" Label */}
-      <rect x="3.5" y="14.8" width="17" height="6" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.3" />
-      <text
-        x="12"
-        y="19.2"
-        textAnchor="middle"
-        fill="#DC2626"
-        fontSize="3.4"
-        fontWeight="bold"
-        fontFamily="sans-serif"
-        letterSpacing="0.4"
-      >
-        FIRE
-      </text>
-
-      {/* Rear Equipment Panel & Hoses */}
-      <rect x="4.5" y="23" width="15" height="12.5" rx="1" fill="#B91C1C" stroke="#7F1D1D" strokeWidth="0.5" />
-      <circle cx="8.5" cy="27.5" r="1.8" fill="#1E293B" stroke="#E2E8F0" strokeWidth="0.5" />
-      <circle cx="15.5" cy="27.5" r="1.8" fill="#1E293B" stroke="#E2E8F0" strokeWidth="0.5" />
-
-      {/* Lights */}
-      <rect x="3.8" y="38.8" width="2.6" height="1.1" rx="0.4" fill="#FEF08A" />
-      <rect x="17.6" y="38.8" width="2.6" height="1.1" rx="0.4" fill="#FEF08A" />
+      <rect x="4.5" y="6.5" width="15" height="5" rx="1.2" fill="#93C5FD" stroke="#1E40AF" strokeWidth="0.4" />
+      {/* Ladder Marking */}
+      <rect x="8" y="14" width="8" height="19" rx="0.5" fill="#E2E8F0" stroke="#64748B" strokeWidth="0.4" />
+      <line x1="8" y1="18" x2="16" y2="18" stroke="#64748B" strokeWidth="0.6" />
+      <line x1="8" y1="22" x2="16" y2="22" stroke="#64748B" strokeWidth="0.6" />
+      <line x1="8" y1="26" x2="16" y2="26" stroke="#64748B" strokeWidth="0.6" />
+      <line x1="8" y1="30" x2="16" y2="30" stroke="#64748B" strokeWidth="0.6" />
     </svg>
   );
 };
@@ -286,75 +223,37 @@ const PoliceSVG = () => {
   return (
     <svg
       viewBox="0 0 24 40"
-      className="w-full h-full drop-shadow-md select-none"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 2px 4px rgba(37,99,235,0.3))' }}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* 4 Wheels */}
-      <rect x="0.2" y="6" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="6" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="0.2" y="28.5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
-      <rect x="21.2" y="28.5" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+      <rect x="0.5" y="6" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="6" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="0.5" y="29" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="29" width="2.4" height="5" rx="0.8" fill="#1E293B" />
 
-      {/* Dark Navy Body */}
-      <rect
-        x="2.5"
-        y="2"
-        width="19"
-        height="36"
-        rx="4.5"
-        fill="#0F172A"
-        stroke="#020617"
-        strokeWidth="0.8"
-      />
+      <rect x="2.5" y="2" width="19" height="36" rx="4.5" fill="#FFFFFF" stroke="#0F172A" strokeWidth="0.7" />
+      {/* Police Blue/Black Doors */}
+      <rect x="2.5" y="14" width="3" height="12" fill="#1E293B" />
+      <rect x="18.5" y="14" width="3" height="12" fill="#1E293B" />
 
-      {/* Side Mirrors */}
-      <rect x="0.8" y="11" width="1.8" height="2.8" rx="0.7" fill="#0F172A" stroke="#020617" strokeWidth="0.4" />
-      <rect x="21.4" y="11" width="1.8" height="2.8" rx="0.7" fill="#0F172A" stroke="#020617" strokeWidth="0.4" />
-
-      {/* Roof Beacon Bar (Alternating Blue & Red) */}
-      <rect x="6.5" y="3.5" width="11" height="3" rx="1" fill="#020617" />
-      <circle cx="8.8" cy="5" r="1.2" fill="#3B82F6">
-        <animate attributeName="opacity" values="1;0.1;1" dur="0.4s" repeatCount="indefinite" />
+      {/* Light Bar */}
+      <rect x="6.5" y="14" width="11" height="2.8" rx="0.8" fill="#1E293B" />
+      <circle cx="8.5" cy="15.4" r="1.1" fill="#EF4444">
+        <animate attributeName="opacity" values="1;0.2;1" dur="0.4s" repeatCount="indefinite" />
       </circle>
-      <circle cx="15.2" cy="5" r="1.2" fill="#EF4444">
-        <animate attributeName="opacity" values="0.1;1;0.1" dur="0.4s" repeatCount="indefinite" />
+      <circle cx="15.5" cy="15.4" r="1.1" fill="#3B82F6">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="0.4s" repeatCount="indefinite" />
       </circle>
 
-      {/* Front Windshield */}
-      <rect x="4.5" y="8" width="15" height="5" rx="1.3" fill="#93C5FD" stroke="#1E293B" strokeWidth="0.5" />
-      <line x1="12" y1="8" x2="12" y2="13" stroke="#1E293B" strokeWidth="0.6" />
-
-      {/* White Roof Accent Strip */}
-      <rect x="4.5" y="14.5" width="15" height="7" rx="0.8" fill="#F8FAFC" />
-
-      {/* Rear Window */}
-      <rect x="4.5" y="23.5" width="15" height="3.8" rx="1.2" fill="#93C5FD" stroke="#1E293B" strokeWidth="0.5" />
-
-      {/* "POLICE" Text Label on Trunk */}
-      <text
-        x="12"
-        y="32.5"
-        textAnchor="middle"
-        fill="#FFFFFF"
-        fontSize="2.6"
-        fontWeight="bold"
-        fontFamily="sans-serif"
-        letterSpacing="0.3"
-      >
-        POLICE
-      </text>
-
-      {/* Headlights & Taillights */}
-      <circle cx="5" cy="3.5" r="1.1" fill="#FEF08A" />
-      <circle cx="19" cy="3.5" r="1.1" fill="#FEF08A" />
-      <rect x="4" y="36.5" width="2.8" height="1.2" rx="0.5" fill="#EF4444" />
-      <rect x="17.2" y="36.5" width="2.8" height="1.2" rx="0.5" fill="#EF4444" />
+      <rect x="4.5" y="9.5" width="15" height="5" rx="1.2" fill="#93C5FD" stroke="#334155" strokeWidth="0.4" />
+      <rect x="5.5" y="17.5" width="13" height="8" fill="#1E293B" />
+      <rect x="4.5" y="26" width="15" height="4" rx="1.2" fill="#93C5FD" stroke="#334155" strokeWidth="0.4" />
     </svg>
   );
 };
 
-// Shape Selector / Lookup
 const VEHICLE_RENDERERS = {
   car: ({ colorIndex }) => <SedanSVG colorIndex={colorIndex} />,
   bike: ({ colorIndex }) => {
@@ -379,7 +278,6 @@ const resolveVehicle = (id, type) => {
     return { kind: emergencyKinds[hash % emergencyKinds.length], colorIndex: hash };
   }
 
-  // Normal traffic distribution: 20% bus, 30% motorcycle, 50% sedan
   const mod = hash % 10;
   if (mod === 0 || mod === 5) {
     return { kind: 'bus', colorIndex: hash };
@@ -396,25 +294,20 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
   const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus';
   const isBike = vehicle.kind === 'bike';
 
-  // Calculate position and rotation based on lane
-  // Normal: Cars 11x19px, Bikes 9.5x17.5px (just smaller than cars)
-  // Fullscreen: Cars 22x38px, Bikes 19x35px (scaled for rich detail)
+  // Compact top-down vehicle dimensions (Cars: 10px x 18px, Bikes: 8.5px x 16px, Bus: 11px x 20px)
   const getStyles = () => {
     const baseStyles = {
       position: 'absolute',
       width: isFullscreen
-        ? (isLarge ? '24px' : isBike ? '19px' : '22px')
-        : (isLarge ? '12px' : isBike ? '9.5px' : '11px'),
+        ? (isLarge ? '22px' : isBike ? '17px' : '20px')
+        : (isLarge ? '11px' : isBike ? '8.5px' : '10px'),
       height: isFullscreen
-        ? (isLarge ? '42px' : isBike ? '35px' : '38px')
-        : (isLarge ? '21px' : isBike ? '17.5px' : '19px'),
+        ? (isLarge ? '40px' : isBike ? '33px' : '36px')
+        : (isLarge ? '20px' : isBike ? '16px' : '18px'),
     };
 
-    // In fullscreen, the container is huge but roads have a fixed pixel width.
-    // Percentage offsets (53%/47%) would put cars outside the road.
-    // Use calc(50% ± fixed offset) to keep cars in their lane.
-    const laneOffsetPos = isFullscreen ? 'calc(50% + 25px)' : '53%';
-    const laneOffsetNeg = isFullscreen ? 'calc(50% - 25px)' : '47%';
+    const laneOffsetPos = isFullscreen ? 'calc(50% + 24px)' : '53%';
+    const laneOffsetNeg = isFullscreen ? 'calc(50% - 24px)' : '47%';
 
     switch (lane) {
       case 'N':
