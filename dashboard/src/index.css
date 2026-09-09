@@ -697,3 +697,24 @@ div > .max-w-7xl > div:last-child {
   margin-left: 0 !important;
   margin-bottom: 0 !important;
 }
+
+/* 7. Fog Atmospheric Drift Animations */
+@keyframes fogDrift1 {
+  0% { transform: translate(-3%, -2%) scale(1); }
+  50% { transform: translate(3%, 2%) scale(1.04); }
+  100% { transform: translate(-3%, -2%) scale(1); }
+}
+
+@keyframes fogDrift2 {
+  0% { transform: translate(2%, 3%) scale(1.03); }
+  50% { transform: translate(-2%, -2%) scale(0.98); }
+  100% { transform: translate(2%, 3%) scale(1.03); }
+}
+
+.animate-fog-drift-1 {
+  animation: fogDrift1 24s ease-in-out infinite alternate;
+}
+
+.animate-fog-drift-2 {
+  animation: fogDrift2 32s ease-in-out infinite alternate;
+}
