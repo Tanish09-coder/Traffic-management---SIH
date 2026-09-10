@@ -831,7 +831,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                     ? 'bg-blue-50 text-blue-700 border-blue-200'
                     : 'bg-slate-100 text-slate-600 border-slate-200'
                 }`}>
-                  {videoReplayActive ? '🟢 Live Injected' : isPlaying ? '▶ Live Playback' : 'Offline Scan'}: {liveEventsCount} / {totalEventsCount}
+                  {videoReplayActive ? <><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1" /> Live Injected</> : isPlaying ? '▶ Live Playback' : 'Offline Scan'}: {liveEventsCount} / {totalEventsCount}
                 </span>
               </div>
 

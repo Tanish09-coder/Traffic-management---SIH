@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MoreVertical, ChevronRight, Bell, ChevronDown } from 'lucide-react';
+import { MoreVertical, ChevronRight, Bell, ChevronDown, LayoutDashboard, TrafficCone, Video, LineChart, Info } from 'lucide-react';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const [timeString, setTimeString] = useState('');
@@ -39,11 +39,11 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   }, []);
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊', desc: 'System Overview & Control' },
-    { id: 'live-intersection', label: 'Live Intersection', icon: '🚦', desc: 'Real-time Simulation & Overrides' },
-    { id: 'traffic-intelligence', label: 'Traffic Intelligence', icon: '📹', desc: 'Video Detection & Tracking' },
-    { id: 'analytics', label: 'Analytics', icon: '📈', desc: 'Efficiency & Sustainability' },
-    { id: 'about', label: 'About', icon: 'ℹ️', desc: 'Architecture & Docs' }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, desc: 'System Overview & Control' },
+    { id: 'live-intersection', label: 'Live Intersection', icon: TrafficCone, desc: 'Real-time Simulation & Overrides' },
+    { id: 'traffic-intelligence', label: 'Traffic Intelligence', icon: Video, desc: 'Video Detection & Tracking' },
+    { id: 'analytics', label: 'Analytics', icon: LineChart, desc: 'Efficiency & Sustainability' },
+    { id: 'about', label: 'About', icon: Info, desc: 'Architecture & Docs' }
   ];
 
   const activeItem = navItems.find(item => item.id === currentPage) || navItems[0];
@@ -119,7 +119,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                             }}
                           >
                             <div className="flex items-center space-x-2.5">
-                              <span className="text-base">{item.icon}</span>
+                              <item.icon size={18} />
                               <div>
                                 <div className="font-semibold text-[#172333] leading-tight">
                                   {item.label}
@@ -180,7 +180,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
       <footer className="mt-auto py-3 bg-white border-t border-[#E3EAF0]">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#94A3B8]">
           <div className="flex items-center space-x-2">
-            <span>🚦 Smart Traffic Management System</span>
+            <span className="flex items-center gap-1.5"><TrafficCone size={14} className="text-slate-700" /> Smart Traffic Management System</span>
             <span>•</span>
             <span>AI Adaptive Signal Control</span>
           </div>

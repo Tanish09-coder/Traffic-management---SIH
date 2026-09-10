@@ -1,34 +1,34 @@
 import { useState } from 'react';
-import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend 
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
 } from 'recharts';
-import { 
-  BarChart3, 
-  Compass, 
-  Clock, 
-  Activity, 
-  ShieldAlert, 
-  RotateCcw, 
-  CheckCircle2, 
-  AlertCircle, 
-  Layers, 
-  TrendingUp, 
-  Car, 
-  Timer, 
-  Fuel, 
-  Leaf, 
+import {
+  BarChart3,
+  Compass,
+  Clock,
+  Activity,
+  ShieldAlert,
+  RotateCcw,
+  CheckCircle2,
+  AlertCircle,
+  Layers,
+  TrendingUp,
+  Car,
+  Timer,
+  Fuel,
+  Leaf,
   IndianRupee,
   Play,
   Pause
@@ -39,13 +39,13 @@ import { BenchmarkComparison } from '../components/BenchmarkComparison';
 
 
 const Analytics = ({ onNavigate }) => {
-  const { 
-    state, 
-    metrics, 
-    analyticsSession, 
-    loading, 
-    simulationSpeed, 
-    setSpeed, 
+  const {
+    state,
+    metrics,
+    analyticsSession,
+    loading,
+    simulationSpeed,
+    setSpeed,
     resetSimulation,
     comparisonResult,
     comparisonStatus,
@@ -108,11 +108,11 @@ const Analytics = ({ onNavigate }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
-      
+
       {/* ── 1. Page Header & Session Control Strip ─────────────── */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          
+
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
@@ -127,11 +127,10 @@ const Analytics = ({ onNavigate }) => {
               </span>
 
               {/* Status Pill */}
-              <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full border ${
-                isSimulationActive 
-                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+              <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full border ${isSimulationActive
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
                   : 'bg-amber-50 text-amber-700 border-amber-200'
-              }`}>
+                }`}>
                 {isSimulationActive ? `Running (${simulationSpeed}x)` : 'Paused'}
               </span>
             </div>
@@ -198,7 +197,7 @@ const Analytics = ({ onNavigate }) => {
 
       {/* ── 2. Required KPI Cards (Current Session Data) ────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        
+
         {/* Total Vehicles */}
         <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -358,12 +357,12 @@ const Analytics = ({ onNavigate }) => {
       </div>
 
       {/* ── Saved Benchmark Comparison Section (Phase 3B) ──────── */}
-      <BenchmarkComparison 
-        data={comparisonResult} 
-        status={comparisonStatus} 
+      <BenchmarkComparison
+        data={comparisonResult}
+        status={comparisonStatus}
         error={comparisonError}
-        onRerun={rerunComparison} 
-        isLiveRun={videoReplayActive} 
+        onRerun={rerunComparison}
+        isLiveRun={videoReplayActive}
       />
 
       {/* ── 3. Empty State Guard if No Traffic Generated Yet ────── */}
@@ -391,10 +390,10 @@ const Analytics = ({ onNavigate }) => {
       {/* ── 4. Main Charts Grid ─────────────────────────────────── */}
       {hasData && (
         <div className="space-y-6">
-          
+
           {/* Row 1: Volume Over Time & Throughput Trend */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Chart 1: Traffic Volume Over Time */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
@@ -414,27 +413,27 @@ const Analytics = ({ onNavigate }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                       <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                         labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="activeVehicles" 
-                        name="Active in Lanes" 
-                        stroke="#2563EB" 
+                      <Line
+                        type="monotone"
+                        dataKey="activeVehicles"
+                        name="Active in Lanes"
+                        stroke="#2563EB"
                         strokeWidth={2.5}
                         dot={false}
                         isAnimationActive={false}
                         connectNulls={true}
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="processedVehicles" 
-                        name="Total Cleared" 
-                        stroke="#059669" 
+                      <Line
+                        type="monotone"
+                        dataKey="processedVehicles"
+                        name="Total Cleared"
+                        stroke="#059669"
                         strokeWidth={2.5}
                         dot={false}
                         isAnimationActive={false}
@@ -469,17 +468,17 @@ const Analytics = ({ onNavigate }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                       <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} unit=" c/m" />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                         labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="throughput" 
-                        name="Throughput (cars/min)" 
-                        stroke="#D97706" 
+                      <Line
+                        type="monotone"
+                        dataKey="throughput"
+                        name="Throughput (cars/min)"
+                        stroke="#D97706"
                         strokeWidth={2.5}
                         dot={{ fill: '#D97706', r: 3 }}
                         isAnimationActive={false}
@@ -499,7 +498,7 @@ const Analytics = ({ onNavigate }) => {
 
           {/* Row 2: Traffic by Lane & Vehicle Type Distribution */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Chart 3: Traffic by Lane / Direction (Bar Chart) */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
@@ -519,7 +518,7 @@ const Analytics = ({ onNavigate }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                       <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                         labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
@@ -569,7 +568,7 @@ const Analytics = ({ onNavigate }) => {
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
                           itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                           labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
@@ -604,7 +603,7 @@ const Analytics = ({ onNavigate }) => {
 
           {/* Row 3: Signal Phase State Distribution & Queue Trends */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Chart 5: Signal State Distribution */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
@@ -636,7 +635,7 @@ const Analytics = ({ onNavigate }) => {
                             <Cell key={`sig-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
                           itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                           labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
@@ -690,7 +689,7 @@ const Analytics = ({ onNavigate }) => {
                       <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                       <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
                       <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
@@ -732,9 +731,8 @@ const Analytics = ({ onNavigate }) => {
                       </div>
                       <span className="text-xs text-slate-500 font-mono">{evt.timestamp} • {evt.id}</span>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      evt.resolved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-200 text-red-900 animate-pulse'
-                    }`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${evt.resolved ? 'bg-emerald-100 text-emerald-800' : 'bg-red-200 text-red-900 animate-pulse'
+                      }`}>
                       {evt.resolved ? 'CLEARED' : 'ACTIVE'}
                     </span>
                   </div>

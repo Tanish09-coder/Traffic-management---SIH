@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Minimize, Sun, CloudRain, CloudFog, Video, BarChart2, ChevronDown, ChevronUp, Sliders, RotateCcw } from 'lucide-react';
+import { Maximize, Minimize, Sun, CloudRain, CloudFog, Video, BarChart2, ChevronDown, ChevronUp, Sliders, RotateCcw, Car as CarIcon, Clock, BarChart3, AlertTriangle, TrafficCone, Siren, PersonStanding } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
@@ -125,7 +125,7 @@ const Dashboard = () => {
             exit={{ opacity: 0, y: -10 }}
             className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl text-xs flex items-center space-x-2"
           >
-            <span>⚠️</span>
+            <AlertTriangle size={16} className="text-amber-500" />
             <span>{error}</span>
           </motion.div>
         )}
@@ -141,8 +141,9 @@ const Dashboard = () => {
             className="mb-4 p-3.5 bg-red-50 border-2 border-red-500 text-red-800 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs"
           >
             <div className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping" />
+            <Siren size={18} className="text-red-600" />
             <span>
-              🚨 EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
+              EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
             </span>
           </motion.div>
         )}
@@ -153,7 +154,7 @@ const Dashboard = () => {
         <StatCard
           title="VEHICLES PASSED"
           value={state?.cars_passed || 32}
-          icon="🚗"
+          icon={CarIcon}
           trend="↑ +12%"
           trendSubtext="vs. last 5 minutes"
           color="blue"
@@ -162,7 +163,7 @@ const Dashboard = () => {
           title="AVERAGE WAIT TIME"
           value={state?.avg_wait_time ? Math.round(state.avg_wait_time) : 31}
           unit="sec"
-          icon="⏱️"
+          icon={Clock}
           trend="↓ -18%"
           trendSubtext="vs. last 5 minutes"
           color="orange"
@@ -171,7 +172,7 @@ const Dashboard = () => {
           title="TOTAL THROUGHPUT"
           value={typeof metrics?.throughput === 'number' ? Math.round(metrics.throughput) : 18}
           unit="cars/min"
-          icon="📊"
+          icon={BarChart3}
           trend="↑ +6%"
           trendSubtext="vs. last 5 minutes"
           color="green"
@@ -180,7 +181,7 @@ const Dashboard = () => {
           title="EMERGENCY VEHICLES"
           value={metrics?.emergency_count || (state?.emergencyActive ? 1 : 0)}
           unit="active"
-          icon="⚠️"
+          icon={AlertTriangle}
           trend="— 0%"
           trendSubtext="vs. last 5 minutes"
           color="purple"
@@ -338,7 +339,7 @@ const Dashboard = () => {
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -386,7 +387,7 @@ const Dashboard = () => {
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -432,7 +433,7 @@ const Dashboard = () => {
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -478,7 +479,7 @@ const Dashboard = () => {
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -643,7 +644,7 @@ const Dashboard = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#F1F5F9]">
               {/* Manual clearance status */}
               <div className="flex items-center space-x-1 text-xs text-[#64748B]">
-                <span>🚦</span>
+                <TrafficCone size={16} className="text-slate-700" />
                 <span className="font-semibold text-[#172333]">Manual:</span>
                 <span>Yellow {state?.yellow_duration || 3}s → All-red {state?.all_red_duration || 1}s</span>
               </div>
@@ -659,7 +660,7 @@ const Dashboard = () => {
                 }`}
                 title="Dispatch emergency vehicle"
               >
-                <span>⚠️</span>
+                <AlertTriangle size={16} className="text-amber-500" />
                 <span>{state?.emergencyActive ? `EMERGENCY ACTIVE (${state?.emergencyDirection || ''})` : 'EMERGENCY MODE'}</span>
               </button>
             </div>
@@ -684,7 +685,7 @@ const Dashboard = () => {
             {/* 1. Current Signal */}
             <div className="p-2.5 rounded-xl bg-[#F0FDFA] border border-[#CCFBF1] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">🚦</span>
+                <TrafficCone size={16} className="text-slate-700" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#13B8B2]">
                     Current Signal
@@ -699,7 +700,7 @@ const Dashboard = () => {
             {/* 2. Active Roads */}
             <div className="p-2.5 rounded-xl bg-[#F0FDF4] border border-[#DCFCE7] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">🚗</span>
+                <CarIcon size={16} className="text-slate-600" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#16A34A]">
                     Active Roads
@@ -714,7 +715,7 @@ const Dashboard = () => {
             {/* 3. Wait Time */}
             <div className="p-2.5 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">⏱️</span>
+                <Clock size={16} className="text-slate-600" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#D97706]">
                     Wait Time

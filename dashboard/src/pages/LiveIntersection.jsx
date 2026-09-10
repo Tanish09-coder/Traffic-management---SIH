@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { MapPin, Target, Zap, Fuel, Clock, Leaf, IndianRupee, AlertTriangle, Siren, TrafficCone, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, CircleDot, PersonStanding, Hand, ShieldCheck, CheckCircle2, XCircle, Radio, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
@@ -6,6 +7,7 @@ import TrafficLight from '../components/TrafficLight';
 import PedestrianLight from '../components/PedestrianLight';
 import AIDecisionPanel from '../components/AIDecisionPanel';
 import Loader from '../components/Loader';
+import StatCard from '../components/StatCard';
 
 const LiveIntersection = () => {
   const { 
@@ -196,7 +198,7 @@ const LiveIntersection = () => {
               >
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">⚠️</span>
+                  <AlertTriangle size={20} className="text-amber-500" />
                   </div>
                   <h2 className="text-xl font-bold text-red-600 mb-2">MANUAL OVERRIDE WARNING</h2>
                   <p className="text-gray-700 text-sm">
@@ -206,7 +208,7 @@ const LiveIntersection = () => {
                 
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                   <div className="flex items-start space-x-2">
-                    <span className="text-yellow-600 text-sm">🚨</span>
+                    <Siren size={16} className="text-yellow-600" />
                     <div className="text-sm text-yellow-800">
                       <p className="font-semibold mb-1">MUMBAI TRAFFIC POLICE NOTICE:</p>
                       <ul className="list-disc list-inside space-y-1 text-xs">
@@ -264,8 +266,8 @@ const LiveIntersection = () => {
         <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-2 border-[#D97706] border-l-4 border-l-amber-500">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">🧠 Mumbai Smart Traffic Management System</h1>
-              <p className="text-sm text-blue-600 mt-1">📍 Bandra-Kurla Complex, Mumbai - Junction 12A</p>
+              <h1 className="text-3xl font-bold text-gray-900">Mumbai Smart Traffic Management System</h1>
+              <p className="text-sm text-blue-600 mt-1 flex items-center gap-1"><MapPin size={14} className="text-blue-600" /> Bandra-Kurla Complex, Mumbai - Junction 12A</p>
               
               {/* Target Achievement Indicator */}
               <div className="mt-3 flex items-center space-x-4">
@@ -274,7 +276,7 @@ const LiveIntersection = () => {
                     ? 'bg-green-100 text-green-800 border-green-200' 
                     : 'border-amber-300 bg-amber-50/80 text-amber-900'
                 }`}>
-                  <span className="mr-1">🎯</span>
+                  <Target size={14} className="mr-1" />
                   {targetAchieved ? 'Target Achieved!' : 'Working towards 30-35s target'}
                 </div>
                 <div className="text-sm text-gray-600">
@@ -318,8 +320,8 @@ const LiveIntersection = () => {
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
                   <div>
-                    <p className="font-semibold">
-                      🚨 MUMBAI MANUAL OVERRIDE ACTIVE
+                    <p className="font-semibold flex items-center gap-2">
+                      <Siren size={16} /> MUMBAI MANUAL OVERRIDE ACTIVE
                     </p>
                     <p className="text-sm">
                       Signal manually controlled • Auto-disable in {overrideStartTime ? 60 - Math.floor((Date.now() - overrideStartTime) / 1000) : 60}s
@@ -349,8 +351,8 @@ const LiveIntersection = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-orange-500 rounded-full animate-ping"></div>
-                  <p className="font-semibold">
-                    🚨 EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
+                  <p className="font-semibold flex items-center gap-2">
+                    <Siren size={16} className="text-red-600" /> EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
                   </p>
                 </div>
                 <div className="text-sm font-medium bg-orange-200 px-3 py-1 rounded">
@@ -366,7 +368,7 @@ const LiveIntersection = () => {
           <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="text-lg">⚡</span>
+                <Zap size={18} className="text-amber-600" />
                 <p className="font-medium">
                   Mumbai AI Detection: Heavy congestion in {highestQueueLane} direction ({state.queues[highestQueueLane]} vehicles)
                 </p>
@@ -380,73 +382,39 @@ const LiveIntersection = () => {
 
         {/* Mumbai Statistics Cards - Showing absolute improvements */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Fuel Saved</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {mumbaiStats.fuelSavedLiters.toFixed(1)}L
-                </p>
-                <p className="text-xs text-green-700 mt-1">
-                  ₹{(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} saved per hour
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                ⛽
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Time Saved</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {mumbaiStats.timeSavedMinutes.toFixed(0)} min
-                </p>
-                <p className="text-xs text-blue-700 mt-1">
-                  per hour
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                ⏰
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">CO₂ Reduced</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {mumbaiStats.co2ReducedKg.toFixed(1)} kg
-                </p>
-                <p className="text-xs text-purple-700 mt-1">
-                  per hour
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                🌱
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Savings</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  ₹{mumbaiStats.totalSavingsRupees.toFixed(0)}
-                </p>
-                <p className="text-xs text-orange-700 mt-1">
-                  per hour
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                💰
-              </div>
-            </div>
-          </div>
+          <StatCard
+            title="Fuel Saved"
+            value={mumbaiStats.fuelSavedLiters}
+            unit="L"
+            icon={Fuel}
+            color="green"
+            trend={`₹${(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} saved`}
+            trendSubtext="per hour"
+          />
+          <StatCard
+            title="Time Saved"
+            value={mumbaiStats.timeSavedMinutes}
+            unit="min"
+            icon={Clock}
+            color="blue"
+            trendSubtext="per hour"
+          />
+          <StatCard
+            title="CO2 Reduced"
+            value={mumbaiStats.co2ReducedKg}
+            unit="kg"
+            icon={Leaf}
+            color="purple"
+            trendSubtext="per hour"
+          />
+          <StatCard
+            title="Total Savings"
+            value={mumbaiStats.totalSavingsRupees}
+            valuePrefix="₹"
+            icon={IndianRupee}
+            color="orange"
+            trendSubtext="per hour"
+          />
         </div>
 
         {/* Strategy & AI Decision Panel */}
@@ -458,7 +426,7 @@ const LiveIntersection = () => {
         <div className="mb-8 bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">🚦 Mumbai Traffic Control Override</h3>
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2"><TrafficCone size={18} /> Mumbai Traffic Control Override</h3>
               <p className="text-sm text-gray-600">Emergency traffic control - Use only when necessary</p>
             </div>
             <div className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
@@ -476,7 +444,7 @@ const LiveIntersection = () => {
                 titleColor: '#1E40AF',
                 badgeBg: '#2563EB',
                 badgeText: '#FFFFFF',
-                arrow: '⬆️'
+                arrow: <ArrowUp size={16} />
               },
               {
                 direction: 'E',
@@ -486,7 +454,7 @@ const LiveIntersection = () => {
                 titleColor: '#065F46',
                 badgeBg: '#22C55E',
                 badgeText: '#FFFFFF',
-                arrow: '➡️'
+                arrow: <ArrowRight size={16} />
               },
               {
                 direction: 'S',
@@ -496,7 +464,7 @@ const LiveIntersection = () => {
                 titleColor: '#9A3412',
                 badgeBg: '#F97316',
                 badgeText: '#FFFFFF',
-                arrow: '⬇️'
+                arrow: <ArrowDown size={16} />
               },
               {
                 direction: 'W',
@@ -506,7 +474,7 @@ const LiveIntersection = () => {
                 titleColor: '#581C87',
                 badgeBg: '#A855F7',
                 badgeText: '#FFFFFF',
-                arrow: '⬅️'
+                arrow: <ArrowLeft size={16} />
               }
             ].map(({ direction, location, bg, labelColor, titleColor, badgeBg, badgeText, arrow }) => {
               const isSelected = state?.signal === direction;
@@ -557,7 +525,7 @@ const LiveIntersection = () => {
         {/* Intelligent System Status */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            🧠 AI Traffic Analysis {overrideActive && <span className="text-red-500 text-sm">(Override Active)</span>}
+            AI Traffic Analysis {overrideActive && <span className="text-red-500 text-sm">(Override Active)</span>}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {['N', 'S', 'E', 'W'].map(direction => {
@@ -590,9 +558,9 @@ const LiveIntersection = () => {
                       )}
                     </div>
                     <div className="text-right">
-                      {isActive && <span className="text-2xl">🟢</span>}
-                      {isHighest && !isActive && <span className="text-2xl">⚡</span>}
-                      {!isActive && !isHighest && <span className="text-2xl">🔴</span>}
+                      {isActive && <CheckCircle2 size={20} className="text-emerald-500" />}
+                      {isHighest && !isActive && <Zap size={16} className="text-amber-500" />}
+                      {!isActive && !isHighest && <CircleDot size={20} className="text-red-500" />}
                     </div>
                   </div>
                 </div>
@@ -654,7 +622,7 @@ const LiveIntersection = () => {
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -684,7 +652,7 @@ const LiveIntersection = () => {
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -712,7 +680,7 @@ const LiveIntersection = () => {
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -740,7 +708,7 @@ const LiveIntersection = () => {
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -824,7 +792,7 @@ const LiveIntersection = () => {
             </div>
             {state?.emergencyActive && (
               <div className="bg-orange-600 text-white px-6 py-3 rounded-xl animate-pulse shadow-lg">
-                <span className="text-lg font-semibold">🚨 EMERGENCY MODE</span>
+                <span className="text-lg font-semibold flex items-center gap-2"><Siren size={18} /> EMERGENCY MODE</span>
               </div>
             )}
           </div>
@@ -834,7 +802,7 @@ const LiveIntersection = () => {
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border-l-4 border-emerald-500">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <span className="text-2xl">🚶‍♂️</span>
+              <PersonStanding size={20} className="text-slate-700" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">
                   Automated Pedestrian Crosswalk Intelligence
@@ -845,8 +813,8 @@ const LiveIntersection = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                🛡️ 100% Zero-Conflict Active
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                <ShieldCheck size={16} className="text-emerald-600" /> 100% Zero-Conflict Active
               </span>
             </div>
           </div>
@@ -885,16 +853,16 @@ const LiveIntersection = () => {
                           ? 'bg-emerald-600 text-white shadow-xs'
                           : 'bg-slate-300 text-slate-700'
                     }`}>
-                      {state?.emergencyActive ? '✋ CLEAR' : isWalk ? '🚶 WALK' : '✋ WAIT'}
+                      {state?.emergencyActive ? <><Hand size={16} className="inline" /> CLEAR</> : isWalk ? <><PersonStanding size={16} className="inline" /> WALK</> : <><Hand size={16} className="inline" /> WAIT</>}
                     </span>
                   </div>
 
                   <p className="text-xs text-gray-600">
                     {state?.emergencyActive
-                      ? '🚨 Emergency corridor priority — Crossing held'
+                      ? <span className="flex items-center gap-1"><Siren size={14} /> Emergency corridor priority — Crossing held</span>
                       : isWalk
-                        ? `✅ Safe to walk (${laneType} halted)`
-                        : `⛔ Stopped — ${state?.signal} vehicular flow active`}
+                        ? <span className="flex items-center gap-1"><CheckCircle2 size={14} className="text-emerald-600" /> Safe to walk ({laneType} halted)</span>
+                        : <span className="flex items-center gap-1"><XCircle size={14} className="text-red-600" /> Stopped — {state?.signal} vehicular flow active</span>}
                   </p>
                 </div>
               );
@@ -941,7 +909,7 @@ const LiveIntersection = () => {
                   useMock ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                🧠 AI Simulation
+                AI Simulation
               </button>
               {switchToBackend && (
                 <button
@@ -950,7 +918,7 @@ const LiveIntersection = () => {
                     !useMock ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  📡 Live Data
+                  <Radio size={14} className="inline mr-1" /> Live Data
                 </button>
               )}
             </div>
@@ -981,7 +949,7 @@ const LiveIntersection = () => {
                 }`}
                 title="Dispatch emergency vehicle (Random approach)"
               >
-                {state?.emergencyActive ? `🚨 Emergency Active (${state?.emergencyDirection || ''})` : '🚨 Emergency Mode'}
+                {state?.emergencyActive ? <><Siren size={14} className="inline mr-1" /> Emergency Active ({state?.emergencyDirection || ''})</> : <><Siren size={14} className="inline mr-1" /> Emergency Mode</>}
               </button>
             )}
             
@@ -990,7 +958,7 @@ const LiveIntersection = () => {
                 onClick={resetSimulation}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600"
               >
-                🔄 Reset System
+                <RotateCcw size={16} className="inline mr-1" /> Reset System
               </button>
             )}
           </div>

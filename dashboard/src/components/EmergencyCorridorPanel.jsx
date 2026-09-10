@@ -5,7 +5,8 @@ import {
   CheckCircle2, 
   Radio,
   Clock,
-  RotateCcw
+  RotateCcw,
+  Zap
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
 
@@ -145,7 +146,7 @@ export const EmergencyCorridorPanel = () => {
                       {junction?.name.split(' ')[0]}
                     </span>
                     <span className="text-[10px] font-mono text-slate-500">
-                      {isCurrent ? '⚡ PASSING' : isPassed ? 'CLEARED' : 'LOCKED'}
+                      {isCurrent ? <><Zap size={14} className="inline" /> PASSING</> : isPassed ? 'CLEARED' : 'LOCKED'}
                     </span>
                   </div>
                 </div>

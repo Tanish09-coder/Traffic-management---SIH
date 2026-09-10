@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Hand, PersonStanding } from 'lucide-react';
 
 /**
  * Realistic Compact Pedestrian Signal Light Head
@@ -26,7 +27,7 @@ const PedestrianLight = ({ status = 'STOP', isFullscreen = false, className = ''
           style={{ height: '48%' }}
         >
           <span className={isFullscreen ? 'text-[9px] leading-none' : 'text-[6px] leading-none font-bold'}>
-            ✋
+            <Hand size={16} />
           </span>
         </motion.div>
 
@@ -42,7 +43,7 @@ const PedestrianLight = ({ status = 'STOP', isFullscreen = false, className = ''
           transition={{ duration: 1.2, repeat: Infinity }}
         >
           <span className={isFullscreen ? 'text-[9px] leading-none' : 'text-[6px] leading-none font-bold'}>
-            🚶‍♀️
+            <PersonStanding size={16} />
           </span>
         </motion.div>
       </div>
