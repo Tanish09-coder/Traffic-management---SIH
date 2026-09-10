@@ -55,22 +55,22 @@ const StatCard = ({
     }
   }
 
-  // Icon badge colors matching government palette
-  let iconBg = '#EAF3F8';
-  let iconColor = '#1D5D91';
+  // Icon badge colors matching screenshot
+  let iconBg = '#F1F5F9';
+  let iconColor = '#475569';
 
   if (titleLower.includes('passed') || color === 'blue') {
-    iconBg = '#EAF3F8';
-    iconColor = '#1D5D91';
+    iconBg = '#F1F5F9';
+    iconColor = '#475569';
   } else if (titleLower.includes('wait') || color === 'orange') {
-    iconBg = '#FFF8E7';
-    iconColor = '#D98B19';
+    iconBg = '#FFFBEB';
+    iconColor = '#F59E0B';
   } else if (titleLower.includes('throughput') || color === 'green') {
-    iconBg = '#EBF7EE';
-    iconColor = '#198754';
+    iconBg = '#F0FDF4';
+    iconColor = '#22C55E';
   } else if (titleLower.includes('emergency') || color === 'purple' || color === 'red') {
-    iconBg = '#FDF2F2';
-    iconColor = '#B42318';
+    iconBg = '#FAF5FF';
+    iconColor = '#8B5CF6';
   }
 
   const numValue = Number(value);
@@ -82,34 +82,34 @@ const StatCard = ({
 
   return (
     <motion.div
-      className="bg-white rounded-lg p-4 shadow-xs transition-all duration-200"
-      style={{ border: '1px solid #D6E0E7' }}
-      whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(18, 59, 99, 0.08)' }}
+      className="bg-white rounded-2xl p-4 shadow-sm transition-all duration-200"
+      style={{ border: '1px solid #E3EAF0' }}
+      whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
       transition={{ duration: 0.15 }}
     >
-      <div className="flex items-center space-x-2.5 mb-2">
+      <div className="flex items-center space-x-2.5 mb-2.5">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center text-xs flex-shrink-0"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0"
           style={{ backgroundColor: iconBg, color: iconColor }}
         >
-          <Icon size={18} />
+          <Icon size={20} />
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[#123B63]">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
           {title}
         </span>
       </div>
 
-      <div className="flex items-baseline space-x-1.5 mb-1.5">
+      <div className="flex items-baseline space-x-1.5 mb-2">
         <span
           className="text-3xl font-extrabold tracking-tight"
           style={{
-            color: titleLower.includes('wait') ? '#D98B19' : '#17324D'
+            color: titleLower.includes('wait') ? '#EA580C' : '#172333'
           }}
         >
           {valuePrefix}{formattedValue}
         </span>
         {unit && (
-          <span className="text-xs font-semibold text-[#526778]">
+          <span className="text-xs font-semibold text-[#64748B]">
             {unit}
           </span>
         )}
@@ -123,7 +123,7 @@ const StatCard = ({
               {defaultTrend}
             </span>
           )}
-          <span className="text-[11px] text-[#718392]">
+          <span className="text-[11px] text-[#94A3B8]">
             {trendSubtext}
           </span>
         </div>

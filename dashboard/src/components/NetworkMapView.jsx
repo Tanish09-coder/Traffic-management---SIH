@@ -18,31 +18,31 @@ export const NetworkMapView = ({ onSelectJunction }) => {
   const getJunction = (id) => junctions.find(j => j.id === id);
 
   return (
-    <div className="bg-white border border-[#D6E0E7] rounded-lg overflow-hidden flex flex-col h-full min-h-[360px] shadow-xs">
+    <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-lg overflow-hidden flex flex-col h-full min-h-[360px]">
       {/* Map Control Bar */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F4F6F8] border-b border-[#D6E0E7]">
+      <div className="flex items-center justify-between px-3 py-2 bg-zinc-950 border-b border-zinc-800/80">
         <div className="flex items-center space-x-2">
-          <MapPin className="w-4 h-4 text-[#1D5D91]" />
-          <span className="text-xs font-extrabold text-[#123B63] uppercase tracking-wider">
-            Traffic Network Overview • BKC Zone
+          <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="text-[11px] font-mono font-bold text-zinc-200 uppercase tracking-wider">
+            PRIMARY ARTERIAL GIS TOPOLOGY
           </span>
-          <span className="text-[10px] font-mono text-[#526778] hidden sm:inline bg-white px-2 py-0.5 rounded border border-[#D6E0E7]">
+          <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline">
             [MUMBAI ZONE-1]
           </span>
         </div>
 
-        <div className="flex items-center space-x-3 text-[10px] font-mono text-[#526778]">
+        <div className="flex items-center space-x-2 text-[10px] font-mono text-zinc-400">
           <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-[#198754]" />
-            <span>&lt;85 PCU (Optimal)</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>&lt;85 PCU</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-[#D98B19]" />
-            <span>85-140 (Moderate)</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span>85-140</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-[#C0392B]" />
-            <span>&gt;140 (Congested)</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            <span>&gt;140</span>
           </div>
         </div>
       </div>

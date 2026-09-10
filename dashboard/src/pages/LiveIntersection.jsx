@@ -263,48 +263,45 @@ const LiveIntersection = () => {
         </AnimatePresence>
 
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-xs p-5 mb-6 border border-[#D6E0E7]">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-2 border-[#D97706] border-l-4 border-l-amber-500">
+          <div className="flex justify-between items-center">
             <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-2xl font-extrabold text-[#123B63] tracking-tight">Live Intersection Control</h1>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-[#EAF3F8] text-[#1D5D91] border border-[#D6E0E7]">
-                  Real-time Simulation
-                </span>
-              </div>
-              <p className="text-xs text-[#526778] mt-1 flex items-center gap-1">
-                <MapPin size={14} className="text-[#1D5D91]" /> Bandra-Kurla Complex, Mumbai - Junction 12A • Municipal Control Cell
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">Mumbai Smart Traffic Management System</h1>
+              <p className="text-sm text-blue-600 mt-1 flex items-center gap-1"><MapPin size={14} className="text-blue-600" /> Bandra-Kurla Complex, Mumbai - Junction 12A</p>
               
               {/* Target Achievement Indicator */}
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <div className={`px-3 py-1 rounded-md text-xs font-semibold border ${
+              <div className="mt-3 flex items-center space-x-4">
+                <div className={`px-3 py-1 rounded-full text-sm font-medium border ${
                   targetAchieved 
-                    ? 'bg-[#EBF7EE] text-[#198754] border-[#198754]/30' 
-                    : 'border-[#D98B19]/30 bg-[#FFF8E7] text-[#D98B19]'
+                    ? 'bg-green-100 text-green-800 border-green-200' 
+                    : 'border-amber-300 bg-amber-50/80 text-amber-900'
                 }`}>
-                  <Target size={14} className="mr-1.5 inline" />
-                  {targetAchieved ? 'Target Achieved!' : 'Targeting 30-35s Avg Wait Time'}
+                  <Target size={14} className="mr-1" />
+                  {targetAchieved ? 'Target Achieved!' : 'Working towards 30-35s target'}
                 </div>
-                <div className="text-xs text-[#526778]">
-                  Current Wait: <strong className="text-[#123B63]">{(state?.avg_wait_time || 0).toFixed(1)}s</strong> | Fixed Baseline: 45s
+                <div className="text-sm text-gray-600">
+                  Current: {(state?.avg_wait_time || 0).toFixed(1)}s | Traditional: 45s
                 </div>
               </div>
             </div>
-
-            <div className="text-left md:text-right">
-              <div className="flex items-center space-x-2">
-                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
-                  overrideActive ? 'bg-[#C0392B]' : 'bg-[#198754]'
-                }`} />
-                <span className={`text-xs font-extrabold tracking-wide uppercase ${
-                  overrideActive ? 'text-[#C0392B]' : 'text-[#198754]'
+            <div className="text-right">
+              {overrideActive && (
+                <div className="text-sm text-gray-500">
+                  Manual Override
+                </div>
+              )}
+              <div className="flex items-center space-x-2 mt-1">
+                <div className={`w-3 h-3 rounded-full animate-pulse ${
+                  overrideActive ? 'bg-red-500' : 'bg-green-500'
+                }`}></div>
+                <span className={`font-semibold ${
+                  overrideActive ? 'text-red-600' : 'text-green-600'
                 }`}>
-                  {overrideActive ? 'MANUAL OVERRIDE' : 'ADAPTIVE AI ACTIVE'}
+                  {overrideActive ? 'OVERRIDE' : 'ACTIVE'}
                 </span>
               </div>
-              <div className="text-xs text-[#526778] mt-1">
-                Wait Time Optimization: <span className="font-bold text-[#198754]">{mumbaiStats.waitTimeImprovement.toFixed(1)}s saved</span>
+              <div className="text-xs text-blue-600 mt-1">
+                Wait Time Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
               </div>
             </div>
           </div>
@@ -317,23 +314,23 @@ const LiveIntersection = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 bg-[#FDF2F2] border-2 border-[#B42318] text-[#B42318] rounded-md shadow-xs"
+              className="mb-6 p-4 bg-red-100 border-2 border-red-400 text-red-800 rounded-lg"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-[#B42318] rounded-full animate-ping"></div>
+                  <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
                   <div>
-                    <p className="font-extrabold text-sm flex items-center gap-2">
-                      <Siren size={16} /> MUMBAI TRAFFIC CONTROL MANUAL OVERRIDE ACTIVE
+                    <p className="font-semibold flex items-center gap-2">
+                      <Siren size={16} /> MUMBAI MANUAL OVERRIDE ACTIVE
                     </p>
-                    <p className="text-xs mt-0.5">
+                    <p className="text-sm">
                       Signal manually controlled • Auto-disable in {overrideStartTime ? 60 - Math.floor((Date.now() - overrideStartTime) / 1000) : 60}s
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={disableOverride}
-                  className="px-3.5 py-1.5 bg-[#B42318] text-white text-xs font-bold rounded hover:bg-[#C0392B] cursor-pointer"
+                  className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
                 >
                   Disable Override
                 </button>
@@ -349,17 +346,17 @@ const LiveIntersection = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 bg-[#FDF2F2] border-2 border-[#B42318] text-[#B42318] rounded-md shadow-xs"
+              className="mb-6 p-4 bg-orange-100 border-2 border-orange-400 text-orange-800 rounded-lg"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-[#B42318] rounded-full animate-ping"></div>
-                  <p className="font-extrabold text-xs sm:text-sm flex items-center gap-2">
-                    <Siren size={16} className="text-[#B42318]" /> EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
+                  <div className="w-4 h-4 bg-orange-500 rounded-full animate-ping"></div>
+                  <p className="font-semibold flex items-center gap-2">
+                    <Siren size={16} className="text-red-600" /> EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
                   </p>
                 </div>
-                <div className="text-xs font-bold bg-[#B42318] text-white px-3 py-1 rounded">
-                  Way {state.emergencyDirection} Preemption
+                <div className="text-sm font-medium bg-orange-200 px-3 py-1 rounded">
+                  Way {state.emergencyDirection} Priority Preemption
                 </div>
               </div>
             </motion.div>
@@ -368,16 +365,16 @@ const LiveIntersection = () => {
 
         {/* Smart Queue Alert */}
         {highestQueueLane && state?.queues[highestQueueLane] > 10 && !overrideActive && (
-          <div className="mb-6 p-4 bg-[#FFF8E7] border border-[#D98B19]/40 text-[#D98B19] rounded-md shadow-xs">
-            <div className="flex items-center justify-between text-xs">
+          <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Zap size={18} className="text-[#D98B19]" />
-                <p className="font-bold">
-                  AI Demand Detection: High congestion in {highestQueueLane} direction ({state.queues[highestQueueLane]} vehicles)
+                <Zap size={18} className="text-amber-600" />
+                <p className="font-medium">
+                  Mumbai AI Detection: Heavy congestion in {highestQueueLane} direction ({state.queues[highestQueueLane]} vehicles)
                 </p>
               </div>
-              <div className="font-mono">
-                Extended Green: {state?.signal_duration}s
+              <div className="text-sm">
+                Extended Signal Duration: {state?.signal_duration}s
               </div>
             </div>
           </div>

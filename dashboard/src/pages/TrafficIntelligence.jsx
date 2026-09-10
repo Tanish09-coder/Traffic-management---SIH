@@ -486,24 +486,25 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const isCrossingJustNow = recentCrossing && Math.abs(currentTimeSec - recentCrossing.videoTimeSec) < 2.0;
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header Banner */}
-      <div className="bg-white rounded-lg border border-[#D6E0E7] p-5 sm:p-6 shadow-xs">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
+          <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="bg-[#EAF3F8] text-[#1D5D91] border border-[#D6E0E7] text-xs font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">
-                Traffic Intelligence & Detection
+              <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+                <Sparkles size={13} />
+                Phase 2 Traffic Intelligence
               </span>
-              <span className="bg-[#EBF7EE] text-[#198754] border border-[#198754]/30 text-xs font-bold px-2.5 py-0.5 rounded">
-                YOLO Computer Vision Active
+              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                YOLOv8 Computer Vision
               </span>
             </div>
-            <h1 className="text-2xl font-extrabold text-[#123B63] tracking-tight">
-              Real-time Video AI Traffic Camera Feed
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              Recorded Video Vehicle Detection & Tracking
             </h1>
-            <p className="text-xs text-[#526778] leading-relaxed">
-              Detect vehicles, track line crossings, and stream automated vehicle arrivals into BKC junction signal optimization controller.
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Analyze incoming traffic footage, map one road approach (N, S, E, or W), and stream deduplicated arrival events into the active adaptive signal simulator.
             </p>
           </div>
 

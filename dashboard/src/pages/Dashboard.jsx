@@ -115,30 +115,7 @@ const Dashboard = () => {
   const dirNames = { N: 'North Bound', S: 'South Bound', E: 'East Bound', W: 'West Bound' };
 
   return (
-    <div className="space-y-4">
-      {/* Page Title & Location Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-4 rounded-lg border border-[#D6E0E7] shadow-xs">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-extrabold text-[#123B63] tracking-tight">
-              Traffic Management Dashboard
-            </h1>
-            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-[#EAF3F8] text-[#1D5D91] border border-[#D6E0E7]">
-              BKC Junction Cell
-            </span>
-          </div>
-          <p className="text-xs text-[#526778]">
-            Real-time Monitoring • Adaptive Signal Control • Municipal Traffic Oversight
-          </p>
-        </div>
-        <div className="flex items-center space-x-3 text-xs text-[#526778]">
-          <span className="font-semibold text-[#123B63]">Active Signal Phase:</span>
-          <span className="px-2.5 py-1 rounded bg-[#EBF7EE] text-[#198754] font-bold border border-[#198754]/30">
-            Phase {state?.phase || 'GREEN'} ({state?.signal || 'E'})
-          </span>
-        </div>
-      </div>
-
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
       {/* Error Banner */}
       <AnimatePresence>
         {error && (
@@ -146,9 +123,9 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-3 bg-[#FFF8E7] border border-[#D98B19]/40 text-[#D98B19] rounded-md text-xs flex items-center space-x-2"
+            className="mb-4 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl text-xs flex items-center space-x-2"
           >
-            <AlertTriangle size={16} className="text-[#D98B19]" />
+            <AlertTriangle size={16} className="text-amber-500" />
             <span>{error}</span>
           </motion.div>
         )}
@@ -161,10 +138,10 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="p-3.5 bg-[#FDF2F2] border-2 border-[#B42318] text-[#B42318] rounded-md text-xs font-bold flex items-center space-x-2 shadow-xs"
+            className="mb-4 p-3.5 bg-red-50 border-2 border-red-500 text-red-800 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs"
           >
-            <div className="w-2.5 h-2.5 bg-[#B42318] rounded-full animate-ping" />
-            <Siren size={18} className="text-[#B42318]" />
+            <div className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping" />
+            <Siren size={18} className="text-red-600" />
             <span>
               EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
             </span>
@@ -173,7 +150,7 @@ const Dashboard = () => {
       </AnimatePresence>
 
       {/* 1. 4 KPI CARDS matching screenshot */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
         <StatCard
           title="VEHICLES PASSED"
           value={state?.cars_passed || 32}
@@ -215,16 +192,16 @@ const Dashboard = () => {
       <AIDecisionPanel />
 
       {/* 3. MAIN SECTION: Left (72%) Live Intersection & Right (28%) Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-[72%_calc(28%-1rem)] gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[72%_calc(28%-1rem)] gap-4 items-start mb-4">
         
         {/* LEFT COLUMN: Live Intersection View */}
-        <div className="bg-white rounded-lg shadow-xs p-4 sm:p-5 border border-[#D6E0E7]">
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 border border-[#E3EAF0]">
           {/* Intersection Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
             <div className="flex items-center space-x-2">
-              <Video className="w-4 h-4 text-[#1D5D91]" />
-              <h2 className="text-sm font-extrabold text-[#123B63]">
-                Live Intersection View • Junction Simulation
+              <Video className="w-4 h-4 text-[#13B8B2]" />
+              <h2 className="text-sm font-bold text-[#172333]">
+                Live Intersection View
               </h2>
             </div>
 

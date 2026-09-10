@@ -1,182 +1,193 @@
-import { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  TrafficCone, 
-  Video, 
-  LineChart, 
-  Info, 
-  Activity, 
-  Clock, 
-  Menu, 
-  X,
-  ShieldCheck
-} from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MoreVertical, ChevronRight, Bell, ChevronDown, LayoutDashboard, TrafficCone, Video, LineChart, Info } from 'lucide-react';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const [timeString, setTimeString] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setTimeString(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+      setTimeString(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // Handle click outside to close dropdown menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'live-intersection', label: 'Live Intersection', icon: TrafficCone },
-    { id: 'traffic-intelligence', label: 'Traffic Intelligence', icon: Video },
-    { id: 'analytics', label: 'Analytics', icon: LineChart },
-    { id: 'about', label: 'About', icon: Info }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, desc: 'System Overview & Control' },
+    { id: 'live-intersection', label: 'Live Intersection', icon: TrafficCone, desc: 'Real-time Simulation & Overrides' },
+    { id: 'traffic-intelligence', label: 'Traffic Intelligence', icon: Video, desc: 'Video Detection & Tracking' },
+    { id: 'analytics', label: 'Analytics', icon: LineChart, desc: 'Efficiency & Sustainability' },
+    { id: 'about', label: 'About', icon: Info, desc: 'Architecture & Docs' }
   ];
 
-  return (
-    <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: '#F4F6F8', color: '#17324D' }}>
-      
-      {/* 1. Top Utility Strip */}
-      <div className="w-full text-white text-xs py-1.5 px-4 sm:px-6 lg:px-8 flex items-center justify-between shadow-xs" style={{ backgroundColor: '#123B63' }}>
-        <div className="flex items-center space-x-2">
-          <ShieldCheck size={14} className="text-[#E09A2D]" />
-          <span className="font-semibold tracking-wide text-[11px] sm:text-xs">
-            Smart City Traffic Management System • BKC Junction, Mumbai
-          </span>
-        </div>
-        <div className="flex items-center space-x-4 text-[11px]">
-          <span className="hidden md:inline-block text-[#D6E0E7]">
-            Municipal Traffic Control Cell
-          </span>
-          <span className="flex items-center gap-1.5 bg-[#1D5D91] px-2 py-0.5 rounded text-white font-mono text-[11px]">
-            <Clock size={12} />
-            {timeString} IST
-          </span>
-        </div>
-      </div>
+  const activeItem = navItems.find(item => item.id === currentPage) || navItems[0];
 
-      {/* 2. Main Government Header */}
-      <header className="sticky top-0 z-50 bg-white shadow-xs" style={{ borderTop: '3px solid #E09A2D', borderBottom: '1px solid #D6E0E7' }}>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            
-            {/* Header Brand Info */}
-            <div className="flex items-center space-x-3 cursor-pointer select-none" onClick={() => onNavigate && onNavigate('dashboard')}>
-              {/* Traffic Light Icon Container */}
-              <div className="w-8 h-10 bg-[#123B63] rounded-md flex flex-col items-center justify-between py-1 shadow-xs flex-shrink-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C0392B]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#D98B19]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#198754]" />
+  return (
+    <div className="min-h-screen flex flex-col font-sans" style={{ backgroundColor: '#F5F8FA', color: '#172333' }}>
+      {/* Top Header matching reference screenshot */}
+      <header className="sticky top-0 z-50 bg-white shadow-xs" style={{ borderBottom: '1px solid #E3EAF0' }}>
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14">
+            {/* Left Section: Green Dot + Traffic Light Icon + Title & Subtitle */}
+            <div className="flex items-center space-x-3">
+              {/* Green System Online Dot */}
+              <div className="w-2.5 h-2.5 rounded-full bg-[#22C55E] shadow-sm animate-pulse flex-shrink-0" />
+
+              {/* Traffic Signal Icon (Black Capsule with 3 Dots) */}
+              <div className="w-5 h-9 bg-[#172333] rounded-md flex flex-col items-center justify-between py-1 shadow-sm flex-shrink-0">
+                <span className="w-2 h-2 rounded-full bg-[#EF4444]" />
+                <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+                <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
               </div>
 
-              <div>
+              {/* Title & Subtitle */}
+              <div className="cursor-pointer select-none" onClick={() => onNavigate && onNavigate('dashboard')}>
                 <div className="flex items-center space-x-2">
-                  <h1 className="font-extrabold text-base sm:text-xl tracking-tight text-[#123B63] leading-tight">
-                    Mumbai STMS
+                  <h1 className="font-bold text-base sm:text-lg tracking-tight text-[#172333] leading-tight">
+                    Smart Traffic Management System
                   </h1>
-                  <span className="hidden sm:inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-[#EAF3F8] text-[#1D5D91] border border-[#D6E0E7]">
-                    Official Portal
-                  </span>
                 </div>
-                <p className="text-xs text-[#526778] font-medium leading-tight">
-                  Smart Traffic Management System • BKC Junction, Mumbai
+                <p className="text-[11px] text-[#64748B] font-medium leading-none mt-0.5">
+                  Mumbai BKC Junction
                 </p>
               </div>
+
+              {/* Navigation Menu Trigger */}
+              <div className="relative ml-2" ref={menuRef}>
+                <button
+                  onClick={() => setIsMenuOpen(prev => !prev)}
+                  className={`p-1.5 rounded-lg border transition-all flex items-center justify-center cursor-pointer ${
+                    isMenuOpen
+                      ? 'border-[#13B8B2] ring-2 ring-[#13B8B2]/20 bg-[#F0FDFA] text-[#13B8B2]'
+                      : 'border-[#E3EAF0] hover:border-[#CBD5E1] text-[#64748B]'
+                  }`}
+                  aria-label="Navigation Menu"
+                  title="Switch Views"
+                >
+                  <MoreVertical size={16} />
+                </button>
+
+                {/* Navigation Dropdown */}
+                {isMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-64 rounded-xl shadow-xl py-2 z-50 bg-white border border-[#E3EAF0]">
+                    <div className="px-3.5 py-1.5 border-b border-[#F1F5F9]">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8]">
+                        Dashboard Modules
+                      </p>
+                    </div>
+                    <div className="p-1 space-y-0.5">
+                      {navItems.map((item) => {
+                        const isActive = currentPage === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              onNavigate && onNavigate(item.id);
+                              setIsMenuOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs transition-all flex items-center justify-between group cursor-pointer"
+                            style={{
+                              backgroundColor: isActive ? '#F0FDFA' : 'transparent',
+                              color: isActive ? '#0E8E89' : '#475569',
+                              fontWeight: isActive ? 600 : 400
+                            }}
+                          >
+                            <div className="flex items-center space-x-2.5">
+                              <item.icon size={18} />
+                              <div>
+                                <div className="font-semibold text-[#172333] leading-tight">
+                                  {item.label}
+                                </div>
+                                <div className="text-[10px] text-[#94A3B8] leading-tight">
+                                  {item.desc}
+                                </div>
+                              </div>
+                            </div>
+                            <ChevronRight size={12} className="text-[#94A3B8] group-hover:text-[#13B8B2] group-hover:translate-x-0.5 transition-transform" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Right Status Badge & Mobile Toggle */}
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-md bg-[#EAF3F8] border border-[#D6E0E7]">
-                <Activity size={15} className="text-[#198754] animate-pulse" />
-                <div className="text-left leading-none">
-                  <div className="text-[11px] font-bold text-[#123B63]">System Active</div>
-                  <div className="text-[9px] text-[#526778]">Adaptive AI Monitoring</div>
+            {/* Right Section: Bell Notification + Admin Avatar/Profile */}
+            <div className="flex items-center space-x-4">
+              {/* Notification Bell */}
+              <button
+                className="relative p-1.5 text-[#64748B] hover:text-[#172333] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                title="Notifications"
+                onClick={() => {}}
+              >
+                <Bell size={18} />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#EF4444] rounded-full" />
+              </button>
+
+              {/* Admin Profile Area matching screenshot */}
+              <div className="flex items-center space-x-2 pl-2 border-l border-[#E3EAF0]">
+                <div className="w-8 h-8 rounded-full bg-[#13B8B2] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                  SA
+                </div>
+                <div className="hidden sm:block text-left select-none leading-tight">
+                  <div className="text-xs font-bold text-[#172333] flex items-center space-x-1">
+                    <span>System Admin</span>
+                    <ChevronDown size={12} className="text-[#94A3B8]" />
+                  </div>
+                  <div className="text-[10px] text-[#64748B]">
+                    Traffic Control
+                  </div>
                 </div>
               </div>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-md text-[#123B63] hover:bg-[#EAF3F8] transition-colors"
-                aria-label="Toggle navigation"
-              >
-                {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
             </div>
           </div>
-
-          {/* Desktop Navigation Tabs */}
-          <nav className="hidden md:flex space-x-1 pt-1 pb-0 overflow-x-auto border-t border-[#E5EBEF]">
-            {navItems.map((item) => {
-              const isActive = currentPage === item.id;
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onNavigate && onNavigate(item.id)}
-                  className={`flex items-center space-x-2 px-4 py-2.5 font-semibold text-xs transition-all border-b-2 cursor-pointer ${
-                    isActive
-                      ? 'bg-[#EAF3F8] text-[#123B63] border-[#1D5D91] shadow-xs'
-                      : 'bg-transparent text-[#526778] border-transparent hover:bg-[#F4F6F8] hover:text-[#123B63]'
-                  }`}
-                >
-                  <Icon size={16} className={isActive ? 'text-[#1D5D91]' : 'text-[#718392]'} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
         </div>
-
-        {/* Mobile Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-[#D6E0E7] px-4 py-3 space-y-1 shadow-md">
-            {navItems.map((item) => {
-              const isActive = currentPage === item.id;
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onNavigate && onNavigate(item.id);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-semibold transition-all ${
-                    isActive
-                      ? 'bg-[#EAF3F8] text-[#123B63] border-l-4 border-[#1D5D91]'
-                      : 'text-[#526778] hover:bg-[#F4F6F8]'
-                  }`}
-                >
-                  <Icon size={18} className={isActive ? 'text-[#1D5D91]' : 'text-[#718392]'} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
       </header>
 
-      {/* 3. Main Content Container */}
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Main Content Area */}
+      <main className="flex-1 w-full">
         {children}
       </main>
 
-      {/* 4. Official Footer */}
-      <footer className="mt-auto bg-white border-t border-[#D6E0E7] py-4">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[#526778]">
+      {/* Footer */}
+      <footer className="mt-auto py-3 bg-white border-t border-[#E3EAF0]">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#94A3B8]">
           <div className="flex items-center space-x-2">
-            <TrafficCone size={16} className="text-[#1D5D91]" />
-            <span className="font-bold text-[#123B63]">Smart Traffic Management System (STMS)</span>
-            <span>•</span>
-            <span>BKC Junction, Mumbai</span>
-          </div>
-          <div className="flex items-center space-x-4 text-[11px] text-[#718392]">
-            <span>Municipal Traffic Control Cell</span>
+            <span className="flex items-center gap-1.5"><TrafficCone size={14} className="text-slate-700" /> Smart Traffic Management System</span>
             <span>•</span>
             <span>AI Adaptive Signal Control</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <span className="font-semibold text-[#13B8B2]">System Online</span>
             <span>•</span>
-            <span>Real-time Monitoring</span>
+            <span>{timeString}</span>
           </div>
         </div>
       </footer>

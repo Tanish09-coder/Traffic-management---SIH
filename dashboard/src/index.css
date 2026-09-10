@@ -39,29 +39,25 @@
 
 /* ── CSS Custom Properties (Design Tokens) ───────────────── */
 :root {
-  /* Brand palette — Official Government Traffic Management System */
-  --clr-bg:           #F4F6F8;
+  /* Brand palette — Professional Teal Light Dashboard */
+  --clr-bg:           #F5F8FA;
   --clr-surface:      #FFFFFF;
-  --clr-surface-2:    #EAF3F8;
-  --clr-border:       #D6E0E7;
-  --clr-divider:      #E5EBEF;
-  --clr-border-light: rgba(18, 59, 99, 0.08);
+  --clr-surface-2:    #F8FAFC;
+  --clr-border:       #E3EAF0;
+  --clr-border-light: rgba(23,35,51,0.06);
 
-  --clr-navy:         #123B63;
-  --clr-primary:      #1D5D91;
-  --clr-secondary:    #2B6F9F;
-  --clr-primary-glow: rgba(29, 93, 145, 0.12);
-  --clr-accent:       #256FA8;
-  --clr-saffron:      #E09A2D;
-  --clr-success:      #198754;
-  --clr-warning:      #D98B19;
-  --clr-danger:       #C0392B;
-  --clr-emergency:    #B42318;
+  --clr-primary:      #13B8B2;
+  --clr-primary-glow: rgba(19,184,178,0.18);
+  --clr-accent:       #0FA8A2;
+  --clr-success:      #22C55E;
+  --clr-warning:      #F59E0B;
+  --clr-danger:       #EF4444;
+  --clr-emergency:    #DC2626;
 
   /* Text */
-  --clr-text-primary:   #17324D;
-  --clr-text-secondary: #526778;
-  --clr-text-muted:     #718392;
+  --clr-text-primary:   #172333;
+  --clr-text-secondary: #64748B;
+  --clr-text-muted:     #94A3B8;
 
   /* Road surface palette — unchanged for simulation fidelity */
   --road-asphalt:     #1c1f26;
@@ -74,15 +70,15 @@
 
   /* Radii */
   --radius-sm:  6px;
-  --radius-md:  8px;
-  --radius-lg:  10px;
-  --radius-xl:  12px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
 
-  /* Shadows — clean subtle government portal shadows */
-  --shadow-card:       0 1px 3px rgba(18, 59, 99, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-glow-blue:  0 0 12px rgba(29, 93, 145, 0.15);
-  --shadow-glow-green: 0 0 12px rgba(25, 135, 84, 0.15);
-  --shadow-glow-red:   0 0 12px rgba(192, 57, 43, 0.15);
+  /* Shadows — subtle dashboard shadows */
+  --shadow-card:       0 1px 3px rgba(23,35,51,0.06), 0 1px 2px rgba(23,35,51,0.04);
+  --shadow-glow-blue:  0 0 16px rgba(19,184,178,0.20);
+  --shadow-glow-green: 0 0 16px rgba(34,197,94,0.20);
+  --shadow-glow-red:   0 0 16px rgba(239,68,68,0.20);
 
   /* Transitions */
   --t-fast:   0.15s ease;

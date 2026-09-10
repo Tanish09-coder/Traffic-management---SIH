@@ -107,35 +107,36 @@ const Analytics = ({ onNavigate }) => {
   const hasData = session.totalVehicles > 0 || session.vehiclesProcessed > 0;
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
 
       {/* ── 1. Page Header & Session Control Strip ─────────────── */}
-      <div className="bg-white rounded-lg border border-[#D6E0E7] p-5 sm:p-6 shadow-xs">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="bg-[#EAF3F8] text-[#1D5D91] border border-[#D6E0E7] text-xs font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">
-                Municipal Traffic Report
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <BarChart3 className="text-[#F59E0B]" size={28} />
+                <span>Traffic Analytics</span>
+              </h1>
+
+              {/* Strict Data Source Indicator */}
+              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Data Source: Current Simulation
               </span>
-              <span className="bg-[#EBF7EE] text-[#198754] border border-[#198754]/30 text-xs font-bold px-2.5 py-0.5 rounded">
-                Telemetry Data Verified
-              </span>
-              <span className={`text-xs font-bold px-2.5 py-0.5 rounded border ${isSimulationActive
-                  ? 'bg-[#EAF3F8] text-[#1D5D91] border-[#D6E0E7]'
-                  : 'bg-[#FFF8E7] text-[#D98B19] border-[#D98B19]/30'
+
+              {/* Status Pill */}
+              <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full border ${isSimulationActive
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
                 }`}>
-                {isSimulationActive ? `Simulation Active (${simulationSpeed}x)` : 'Simulation Paused'}
+                {isSimulationActive ? `Running (${simulationSpeed}x)` : 'Paused'}
               </span>
             </div>
 
-            <h1 className="text-2xl font-extrabold text-[#123B63] tracking-tight mt-1.5 flex items-center gap-2">
-              <BarChart3 className="text-[#1D5D91]" size={24} />
-              <span>Traffic Analytics & Performance Report</span>
-            </h1>
-
-            <p className="text-xs text-[#526778] mt-1">
-              Real-time telemetry and sustainability metrics from current BKC junction simulation session.
+            <p className="text-sm sm:text-base text-slate-500 mt-1">
+              Real-time analytics from the current simulation session. Zero mocked or fabricated numbers.
             </p>
           </div>
 
@@ -143,7 +144,7 @@ const Analytics = ({ onNavigate }) => {
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               onClick={() => setSpeed(isSimulationActive ? 0 : 1)}
-              className="px-3.5 py-1.5 text-xs font-bold rounded border border-[#D6E0E7] bg-white hover:bg-[#F4F6F8] text-[#17324D] flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
             >
               {isSimulationActive ? <Pause size={14} /> : <Play size={14} />}
               <span>{isSimulationActive ? 'Pause Sim' : 'Resume Sim'}</span>
@@ -151,7 +152,7 @@ const Analytics = ({ onNavigate }) => {
 
             <button
               onClick={resetSimulation}
-              className="px-3.5 py-1.5 text-xs font-bold rounded border border-[#B42318]/30 bg-[#FDF2F2] hover:bg-[#B42318]/10 text-[#B42318] flex items-center gap-1.5 transition cursor-pointer"
+              className="px-3.5 py-2 text-sm font-bold rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 flex items-center gap-1.5 transition cursor-pointer"
               title="Clear all session data and start fresh"
             >
               <RotateCcw size={14} />
@@ -160,7 +161,7 @@ const Analytics = ({ onNavigate }) => {
 
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-4 py-1.5 text-xs font-bold rounded bg-[#1D5D91] hover:bg-[#123B63] text-white flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+              className="px-4 py-2 text-sm font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Compass size={14} />
               <span>Live Intersection</span>
@@ -170,13 +171,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Session Metadata Strip */}
-        <div className="mt-4 pt-3.5 border-t border-[#E5EBEF] grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-xs text-[#526778]">
+        <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 text-sm text-slate-600">
           <div>
-            <span className="text-[#718392] block font-semibold text-[10px] uppercase">Session ID</span>
-            <span className="font-mono font-bold text-[#123B63]">{session.sessionId}</span>
+            <span className="text-slate-400 block font-medium text-[11px]">Session ID</span>
+            <span className="font-mono font-bold text-slate-800">{session.sessionId}</span>
           </div>
           <div>
-            <span className="text-[#718392] block font-semibold text-[10px] uppercase">Session Started</span>
+            <span className="text-slate-400 block font-medium text-[11px]">Session Started</span>
             <span className="font-semibold text-slate-800">{startTimeString}</span>
           </div>
           <div>
