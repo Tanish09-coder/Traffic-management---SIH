@@ -2,19 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { MoreVertical, ChevronRight, Bell, ChevronDown, LayoutDashboard, TrafficCone, Video, LineChart, Info } from 'lucide-react';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
-  const [timeString, setTimeString] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTimeString(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Handle click outside to close dropdown menu
   useEffect(() => {
@@ -175,22 +164,6 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
       <main className="flex-1 w-full">
         {children}
       </main>
-
-      {/* Footer */}
-      <footer className="mt-auto py-3 bg-white border-t border-[#E3EAF0]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#94A3B8]">
-          <div className="flex items-center space-x-2">
-            <span className="flex items-center gap-1.5"><TrafficCone size={14} className="text-slate-700" /> Smart Traffic Management System</span>
-            <span>•</span>
-            <span>AI Adaptive Signal Control</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <span className="font-semibold text-[#13B8B2]">System Online</span>
-            <span>•</span>
-            <span>{timeString}</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

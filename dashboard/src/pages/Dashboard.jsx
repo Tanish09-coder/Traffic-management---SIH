@@ -26,8 +26,6 @@ const Dashboard = () => {
     stagedDemand,
     demandPendingReset,
     setGeneratedDemandMultiplier,
-    switchToMock,
-    switchToBackend,
     setSpeed,
     setWeather,
     resetSimulation,
@@ -189,7 +187,7 @@ const Dashboard = () => {
       </div>
 
       {/* 2. SIGNAL OPTIMIZATION & DEMAND CONTROL PANEL */}
-      <AIDecisionPanel />
+      <AIDecisionPanel showAllocationDetails={false} />
 
       {/* 3. MAIN SECTION: Left (72%) Live Intersection & Right (28%) Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-[72%_calc(28%-1rem)] gap-4 items-start mb-4">
@@ -751,17 +749,11 @@ const Dashboard = () => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#172333]">System Controls</h3>
-              <p className="text-[11px] text-[#64748B]">Configure data sources, simulation parameters, and system actions</p>
+              <p className="text-[11px] text-[#64748B]">Configure simulation parameters and system actions</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            {/* System Online Status Indicator */}
-            <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#16A34A]">
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-              <span>System Online</span>
-            </div>
-
             {/* Timestamp matching screenshot */}
             <span className="text-xs text-[#64748B] font-mono">
               {currentTimeFormatted}
@@ -787,37 +779,8 @@ const Dashboard = () => {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden pt-4 mt-4 border-t border-[#F1F5F9]"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
-                {/* 1. Data Source */}
-                <div>
-                  <label className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5">
-                    Data Source
-                  </label>
-                  <div className="flex space-x-1 p-1 rounded-xl bg-[#F1F5F9]">
-                    <button
-                      onClick={switchToMock}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                        useMock
-                          ? 'bg-[#13B8B2] text-white shadow-xs'
-                          : 'text-[#64748B] hover:text-[#172333]'
-                      }`}
-                    >
-                      Mock Data
-                    </button>
-                    <button
-                      onClick={switchToBackend}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                        !useMock
-                          ? 'bg-[#13B8B2] text-white shadow-xs'
-                          : 'text-[#64748B] hover:text-[#172333]'
-                      }`}
-                    >
-                      Live Backend
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. Generated Traffic */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                {/* 1. Generated Traffic */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
