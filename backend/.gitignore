@@ -3,5 +3,5 @@ node_modules
 uploads/
 cache/
 *.pt
-backend/videos/*.mp4
-!backend/videos/bellevue_trial.mp4
+videos/*.mp4
+backend/videos/*.mp4

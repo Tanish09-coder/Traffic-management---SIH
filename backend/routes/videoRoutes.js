@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 const CACHE_DIR = path.join(__dirname, '..', 'cache');
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
-const BUNDLED_VIDEO_PATH = path.join(VIDEOS_DIR, 'bellevue_trial.mp4');
+const BUNDLED_VIDEO_PATH = path.join(VIDEOS_DIR, 'vid_sim.mp4');
 
 // Ensure directories exist
 [UPLOADS_DIR, CACHE_DIR, VIDEOS_DIR].forEach(dir => {
@@ -47,17 +47,21 @@ const activeJobs = new Map();
 
 /**
  * GET /api/video/bundled
- * Returns info on the pre-bundled Bellevue trial video
+ * Returns info on the pre-bundled simulation video
  */
 router.get('/bundled', (req, res) => {
-  if (!fs.existsSync(BUNDLED_VIDEO_PATH)) {
-    return res.status(404).json({ error: 'Bundled trial video not found at backend/videos/bellevue_trial.mp4' });
+  const videoPath = fs.existsSync(BUNDLED_VIDEO_PATH)
+    ? BUNDLED_VIDEO_PATH
+    : (fs.existsSync(path.join(VIDEOS_DIR, 'vid sim.mp4')) ? path.join(VIDEOS_DIR, 'vid sim.mp4') : BUNDLED_VIDEO_PATH);
+
+  if (!fs.existsSync(videoPath)) {
+    return res.status(404).json({ error: 'Bundled simulation video not found at backend/videos/vid_sim.mp4' });
   }
-  const stats = fs.statSync(BUNDLED_VIDEO_PATH);
+  const stats = fs.statSync(videoPath);
   res.json({
-    videoId: 'bellevue_trial',
-    title: 'Bellevue Trial Video (Intersection Camera)',
-    filename: 'bellevue_trial.mp4',
+    videoId: 'vid_sim',
+    title: 'Traffic Simulation Video (Default)',
+    filename: path.basename(videoPath),
     sizeBytes: stats.size,
     isBundled: true,
     defaultConfig: {
@@ -72,7 +76,13 @@ router.get('/bundled', (req, res) => {
         end: [0.85, 0.65],
         incomingDirection: 'positive'
       },
-      mappedDirection: 'S'
+      mappedDirection: 'S',
+      approachZones: {
+        N: [[0.36, 0.12], [0.62, 0.12], [0.65, 0.38], [0.35, 0.38]],
+        E: [[0.68, 0.38], [0.99, 0.40], [0.99, 0.75], [0.65, 0.70]],
+        S: [[0.35, 0.60], [0.70, 0.60], [0.75, 0.98], [0.30, 0.98]],
+        W: [[0.02, 0.28], [0.35, 0.30], [0.35, 0.65], [0.02, 0.58]]
+      }
     }
   });
 });
@@ -99,26 +109,33 @@ router.post('/upload', upload.single('video'), (req, res) => {
  * Video streaming route supporting Range headers (seeking)
  */
 router.get('/stream/:videoId', (req, res) => {
-  const videoId = req.params.videoId;
+  const rawId = decodeURIComponent(req.params.videoId);
   let videoPath;
 
-  if (videoId === 'bellevue_trial' || videoId === 'bellevue_trial.mp4') {
-    videoPath = BUNDLED_VIDEO_PATH;
+  if (rawId === 'vid_sim' || rawId === 'vid sim' || rawId === 'vid_sim.mp4' || rawId === 'vid sim.mp4' || rawId === 'bellevue_trial' || rawId === 'bellevue_trial.mp4') {
+    videoPath = fs.existsSync(BUNDLED_VIDEO_PATH)
+      ? BUNDLED_VIDEO_PATH
+      : (fs.existsSync(path.join(VIDEOS_DIR, 'vid sim.mp4')) ? path.join(VIDEOS_DIR, 'vid sim.mp4') : BUNDLED_VIDEO_PATH);
   } else {
     // Sanitize filename to prevent path traversal
-    const safeFilename = path.basename(videoId);
-    videoPath = path.join(UPLOADS_DIR, safeFilename.includes('.') ? safeFilename : `${safeFilename}.mp4`);
-    if (!fs.existsSync(videoPath)) {
-      // Check if file exists with another extension in uploads
-      const files = fs.readdirSync(UPLOADS_DIR);
-      const match = files.find(f => f.startsWith(safeFilename));
-      if (match) {
-        videoPath = path.join(UPLOADS_DIR, match);
+    const safeFilename = path.basename(rawId);
+    const inVideos = path.join(VIDEOS_DIR, safeFilename.includes('.') ? safeFilename : `${safeFilename}.mp4`);
+    if (fs.existsSync(inVideos)) {
+      videoPath = inVideos;
+    } else {
+      videoPath = path.join(UPLOADS_DIR, safeFilename.includes('.') ? safeFilename : `${safeFilename}.mp4`);
+      if (!fs.existsSync(videoPath)) {
+        // Check if file exists with another extension in uploads
+        const files = fs.readdirSync(UPLOADS_DIR);
+        const match = files.find(f => f.startsWith(safeFilename));
+        if (match) {
+          videoPath = path.join(UPLOADS_DIR, match);
+        }
       }
     }
   }
 
-  if (!fs.existsSync(videoPath)) {
+  if (!videoPath || !fs.existsSync(videoPath)) {
     return res.status(404).json({ error: 'Video file not found' });
   }
 
@@ -162,19 +179,26 @@ router.post('/analyze', (req, res) => {
   }
 
   let videoPath;
-  if (videoId === 'bellevue_trial' || videoId === 'bellevue_trial.mp4') {
-    videoPath = BUNDLED_VIDEO_PATH;
+  if (videoId === 'vid_sim' || videoId === 'vid sim' || videoId === 'vid_sim.mp4' || videoId === 'vid sim.mp4' || videoId === 'bellevue_trial' || videoId === 'bellevue_trial.mp4') {
+    videoPath = fs.existsSync(BUNDLED_VIDEO_PATH)
+      ? BUNDLED_VIDEO_PATH
+      : (fs.existsSync(path.join(VIDEOS_DIR, 'vid sim.mp4')) ? path.join(VIDEOS_DIR, 'vid sim.mp4') : BUNDLED_VIDEO_PATH);
   } else {
     const safeFilename = path.basename(videoId);
-    videoPath = path.join(UPLOADS_DIR, safeFilename.includes('.') ? safeFilename : `${safeFilename}.mp4`);
-    if (!fs.existsSync(videoPath)) {
-      const files = fs.readdirSync(UPLOADS_DIR);
-      const match = files.find(f => f.startsWith(safeFilename));
-      if (match) videoPath = path.join(UPLOADS_DIR, match);
+    const inVideos = path.join(VIDEOS_DIR, safeFilename.includes('.') ? safeFilename : `${safeFilename}.mp4`);
+    if (fs.existsSync(inVideos)) {
+      videoPath = inVideos;
+    } else {
+      videoPath = path.join(UPLOADS_DIR, safeFilename.includes('.') ? safeFilename : `${safeFilename}.mp4`);
+      if (!fs.existsSync(videoPath)) {
+        const files = fs.readdirSync(UPLOADS_DIR);
+        const match = files.find(f => f.startsWith(safeFilename));
+        if (match) videoPath = path.join(UPLOADS_DIR, match);
+      }
     }
   }
 
-  if (!fs.existsSync(videoPath)) {
+  if (!videoPath || !fs.existsSync(videoPath)) {
     return res.status(404).json({ error: 'Video file not found' });
   }
 
@@ -212,13 +236,12 @@ router.post('/analyze', (req, res) => {
     mappedDirection: mappedDirection || 'S'
   });
 
-  const pyProcess = spawn('python', [
-    pyScript,
-    '--video', videoPath,
-    '--config', configJson,
-    '--sample_fps', String(sampleFps),
-    '--output', cachePath
-  ]);
+  const pyCmd = process.platform === 'win32' ? 'py' : 'python';
+  const pyArgs = process.platform === 'win32'
+    ? ['-3', pyScript, '--video', videoPath, '--config', configJson, '--sample_fps', String(sampleFps), '--output', cachePath]
+    : [pyScript, '--video', videoPath, '--config', configJson, '--sample_fps', String(sampleFps), '--output', cachePath];
+
+  const pyProcess = spawn(pyCmd, pyArgs);
 
   const jobRecord = {
     jobId,

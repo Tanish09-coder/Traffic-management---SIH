@@ -221,42 +221,42 @@ export const PredictiveTrafficPanel = () => {
   };
 
   return (
-    <div className="space-y-6 pt-4 border-t border-slate-200 font-sans">
+    <div className="space-y-6 pt-4 border-t border-[#CBD5E1] font-sans">
       {/* Panel Header */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs relative overflow-hidden">
+      <div className="bg-white rounded-xl p-5 border border-[#CBD5E1] shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+              <span className="bg-[#0F2942] text-amber-300 border border-[#1E3A8A] text-xs font-black px-2.5 py-1 rounded-md flex items-center gap-1.5 uppercase tracking-wider">
                 <TrendingUp size={13} />
                 Predictive Traffic Intelligence
               </span>
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-0.5 rounded-full">
+              <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-1 rounded-md">
                 Phase 1 Display-Only
               </span>
             </div>
             
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            <h2 className="text-xl sm:text-2xl font-black text-[#0F2942]">
               Predictive Traffic Intelligence
             </h2>
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
+            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
               Short-term traffic forecasting from historical intersection patterns.
             </p>
           </div>
 
           {/* Compact Dataset Info Badges */}
-          <div className="grid grid-cols-2 gap-2.5 text-xs w-full md:w-auto bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <div className="grid grid-cols-2 gap-2.5 text-xs w-full md:w-auto bg-[#F8FAFC] p-3.5 rounded-lg border border-[#CBD5E1]">
             <div className="space-y-0.5">
               <span className="text-slate-400 text-[11px] block font-medium">Intersection:</span>
-              <span className="font-bold text-slate-900">Jehangir Chowk, Pune</span>
+              <span className="font-bold text-[#0F2942]">Jehangir Chowk, Pune</span>
             </div>
             <div className="space-y-0.5">
               <span className="text-slate-400 text-[11px] block font-medium">Camera:</span>
-              <span className="font-bold text-blue-700 font-mono">j3</span>
+              <span className="font-bold text-[#003366] font-mono">j3</span>
             </div>
             <div className="space-y-0.5">
               <span className="text-slate-400 text-[11px] block font-medium">Historical Dataset:</span>
-              <span className="font-bold text-slate-900">January 2023</span>
+              <span className="font-bold text-[#0F2942]">January 2023</span>
             </div>
             <div className="space-y-0.5">
               <span className="text-slate-400 text-[11px] block font-medium">Forecast Horizons:</span>
@@ -267,16 +267,16 @@ export const PredictiveTrafficPanel = () => {
       </div>
 
       {/* Date & Time Selectors */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-4 border border-[#CBD5E1] shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Date Selector */}
           <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-blue-600" />
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">DATE:</label>
+            <Calendar size={16} className="text-[#003366]" />
+            <label className="text-xs font-bold uppercase tracking-wider text-[#475569]">DATE:</label>
             <select
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+              className="bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F2942] text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#003366] cursor-pointer"
             >
               {DATE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -288,13 +288,13 @@ export const PredictiveTrafficPanel = () => {
 
           {/* Time Selector */}
           <div className="flex items-center gap-2">
-            <Clock size={18} className="text-blue-600" />
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">TIMESTAMP (5-MIN):</label>
+            <Clock size={16} className="text-[#003366]" />
+            <label className="text-xs font-bold uppercase tracking-wider text-[#475569]">TIMESTAMP (5-MIN):</label>
             <select
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
               disabled={loadingTimes || availableTimes.length === 0}
-              className="bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 cursor-pointer"
+              className="bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F2942] text-xs font-mono font-bold rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#003366] disabled:opacity-50 cursor-pointer"
             >
               {availableTimes.length === 0 ? (
                 <option value="">No timestamps</option>
@@ -313,7 +313,7 @@ export const PredictiveTrafficPanel = () => {
         <button
           onClick={handleRetry}
           disabled={loadingForecast || loadingTimes}
-          className="px-4 py-2 rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white text-xs font-bold flex items-center gap-2 transition shadow-sm cursor-pointer active:scale-95 disabled:opacity-50"
+          className="px-3.5 py-2 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white text-xs font-bold flex items-center gap-2 transition shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
         >
           <RefreshCw size={14} className={loadingForecast || loadingTimes ? 'animate-spin' : ''} />
           Sync Forecast
@@ -322,14 +322,14 @@ export const PredictiveTrafficPanel = () => {
 
       {/* Error Banner if API is down */}
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center justify-between shadow-xs">
+        <div className="p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2.5">
-            <AlertCircle size={18} className="text-rose-600 flex-shrink-0" />
-            <span className="font-semibold">{error}</span>
+            <AlertCircle size={16} className="text-red-600 flex-shrink-0" />
+            <span className="font-bold">{error}</span>
           </div>
           <button
             onClick={handleRetry}
-            className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
           >
             Retry
           </button>
@@ -339,19 +339,19 @@ export const PredictiveTrafficPanel = () => {
       {/* Forecast Table & Visualization */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Forecast Table (7 cols on lg) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white rounded-xl p-5 border border-[#CBD5E1] shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Layers size={18} className="text-blue-600" />
+                <h3 className="text-sm font-bold text-[#0F2942] flex items-center gap-2">
+                  <Layers size={16} className="text-[#003366]" />
                   Short-Term Directional Forecast
                 </h3>
-                <p className="text-sm text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   PCU values blended from historical profile and current observations.
                 </p>
               </div>
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-[#F1F5F9] text-[#0F2942] border border-[#CBD5E1]">
                 {selectedTime || 'N/A'}
               </span>
             </div>
@@ -359,20 +359,20 @@ export const PredictiveTrafficPanel = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                    <th className="py-3 px-3">Direction</th>
-                    <th className="py-3 px-3 text-right">Current PCU</th>
-                    <th className="py-3 px-3 text-right text-blue-700">+5 min</th>
-                    <th className="py-3 px-3 text-right text-blue-700">+10 min</th>
-                    <th className="py-3 px-3 text-right text-blue-700">+15 min</th>
-                    <th className="py-3 px-3 text-center">Forecast Risk</th>
+                  <tr className="border-b border-[#CBD5E1] text-[#475569] text-[11px] uppercase tracking-wider font-bold">
+                    <th className="py-2.5 px-3">Direction</th>
+                    <th className="py-2.5 px-3 text-right">Current PCU</th>
+                    <th className="py-2.5 px-3 text-right text-[#003366]">+5 min</th>
+                    <th className="py-2.5 px-3 text-right text-[#003366]">+10 min</th>
+                    <th className="py-2.5 px-3 text-right text-[#003366]">+15 min</th>
+                    <th className="py-2.5 px-3 text-center">Forecast Risk</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {loadingForecast ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-500 text-sm">
-                        <RefreshCw size={18} className="animate-spin inline-block mr-2 text-blue-600" />
+                      <td colSpan={6} className="py-8 text-center text-slate-500 text-xs">
+                        <RefreshCw size={16} className="animate-spin inline-block mr-2 text-[#003366]" />
                         Calculating directional forecasts...
                       </td>
                     </tr>
@@ -380,24 +380,24 @@ export const PredictiveTrafficPanel = () => {
                     const dirData = forecastData?.directions?.[dir];
                     const forecasts = dirData?.forecasts || {};
                     return (
-                      <tr key={dir} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-3 text-slate-900 font-bold flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                      <tr key={dir} className="hover:bg-[#F8FAFC] transition-colors">
+                        <td className="py-2.5 px-3 text-[#0F2942] font-bold flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#003366]" />
                           {DIRECTION_LABELS[dir]?.name || dir}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-800 font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono text-slate-800 font-semibold">
                           {formatNumber(dirData?.currentPCU)}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-blue-700 font-bold">
+                        <td className="py-2.5 px-3 text-right font-mono text-[#003366] font-bold">
                           {formatNumber(forecasts?.min5)}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-blue-700 font-bold">
+                        <td className="py-2.5 px-3 text-right font-mono text-[#003366] font-bold">
                           {formatNumber(forecasts?.min10)}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-blue-700 font-bold">
+                        <td className="py-2.5 px-3 text-right font-mono text-[#003366] font-bold">
                           {formatNumber(forecasts?.min15)}
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-2.5 px-3 text-center">
                           {getRiskBadge(dirData?.congestionRisk)}
                         </td>
                       </tr>
@@ -408,23 +408,23 @@ export const PredictiveTrafficPanel = () => {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-500">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-500">
             <span>Weights: +5m (60/40), +10m (60/40), +15m (70/30)</span>
             <span className="italic">PCU = Car: 1.0, Bike: 0.5, Bus: 2.5, Truck: 2.5</span>
           </div>
         </div>
 
         {/* Compact Forecast Chart (5 cols on lg) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl p-5 border border-[#CBD5E1] shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Activity size={18} className="text-blue-600" />
+              <h3 className="text-sm font-bold text-[#0F2942] flex items-center gap-2">
+                <Activity size={16} className="text-[#003366]" />
                 Forecast Trajectory
               </h3>
-              <span className="text-xs font-bold text-slate-400">PCU by Direction</span>
+              <span className="text-[11px] font-bold text-slate-400">PCU by Direction</span>
             </div>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-xs text-slate-500 mb-4">
               Comparison across current and predicted horizons.
             </p>
 
@@ -437,9 +437,9 @@ export const PredictiveTrafficPanel = () => {
                     <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#07172E',
-                        borderRadius: '10px',
-                        border: '1px solid #1E293B',
+                        backgroundColor: '#0F2942',
+                        borderRadius: '8px',
+                        border: '1px solid #1E3A8A',
                         fontSize: '11px',
                         color: '#FFFFFF'
                       }}
@@ -448,33 +448,33 @@ export const PredictiveTrafficPanel = () => {
                     />
                     <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                     <Bar dataKey="current" name="Current" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="min5" name="+5 min" fill="#60A5FA" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="min10" name="+10 min" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="min15" name="+15 min" fill="#1D4ED8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="min5" name="+5 min" fill="#38BDF8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="min10" name="+10 min" fill="#0284C7" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="min15" name="+15 min" fill="#003366" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-full flex items-center justify-center text-slate-400 text-xs">
                   Awaiting forecast data...
                 </div>
               )}
             </div>
           </div>
 
-          <div className="mt-2 text-xs text-slate-500 text-center">
+          <div className="mt-2 text-[11px] text-slate-500 text-center">
             Bar heights correspond to Passenger Car Units (PCU)
           </div>
         </div>
       </div>
 
       {/* Traffic Pattern & Anomaly Status */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl p-5 border border-[#CBD5E1] shadow-xs space-y-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <AlertTriangle size={18} className="text-amber-500" />
+          <h3 className="text-sm font-bold text-[#0F2942] flex items-center gap-2">
+            <AlertTriangle size={16} className="text-amber-500" />
             Traffic Pattern & Deviation Analysis
           </h3>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Statistical deviation of observed traffic versus historical training distribution for this timestamp.
           </p>
         </div>
@@ -486,29 +486,29 @@ export const PredictiveTrafficPanel = () => {
             return (
               <div
                 key={dir}
-                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3"
+                className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg p-3.5 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-slate-900">
+                  <span className="font-bold text-xs text-[#0F2942]">
                     {DIRECTION_LABELS[dir]?.name || dir}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-[11px] uppercase tracking-wider text-slate-500 font-bold block mb-1">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold block mb-1">
                     Pattern Status
                   </span>
                   <div>{getAnomalyBadge(anomaly.status)}</div>
                 </div>
 
-                <div className="space-y-1 text-xs pt-2 border-t border-slate-200 font-mono">
+                <div className="space-y-1 text-xs pt-2 border-t border-[#CBD5E1] font-mono">
                   <div className="flex justify-between text-slate-600">
                     <span>Observed PCU:</span>
-                    <span className="text-slate-900 font-bold">{formatNumber(anomaly.observedPCU)}</span>
+                    <span className="text-[#0F2942] font-bold">{formatNumber(anomaly.observedPCU)}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Expected Historical:</span>
-                    <span className="text-slate-900 font-bold">{formatNumber(anomaly.expectedPCU)}</span>
+                    <span className="text-[#0F2942] font-bold">{formatNumber(anomaly.expectedPCU)}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Deviation %:</span>
@@ -532,18 +532,18 @@ export const PredictiveTrafficPanel = () => {
       </div>
 
       {/* Forecast Validation Section */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs space-y-4">
+      <div className="bg-white rounded-xl p-5 border border-[#CBD5E1] shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-teal-600" />
+            <h3 className="text-sm font-bold text-[#0F2942] flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-emerald-600" />
               Forecast Validation Metrics
             </h3>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Evaluated dynamically against held-out validation data for {selectedDate}.
             </p>
           </div>
-          <span className="text-xs px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700 font-bold self-start sm:self-auto">
+          <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-300 text-emerald-800 font-bold self-start sm:self-auto">
             Test Date: {selectedDate}
           </span>
         </div>
@@ -558,29 +558,29 @@ export const PredictiveTrafficPanel = () => {
             return (
               <div
                 key={horizon}
-                className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3"
+                className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-blue-700">{label}</span>
+                  <span className="font-bold text-xs text-[#003366]">{label}</span>
                   <span className="text-xs text-slate-500 font-mono font-medium">
                     {res?.samples ?? 0} samples
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#CBD5E1]">
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-slate-500 uppercase tracking-wider font-bold block">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">
                       MAE (PCU)
                     </span>
-                    <span className="text-xl font-black font-mono text-slate-900">
+                    <span className="text-xl font-black font-mono text-[#0F2942]">
                       {formatNumber(res?.mae, 2)}
                     </span>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-slate-500 uppercase tracking-wider font-bold block">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">
                       Validation Error (WAPE)
                     </span>
-                    <span className="text-xl font-black font-mono text-teal-700">
+                    <span className="text-xl font-black font-mono text-emerald-700">
                       {res?.wape !== null && res?.wape !== undefined ? `${formatNumber(res.wape, 2)}%` : 'N/A'}
                     </span>
                   </div>
@@ -590,18 +590,18 @@ export const PredictiveTrafficPanel = () => {
           })}
         </div>
 
-        <p className="text-xs text-slate-500 italic pt-1">
+        <p className="text-[11px] text-slate-500 italic pt-1">
           MAE shows the average PCU forecast error. WAPE shows total forecast error relative to actual traffic volume.
         </p>
       </div>
 
       {/* Mandatory Data Source & Scope Notice */}
-      <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs space-y-1 shadow-xs">
-        <div className="font-bold flex items-center gap-1.5 text-amber-800">
+      <div className="p-3.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1 shadow-xs">
+        <div className="font-bold flex items-center gap-1.5 text-amber-900">
           <Info size={14} className="text-amber-600" />
           Data Source & Intersection Scope Notice
         </div>
-        <p className="text-xs leading-relaxed text-amber-800/90">
+        <p className="text-[11px] leading-relaxed text-amber-800">
           Historical forecasting uses traffic count data from Jehangir Chowk, Pune. Recorded-video vehicle detection may use a separate demonstration video and should not be interpreted as the same physical intersection or timestamp.
         </p>
       </div>

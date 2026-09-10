@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSimulation } from '../context/SimulationContext';
 import { 
   Play, 
@@ -16,9 +16,14 @@ import {
   Sparkles,
   RefreshCw,
   Eye,
+  EyeOff,
+  MapPin,
+  Compass,
+  ChevronDown,
+  ChevronUp,
   Info
 } from 'lucide-react';
-import PredictiveTrafficPanel from '../components/PredictiveTrafficPanel';
+import LiveVisionTelemetryPanel from '../components/LiveVisionTelemetryPanel';
 
 const API_BASE = 'http://localhost:5000/api/video';
 
@@ -33,6 +38,48 @@ const DEFAULT_LINE = {
   start: [0.02, 0.65],
   end: [0.85, 0.65],
   incomingDirection: 'positive'
+};
+
+// Calibrated perspective approach queue zones for intersection CCTV
+const DEFAULT_APPROACH_ZONES = {
+  N: [
+    [0.36, 0.12],
+    [0.62, 0.12],
+    [0.65, 0.38],
+    [0.35, 0.38]
+  ],
+  E: [
+    [0.68, 0.38],
+    [0.99, 0.40],
+    [0.99, 0.75],
+    [0.65, 0.70]
+  ],
+  S: [
+    [0.35, 0.60],
+    [0.70, 0.60],
+    [0.75, 0.98],
+    [0.30, 0.98]
+  ],
+  W: [
+    [0.02, 0.28],
+    [0.35, 0.30],
+    [0.35, 0.65],
+    [0.02, 0.58]
+  ]
+};
+
+// Ray-casting point-in-polygon algorithm for normalized [0..1] coordinates
+const isPointInPolygon = (point, vs) => {
+  if (!vs || vs.length < 3) return false;
+  const x = point[0], y = point[1];
+  let inside = false;
+  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    const xi = vs[i][0], yi = vs[i][1];
+    const xj = vs[j][0], yj = vs[j][1];
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
 };
 
 const TrafficIntelligence = ({ onNavigate }) => {
@@ -51,7 +98,8 @@ const TrafficIntelligence = ({ onNavigate }) => {
   } = useSimulation();
 
   // Video Selection
-  const [selectedVideo, setSelectedVideo] = useState('bellevue_trial'); // 'bellevue_trial' or uploaded id
+  const [selectedVideo, setSelectedVideo] = useState('vid_sim'); // 'vid_sim' or uploaded id
+  const [bundledVideoInfo, setBundledVideoInfo] = useState({ videoId: 'vid_sim', title: 'Traffic Simulation Video (Default)' });
   const [uploadedVideoInfo, setUploadedVideoInfo] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -60,7 +108,12 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const [regionPoints, setRegionPoints] = useState(DEFAULT_REGION);
   const [lineConfig, setLineConfig] = useState(DEFAULT_LINE);
   const [mappedDirection, setMappedDirection] = useState('S');
-  const [drawingMode, setDrawingMode] = useState('none'); // 'none' | 'region' | 'line'
+  const [drawingMode, setDrawingMode] = useState('none'); // 'none' | 'region' | 'line' | 'approachZone'
+
+  // Configurable Directional Approach Queue Zones (N, E, S, W)
+  const [approachZones, setApproachZones] = useState(DEFAULT_APPROACH_ZONES);
+  const [showApproachZones, setShowApproachZones] = useState(true);
+  const [editingZone, setEditingZone] = useState('E'); // 'N' | 'E' | 'S' | 'W'
 
   // Analysis job state
   const [analysisStatus, setAnalysisStatus] = useState('IDLE'); // IDLE | RUNNING | COMPLETED | FAILED | CANCELLED
@@ -90,6 +143,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
     fetch(`${API_BASE}/bundled`)
       .then(res => res.json())
       .then(data => {
+        if (data.videoId) {
+          setBundledVideoInfo(data);
+          setSelectedVideo(data.videoId);
+        }
         if (data.defaultConfig) {
           setRegionPoints(data.defaultConfig.region);
           setLineConfig(data.defaultConfig.line);
@@ -100,7 +157,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              videoId: 'bellevue_trial',
+              videoId: data.videoId || 'vid_sim',
               region: data.defaultConfig.region,
               line: data.defaultConfig.line,
               mappedDirection: data.defaultConfig.mappedDirection,
@@ -264,6 +321,99 @@ const TrafficIntelligence = ({ onNavigate }) => {
     }
   };
 
+  // Live Frame Detections & Video-Derived Approach Queue Counts
+  // SOURCE OF TRUTH: YOLOv8 Detections -> ByteTrack Active Tracks -> Approach Polygon Assignment -> Unique Active Track IDs
+  const { liveApproachCounts, totalVisibleQueue, currentFrameDetections, assignedTracksByApproach } = useMemo(() => {
+    if (!analysisResults || !analysisResults.frames || analysisResults.frames.length === 0) {
+      return {
+        liveApproachCounts: { N: null, E: null, S: null, W: null },
+        totalVisibleQueue: null,
+        currentFrameDetections: [],
+        assignedTracksByApproach: { N: [], E: [], S: [], W: [] }
+      };
+    }
+
+    // Deterministically find the closest analyzed frame for current video timestamp
+    let closestFrame = null;
+    let minDiff = Infinity;
+    const frames = analysisResults.frames;
+    for (let i = 0; i < frames.length; i++) {
+      const diff = Math.abs(frames[i].videoTimeSec - currentTimeSec);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestFrame = frames[i];
+        if (diff < 0.05) break;
+      }
+    }
+
+    if (!closestFrame || !closestFrame.detections) {
+      return {
+        liveApproachCounts: { N: null, E: null, S: null, W: null },
+        totalVisibleQueue: null,
+        currentFrameDetections: [],
+        assignedTracksByApproach: { N: [], E: [], S: [], W: [] }
+      };
+    }
+
+    const assignedTracks = { N: [], E: [], S: [], W: [] };
+    const seenTrackIds = new Set();
+    const approachDirs = ['N', 'E', 'S', 'W'];
+
+    // Process every detected vehicle in this frame
+    closestFrame.detections.forEach((det, idx) => {
+      if (!det.bbox || det.bbox.length < 4) return;
+      const [bx1, by1, bx2, by2] = det.bbox;
+      // Anchor: bottom-center of bounding box (represents vehicle's road position)
+      const anchorX = (bx1 + bx2) / 2;
+      const anchorY = by2;
+      const anchor = [anchorX, anchorY];
+
+      // Track identification
+      const trackKey = (det.trackId !== null && det.trackId !== undefined) ? det.trackId : `untracked-${idx}`;
+
+      // Enforce: each vehicle belongs to AT MOST ONE approach at a time
+      if (seenTrackIds.has(trackKey)) return;
+
+      for (const dir of approachDirs) {
+        const zonePoly = approachZones[dir];
+        if (zonePoly && zonePoly.length >= 3 && isPointInPolygon(anchor, zonePoly)) {
+          seenTrackIds.add(trackKey);
+          assignedTracks[dir].push({
+            trackId: det.trackId,
+            type: det.type || 'car',
+            confidence: det.confidence,
+            bbox: det.bbox,
+            anchor
+          });
+          break; // Stop at first matched approach
+        }
+      }
+    });
+
+    const counts = { N: null, E: null, S: null, W: null };
+    let total = 0;
+    let hasAnyConfigured = false;
+
+    approachDirs.forEach(dir => {
+      const zonePoly = approachZones[dir];
+      if (zonePoly && zonePoly.length >= 3) {
+        hasAnyConfigured = true;
+        const count = assignedTracks[dir].length;
+        counts[dir] = count;
+        total += count;
+      } else {
+        counts[dir] = null; // Unconfigured / Not visible -> N/A
+      }
+    });
+
+    return {
+      liveApproachCounts: counts,
+      totalVisibleQueue: hasAnyConfigured ? total : null,
+      currentFrameDetections: closestFrame.detections,
+      assignedTracksByApproach: assignedTracks
+    };
+  }, [analysisResults, currentTimeSec, approachZones]);
+
   // Canvas drawing & video bounding box overlay
   const renderCanvasOverlay = useCallback(() => {
     const canvas = canvasRef.current;
@@ -276,7 +426,74 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
     ctx.clearRect(0, 0, w, h);
 
-    // 1. Draw Region Polygon
+    // 1. Draw Directional Approach Queue Zones (if enabled)
+    if (showApproachZones && approachZones) {
+      const zoneVisuals = {
+        N: { stroke: '#0284c7', fill: 'rgba(56, 189, 248, 0.12)', label: 'NORTH', arrow: '↑' },
+        E: { stroke: '#d97706', fill: 'rgba(245, 158, 11, 0.12)', label: 'EAST', arrow: '→' },
+        S: { stroke: '#059669', fill: 'rgba(16, 185, 129, 0.12)', label: 'SOUTH', arrow: '↓' },
+        W: { stroke: '#7c3aed', fill: 'rgba(139, 92, 246, 0.12)', label: 'WEST', arrow: '←' }
+      };
+
+      Object.entries(approachZones).forEach(([dir, points]) => {
+        if (!points || points.length < 3) return;
+        const visual = zoneVisuals[dir] || { stroke: '#64748b', fill: 'rgba(100, 116, 139, 0.1)' };
+        const isCurrentlyEditing = drawingMode === 'approachZone' && editingZone === dir;
+
+        ctx.beginPath();
+        points.forEach(([ptX, ptY], idx) => {
+          const x = ptX * w;
+          const y = ptY * h;
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+
+        ctx.fillStyle = isCurrentlyEditing ? 'rgba(245, 158, 11, 0.25)' : visual.fill;
+        ctx.fill();
+        ctx.strokeStyle = isCurrentlyEditing ? '#f59e0b' : visual.stroke;
+        ctx.lineWidth = isCurrentlyEditing ? 3 : 2;
+        ctx.setLineDash(isCurrentlyEditing ? [6, 4] : [4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Vertices if editing this zone
+        if (isCurrentlyEditing) {
+          points.forEach(([ptX, ptY]) => {
+            ctx.beginPath();
+            ctx.arc(ptX * w, ptY * h, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+        }
+
+        // Live Count Badge / Label pill in zone center (using EXACT same count as right panel!)
+        const countVal = liveApproachCounts[dir];
+        const countText = countVal !== null 
+          ? `${visual.label} ${visual.arrow} : ${String(countVal).padStart(2, '0')} VEHICLES`
+          : `${visual.label} ${visual.arrow} : N/A`;
+
+        let sumX = 0, sumY = 0;
+        points.forEach(([px, py]) => { sumX += px; sumY += py; });
+        const cx = (sumX / points.length) * w;
+        const cy = (sumY / points.length) * h;
+
+        ctx.font = 'bold 11px sans-serif';
+        const tw = ctx.measureText(countText).width;
+        ctx.fillStyle = 'rgba(15, 41, 66, 0.88)';
+        ctx.fillRect(cx - tw / 2 - 8, cy - 12, tw + 16, 22);
+        ctx.strokeStyle = visual.stroke;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(cx - tw / 2 - 8, cy - 12, tw + 16, 22);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(countText, cx - tw / 2, cy + 3);
+      });
+    }
+
+    // 2. Draw Region Polygon
     if (regionPoints && regionPoints.length > 0) {
       ctx.beginPath();
       regionPoints.forEach(([ptX, ptY], idx) => {
@@ -287,27 +504,28 @@ const TrafficIntelligence = ({ onNavigate }) => {
       });
       ctx.closePath();
 
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.08)';
       ctx.fill();
       ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Draw Region Vertices
-      regionPoints.forEach(([ptX, ptY]) => {
-        ctx.beginPath();
-        ctx.arc(ptX * w, ptY * h, 5, 0, Math.PI * 2);
-        ctx.fillStyle = '#2563eb';
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      });
+      if (drawingMode === 'region') {
+        regionPoints.forEach(([ptX, ptY]) => {
+          ctx.beginPath();
+          ctx.arc(ptX * w, ptY * h, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#2563eb';
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        });
+      }
     }
 
-    // 2. Draw Counting Line & Direction Arrow
+    // 3. Draw Counting Line & Direction Arrow
     if (lineConfig && lineConfig.start && lineConfig.end) {
       const lx1 = lineConfig.start[0] * w;
       const ly1 = lineConfig.start[1] * h;
@@ -315,7 +533,6 @@ const TrafficIntelligence = ({ onNavigate }) => {
       const ly2 = lineConfig.end[1] * h;
 
       const curSec = video.currentTime;
-      // Check if an arrival event is actively crossing the line (within 0.7s)
       const crossingEvent = (analysisResults?.arrivalEvents || []).find(
         e => Math.abs(e.videoTimeSec - curSec) < 0.7
       );
@@ -324,18 +541,18 @@ const TrafficIntelligence = ({ onNavigate }) => {
       ctx.moveTo(lx1, ly1);
       ctx.lineTo(lx2, ly2);
       ctx.strokeStyle = crossingEvent ? '#10b981' : '#ef4444';
-      ctx.lineWidth = crossingEvent ? 6 : 3;
+      ctx.lineWidth = crossingEvent ? 5 : 2.5;
       if (crossingEvent) {
         ctx.shadowColor = '#10b981';
         ctx.shadowBlur = 14;
       }
       ctx.stroke();
-      ctx.shadowBlur = 0; // reset shadow
+      ctx.shadowBlur = 0;
 
       // Line Endpoints
       [ [lx1, ly1], [lx2, ly2] ].forEach(([x, y]) => {
         ctx.beginPath();
-        ctx.arc(x, y, crossingEvent ? 8 : 6, 0, Math.PI * 2);
+        ctx.arc(x, y, crossingEvent ? 7 : 5, 0, Math.PI * 2);
         ctx.fillStyle = crossingEvent ? '#10b981' : '#dc2626';
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
@@ -352,7 +569,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
       const normalY = dx;
       const normLen = Math.sqrt(normalX * normalX + normalY * normalY) || 1;
       
-      const arrowLen = 20;
+      const arrowLen = 18;
       const sign = lineConfig.incomingDirection === 'positive' ? 1 : -1;
       const ax = mx + (normalX / normLen) * arrowLen * sign;
       const ay = my + (normalY / normLen) * arrowLen * sign;
@@ -361,52 +578,70 @@ const TrafficIntelligence = ({ onNavigate }) => {
       ctx.moveTo(mx, my);
       ctx.lineTo(ax, ay);
       ctx.strokeStyle = crossingEvent ? '#10b981' : '#f59e0b';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // If active crossing event, draw energetic crossing badge
       if (crossingEvent) {
         const badgeText = `⚡ CROSSING: ${(crossingEvent.vehicleType || 'car').toUpperCase()} #${crossingEvent.trackId}`;
-        ctx.font = 'bold 12px sans-serif';
+        ctx.font = 'bold 11px sans-serif';
         const tw = ctx.measureText(badgeText).width;
         ctx.fillStyle = 'rgba(16, 185, 129, 0.95)';
-        ctx.fillRect(mx - tw / 2 - 8, my - 26, tw + 16, 22);
+        ctx.fillRect(mx - tw / 2 - 8, my - 24, tw + 16, 20);
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(badgeText, mx - tw / 2, my - 11);
+        ctx.fillText(badgeText, mx - tw / 2, my - 10);
       }
     }
 
-    // 3. Draw Detections for Current Video Timestamp (if analyzed)
-    if (analysisResults && analysisResults.frames) {
-      const curSec = video.currentTime;
-      // Find closest frame result
-      const frameMatch = analysisResults.frames.find(f => Math.abs(f.videoTimeSec - curSec) < 0.25);
-      
-      if (frameMatch && frameMatch.detections) {
-        frameMatch.detections.forEach(det => {
-          const [bx1, by1, bx2, by2] = det.bbox;
-          const rx = bx1 * w;
-          const ry = by1 * h;
-          const rw = (bx2 - bx1) * w;
-          const rh = (by2 - by1) * h;
+    // 4. Draw Detections for Current Video Timestamp with Approach Color & Anchor Points
+    if (currentFrameDetections && currentFrameDetections.length > 0) {
+      currentFrameDetections.forEach(det => {
+        const [bx1, by1, bx2, by2] = det.bbox;
+        const rx = bx1 * w;
+        const ry = by1 * h;
+        const rw = (bx2 - bx1) * w;
+        const rh = (by2 - by1) * h;
+        const anchorX = ((bx1 + bx2) / 2) * w;
+        const anchorY = by2 * h;
 
-          ctx.strokeStyle = det.inRoi ? '#10b981' : '#64748b';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(rx, ry, rw, rh);
+        // Find which approach this vehicle belongs to
+        let assignedDir = null;
+        for (const [dir, tracks] of Object.entries(assignedTracksByApproach)) {
+          if (tracks.some(t => t.trackId === det.trackId)) {
+            assignedDir = dir;
+            break;
+          }
+        }
 
-          // Track label
-          const trackLabel = (det.trackId !== null && det.trackId !== undefined) ? `#${det.trackId}` : 'untracked';
-          const labelText = `${det.type} ${trackLabel}`;
-          ctx.fillStyle = det.inRoi ? '#10b981' : '#64748b';
-          ctx.fillRect(rx, ry - 18, Math.max(60, ctx.measureText(labelText).width + 10), 18);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 10px sans-serif';
-          ctx.fillText(labelText, rx + 4, ry - 5);
-        });
-      }
+        const boxColor = assignedDir === 'E' ? '#d97706'
+          : assignedDir === 'W' ? '#7c3aed'
+          : assignedDir === 'N' ? '#0284c7'
+          : assignedDir === 'S' ? '#059669'
+          : det.inRoi ? '#10b981' : '#64748b';
+
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = assignedDir ? 2.5 : 1.5;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        // Draw road-contact anchor point at bottom-center
+        ctx.beginPath();
+        ctx.arc(anchorX, anchorY, 4, 0, Math.PI * 2);
+        ctx.fillStyle = boxColor;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Track label
+        const trackLabel = (det.trackId !== null && det.trackId !== undefined) ? `#${det.trackId}` : 'untracked';
+        const labelText = assignedDir ? `${det.type} ${trackLabel} [${assignedDir}]` : `${det.type} ${trackLabel}`;
+        ctx.fillStyle = boxColor;
+        ctx.fillRect(rx, ry - 18, Math.max(60, ctx.measureText(labelText).width + 10), 18);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(labelText, rx + 4, ry - 5);
+      });
     }
-  }, [regionPoints, lineConfig, analysisResults]);
-
+  }, [regionPoints, lineConfig, analysisResults, approachZones, showApproachZones, drawingMode, editingZone, liveApproachCounts, assignedTracksByApproach, currentFrameDetections]);
 
   // Video timeupdate loop
   const handleTimeUpdate = () => {
@@ -419,6 +654,11 @@ const TrafficIntelligence = ({ onNavigate }) => {
       renderCanvasOverlay();
     }
   };
+
+  // Keep overlay fresh whenever paused or geometry changes
+  useEffect(() => {
+    renderCanvasOverlay();
+  }, [currentTimeSec, approachZones, showApproachZones, editingZone, drawingMode, analysisResults, renderCanvasOverlay]);
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
@@ -443,7 +683,20 @@ const TrafficIntelligence = ({ onNavigate }) => {
     const clickX = parseFloat(((e.clientX - rect.left) / rect.width).toFixed(4));
     const clickY = parseFloat(((e.clientY - rect.top) / rect.height).toFixed(4));
 
-    if (drawingMode === 'region') {
+    if (drawingMode === 'approachZone') {
+      const currentPts = approachZones[editingZone] || [];
+      if (currentPts.length >= 4) {
+        setApproachZones(prev => ({
+          ...prev,
+          [editingZone]: [[clickX, clickY]]
+        }));
+      } else {
+        setApproachZones(prev => ({
+          ...prev,
+          [editingZone]: [...currentPts, [clickX, clickY]]
+        }));
+      }
+    } else if (drawingMode === 'region') {
       if (regionPoints.length >= 4) {
         setRegionPoints([[clickX, clickY]]);
       } else {
@@ -486,29 +739,29 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const isCrossingJustNow = recentCrossing && Math.abs(currentTimeSec - recentCrossing.videoTimeSec) < 2.0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
-                <Sparkles size={13} />
-                Phase 2 Traffic Intelligence
+      <div className="bg-white rounded-xl shadow-xs p-5 border border-[#CBD5E1]">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
+                MoRTH Live Vision
               </span>
+              <span className="text-xs font-semibold text-slate-500">Node #04 • BKC Camera Grid</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-              Recorded Video Vehicle Detection & Tracking
+            <h1 className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">
+              Integrated Traffic Management System (ITMS) • Camera AI & Video Grid
             </h1>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Analyze incoming traffic footage, map one road approach (N, S, E, or W), and stream deduplicated arrival events into the active adaptive signal simulator.
+            <p className="text-xs text-slate-600 mt-0.5">
+              📍 Optical Vehicle Detection & ByteTrack Actuation • Real-Time Stream Ingestion
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-4 py-2 text-xs font-bold rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white flex items-center gap-1.5 transition shadow-xs cursor-pointer active:scale-95"
             >
               <Eye size={14} />
               <span>View Simulator</span>
@@ -518,56 +771,49 @@ const TrafficIntelligence = ({ onNavigate }) => {
       </div>
 
       {/* Main Workspace Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left 8 Cols: Video Player & Overlay Canvas */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-xs p-5 space-y-4">
             
             {/* Video Selector & Controls Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
-              <div className="flex items-center space-x-3">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <Video size={15} /> Video Source:
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2.5">
+                <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider flex items-center gap-1">
+                  <Video size={14} className="text-[#003366]" /> Video Source:
                 </span>
-                <button
-                  onClick={() => { setSelectedVideo('bellevue_trial'); setAnalysisResults(null); }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                    selectedVideo === 'bellevue_trial'
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  Bellevue Trial Video (Default)
-                </button>
-
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept="video/*"
-                  className="hidden"
-                />
-
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5"
-                >
-                  <Upload size={14} />
-                  {isUploading ? 'Uploading...' : 'Upload Video'}
-                </button>
+                <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#003366] text-white shadow-xs">
+                  {bundledVideoInfo.title || 'Traffic Simulation Video (Default)'}
+                </span>
               </div>
 
+              {/* Analysis Execution Button in Video Corner (where timer previously was) */}
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-mono font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
-                  {currentTimeSec.toFixed(1)}s / {videoDurationSec.toFixed(1)}s
-                </span>
+                {analysisStatus === 'RUNNING' ? (
+                  <div className="flex items-center gap-2 bg-[#F1F5F9] border border-[#CBD5E1] px-2.5 py-1 rounded-lg">
+                    <span className="text-xs font-bold text-[#0F2942]">Analyzing... {analysisProgress}%</span>
+                    <button
+                      onClick={handleCancelAnalysis}
+                      className="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-xs font-bold hover:bg-red-100 cursor-pointer transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleStartAnalysis}
+                    className="px-3.5 py-1.5 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Sparkles size={14} />
+                    Analyze Video (YOLO Tracking)
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Video Container with Canvas Overlay */}
-            <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-video group shadow-inner border border-slate-800">
+            <div className="relative rounded-xl overflow-hidden bg-slate-950 aspect-video group shadow-inner border border-slate-800">
               <video
                 ref={videoRef}
                 src={`${API_BASE}/stream/${selectedVideo}`}
@@ -600,7 +846,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                         setIsReplayComplete(false);
                       }
                     }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md flex items-center gap-2"
+                    className="px-4 py-2 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer"
                   >
                     <RotateCcw size={14} /> Restart Replay
                   </button>
@@ -609,7 +855,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
             </div>
 
             {/* Video Controls Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => {
@@ -623,7 +869,8 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       }
                     }
                   }}
-                  className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
+                  className="p-2 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white shadow-xs transition-all cursor-pointer"
+                  title={isPlaying ? 'Pause replay' : 'Play replay'}
                 >
                   {isPlaying ? <Pause size={18} /> : <Play size={18} />}
                 </button>
@@ -634,373 +881,313 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       videoRef.current.currentTime = 0;
                     }
                   }}
-                  className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
+                  className="p-2 rounded-lg bg-[#F1F5F9] hover:bg-slate-200 text-[#475569] border border-[#CBD5E1] transition-all cursor-pointer"
                   title="Rewind to start"
                 >
                   <RotateCcw size={18} />
                 </button>
 
                 <div className="flex items-center space-x-1.5 pl-2">
-                  <span className="text-xs text-slate-500 font-medium">Speed:</span>
-                  {[0.5, 1.0, 2.0].map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setSpeed(s)}
-                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-all ${
-                        simulationSpeed === s ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {s}x
-                    </button>
-                  ))}
+                  <span className="text-xs text-slate-500 font-semibold">Speed:</span>
+                  <div className="flex items-center p-0.5 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
+                    {[0.5, 1.0, 2.0].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setSpeed(s)}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                          simulationSpeed === s
+                            ? 'bg-[#003366] text-white shadow-xs'
+                            : 'text-[#475569] hover:text-[#0F2942]'
+                        }`}
+                      >
+                        {s}x
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* Drawing Toolbar */}
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Show/Hide Zones Toggle */}
+                <button
+                  onClick={() => setShowApproachZones(!showApproachZones)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    showApproachZones
+                      ? 'bg-blue-50 border-blue-300 text-[#003366]'
+                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
+                  }`}
+                  title="Toggle approach queue zones & count overlays on video"
+                >
+                  {showApproachZones ? <Eye size={14} /> : <EyeOff size={14} />}
+                  <span>Zones {showApproachZones ? 'ON' : 'OFF'}</span>
+                </button>
+
+                {/* Edit Approach Zones Button */}
+                <button
+                  onClick={() => setDrawingMode(drawingMode === 'approachZone' ? 'none' : 'approachZone')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    drawingMode === 'approachZone'
+                      ? 'bg-[#003366] border-[#003366] text-white shadow-xs'
+                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
+                  }`}
+                  title="Configure directional road queue polygons for each approach"
+                >
+                  <MapPin size={14} />
+                  <span>Edit Approach Zones</span>
+                </button>
+
+                {/* Edit ROI */}
                 <button
                   onClick={() => setDrawingMode(drawingMode === 'region' ? 'none' : 'region')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                     drawingMode === 'region'
-                      ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-sm'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-[#003366] border-[#003366] text-white shadow-xs'
+                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
                   }`}
                 >
                   <Layers size={14} />
-                  Edit Region ({regionPoints.length}/4)
+                  ROI ({regionPoints.length}/4)
                 </button>
 
+                {/* Edit Counting Line */}
                 <button
                   onClick={() => setDrawingMode(drawingMode === 'line' ? 'none' : 'line')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
                     drawingMode === 'line'
-                      ? 'bg-red-50 border-red-300 text-red-700 shadow-sm'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-amber-500 border-amber-600 text-white shadow-xs'
+                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
                   }`}
                 >
                   <Crosshair size={14} />
-                  Edit Counting Line
+                  Line
                 </button>
 
                 <button
                   onClick={() => {
                     setRegionPoints(DEFAULT_REGION);
                     setLineConfig(DEFAULT_LINE);
+                    setApproachZones(DEFAULT_APPROACH_ZONES);
                   }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                  title="Reset Region & Line Geometry"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-[#0F2942] hover:bg-[#F1F5F9] border border-[#CBD5E1] cursor-pointer"
+                  title="Reset All Region, Line & Approach Geometry"
                 >
                   <RotateCcw size={16} />
                 </button>
               </div>
             </div>
+
+            {/* Sub-Bar for Approach Zone Editing */}
+            {drawingMode === 'approachZone' && (
+              <div className="p-3 bg-amber-50/80 border border-amber-300 rounded-xl space-y-2.5 animate-in fade-in duration-200">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-[#0F2942] uppercase tracking-wider flex items-center gap-1">
+                      <MapPin size={14} className="text-amber-600" />
+                      Select Zone:
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {[
+                        { dir: 'N', label: 'North' },
+                        { dir: 'E', label: 'East' },
+                        { dir: 'S', label: 'South' },
+                        { dir: 'W', label: 'West' }
+                      ].map(({ dir, label }) => {
+                        const pts = approachZones[dir];
+                        const isConf = pts && pts.length >= 3;
+                        return (
+                          <button
+                            key={dir}
+                            onClick={() => setEditingZone(dir)}
+                            className={`px-2.5 py-1 rounded-md text-xs font-bold transition border cursor-pointer ${
+                              editingZone === dir
+                                ? 'bg-[#003366] text-white border-[#003366] shadow-xs'
+                                : 'bg-white border-[#CBD5E1] text-[#475569] hover:text-[#0F2942]'
+                            }`}
+                          >
+                            {dir}: {label} ({isConf ? `${pts.length} pts` : 'N/A'})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setApproachZones(prev => ({ ...prev, [editingZone]: null }));
+                      }}
+                      className="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-red-600 border border-red-300 hover:bg-red-50 cursor-pointer transition"
+                      title={`Mark ${editingZone} as not visible from this camera (shows N/A)`}
+                    >
+                      Clear {editingZone} (Set N/A)
+                    </button>
+                    <button
+                      onClick={() => setApproachZones(DEFAULT_APPROACH_ZONES)}
+                      className="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-[#475569] border border-[#CBD5E1] hover:bg-slate-100 cursor-pointer transition"
+                    >
+                      Reset Defaults
+                    </button>
+                    <button
+                      onClick={() => setDrawingMode('none')}
+                      className="px-3 py-1 rounded-md text-xs font-bold bg-[#003366] text-white hover:bg-[#0F2942] cursor-pointer shadow-xs transition"
+                    >
+                      Done Editing
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[11px] text-amber-900 leading-tight">
+                  👉 Click 4 corners on the video canvas to define the queue detection polygon for <strong>Approach {editingZone}</strong>. Vehicles with bottom road-contact anchor in this zone will contribute to the live {editingZone} queue.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right 4 Cols: Configuration & Analysis Controls */}
         <div className="lg:col-span-4 space-y-6">
           
-          {/* Approach & Line Mapping Panel */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Sliders size={18} className="text-blue-600" />
-              Approach Mapping
-            </h3>
 
-            {/* Road Direction Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Map Video Incoming Road To:
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {['N', 'S', 'E', 'W'].map(dir => (
-                  <button
+          {/* LIVE SIGNAL QUEUE STATUS PANEL (DIRECT VIDEO AI OBSERVATION) */}
+          <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-xs p-5 space-y-4 animate-in fade-in duration-300">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
+                    Direct Camera Feed
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-500">YOLOv8 + ByteTrack</span>
+                </div>
+                <h3 className="text-sm font-black text-[#0F2942] flex items-center gap-1.5 mt-1">
+                  <Activity size={16} className="text-emerald-600" />
+                  LIVE SIGNAL QUEUE STATUS
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Direct optical count of vehicles waiting in each camera approach zone
+                </p>
+              </div>
+              <span className="px-2 py-1 rounded-md text-[10px] font-bold border transition-all flex-shrink-0 bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-400/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                {isPlaying ? 'Live Video' : 'Paused Frame'}
+              </span>
+            </div>
+
+            {/* 4 Approach Queue Cards (NORTH, EAST, SOUTH, WEST) */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { dir: 'N', name: 'NORTH', arrow: '↑' },
+                { dir: 'E', name: 'EAST', arrow: '→' },
+                { dir: 'S', name: 'SOUTH', arrow: '↓' },
+                { dir: 'W', name: 'WEST', arrow: '←' }
+              ].map(({ dir, name, arrow }) => {
+                const count = liveApproachCounts[dir];
+                const isVisible = count !== null;
+                const activeTracks = assignedTracksByApproach[dir] || [];
+
+                return (
+                  <div
                     key={dir}
-                    onClick={() => setMappedDirection(dir)}
-                    className={`py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                      mappedDirection === dir
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    className={`p-3.5 rounded-xl border transition-all ${
+                      isVisible
+                        ? 'bg-[#F8FAFC] border-[#CBD5E1] shadow-xs'
+                        : 'bg-slate-50/80 border-dashed border-slate-300 opacity-75'
                     }`}
                   >
-                    {dir} ({dir === 'N' ? 'North' : dir === 'S' ? 'South' : dir === 'E' ? 'East' : 'West'})
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-slate-400 italic">
-                Incoming crossings from the video will spawn as arrivals strictly on the {mappedDirection} approach of the simulator.
-              </p>
-            </div>
-
-            {/* Counting Line Direction Selector */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Counting Crossing Direction:
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setLineConfig({ ...lineConfig, incomingDirection: 'positive' })}
-                  className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
-                    lineConfig.incomingDirection === 'positive'
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                      : 'bg-white border-slate-200 text-slate-700'
-                  }`}
-                >
-                  Arrow Direction (Forward)
-                </button>
-                <button
-                  onClick={() => setLineConfig({ ...lineConfig, incomingDirection: 'negative' })}
-                  className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
-                    lineConfig.incomingDirection === 'negative'
-                      ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                      : 'bg-white border-slate-200 text-slate-700'
-                  }`}
-                >
-                  Opposite Arrow (Reverse)
-                </button>
-              </div>
-              <p className="text-[11px] text-slate-400 italic">
-                Counts vehicles moving across the line in the direction of the perpendicular orange arrow.
-              </p>
-            </div>
-
-
-            {/* Analysis Execution Control */}
-            <div className="pt-4 border-t border-slate-100 space-y-3">
-              {analysisStatus === 'RUNNING' ? (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-semibold text-slate-700">
-                    <span>Analyzing Video...</span>
-                    <span>{analysisProgress}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${analysisProgress}%` }}
-                    />
-                  </div>
-                  <button
-                    onClick={handleCancelAnalysis}
-                    className="w-full py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100 transition-all"
-                  >
-                    Cancel Analysis
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleStartAnalysis}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-                >
-                  <Sparkles size={16} />
-                  Analyze Video (YOLO Tracking)
-                </button>
-              )}
-
-              {/* Error Alert */}
-              {analysisError && (
-                <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs space-y-1">
-                  <div className="font-bold flex items-center gap-1.5">
-                    <AlertTriangle size={14} /> Analysis Error
-                  </div>
-                  <div className="text-[11px] leading-relaxed">{analysisError}</div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Analysis & Live Replay Stream Panel */}
-          {analysisResults && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5 animate-in fade-in duration-300">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Activity size={18} className="text-emerald-600" />
-                    Detection & Arrival Stream
-                  </h3>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    {videoReplayActive ? `Streaming video arrivals into approach ${mappedDirection}` : isPlaying ? 'Playback active — tracking line crossings' : 'Ready to stream into simulation'}
-                  </p>
-                </div>
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all flex-shrink-0 ${
-                  videoReplayActive 
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-400/20' 
-                    : isPlaying && liveEventsCount > 0
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : 'bg-slate-100 text-slate-600 border-slate-200'
-                }`}>
-                  {videoReplayActive ? <><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1" /> Live Injected</> : isPlaying ? '▶ Live Playback' : 'Offline Scan'}: {liveEventsCount} / {totalEventsCount}
-                </span>
-              </div>
-
-              {/* Real-time Streaming Progress Bar */}
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                    {videoReplayActive ? (
-                      <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-[#0F2942] tracking-wider flex items-center gap-1">
+                        <span>{name}</span>
+                        <span className="text-slate-400 font-bold">{arrow}</span>
                       </span>
-                    ) : isPlaying ? (
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                    ) : (
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-300"></span>
-                    )}
-                    <span>{liveEventsCount} of {totalEventsCount} Vehicles Crossed Line</span>
-                  </span>
-                  <span className="font-mono font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
-                    {livePercent}%
-                  </span>
-                </div>
-                <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full transition-all duration-300 shadow-sm"
-                    style={{ width: `${livePercent}%` }}
-                  />
-                </div>
-              </div>
+                      <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                        isVisible ? 'bg-[#003366] text-white' : 'bg-slate-200 text-slate-600'
+                      }`}>
+                        {isVisible ? 'Video AI' : 'Not Visible'}
+                      </span>
+                    </div>
 
-              {/* Class Breakdown Grid: Live Crossed / Total in Video */}
-              <div className="space-y-1">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex justify-between px-1">
-                  <span>Vehicle Breakdown</span>
-                  <span className="text-[10px] text-slate-400">Crossed / Total Detected</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  {['car', 'bike', 'bus', 'truck'].map(cls => {
-                    const liveCnt = liveCountsByClass[cls] || 0;
-                    const totalCnt = totalCountsByClass[cls] || 0;
-                    const hasActive = liveCnt > 0;
-                    return (
-                      <div 
-                        key={cls} 
-                        className={`p-2.5 rounded-xl border transition-all ${
-                          hasActive ? 'bg-emerald-50/50 border-emerald-200 shadow-sm' : 'bg-slate-50 border-slate-100'
-                        }`}
-                      >
-                        <div className="text-[10px] text-slate-400 uppercase font-bold">{cls}</div>
-                        <div className="flex items-baseline justify-center gap-1 mt-0.5">
-                          <span className={`text-base font-extrabold ${hasActive ? 'text-emerald-700' : 'text-slate-800'}`}>
-                            {liveCnt}
-                          </span>
-                          <span className="text-[11px] text-slate-400 font-semibold">
-                            / {totalCnt}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    <div className="my-2 flex items-baseline gap-2">
+                      {isVisible ? (
+                        <span className="text-3xl font-black font-mono text-[#0F2942] tracking-tight">
+                          {String(count).padStart(2, '0')}
+                        </span>
+                      ) : (
+                        <span className="text-2xl font-black font-mono text-slate-400">
+                          N/A
+                        </span>
+                      )}
+                      <span className="text-[11px] font-bold text-slate-500">
+                        {isVisible ? 'Vehicles Waiting' : 'Not in View'}
+                      </span>
+                    </div>
 
-              {/* Active Crossing Alert / Recent Crossing Toast */}
-              {recentCrossing ? (
-                <div className={`p-3 rounded-2xl border text-xs flex items-center justify-between transition-all ${
-                  isCrossingJustNow 
-                    ? 'bg-emerald-100/80 border-emerald-300 text-emerald-900 shadow-sm ring-2 ring-emerald-400/20' 
-                    : 'bg-slate-50 border-slate-200 text-slate-600'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={15} className={isCrossingJustNow ? 'text-emerald-600 animate-bounce' : 'text-slate-400'} />
-                    <span>
-                      <strong>{(recentCrossing.vehicleType || 'car').toUpperCase()} #{recentCrossing.trackId}</strong> crossed at {recentCrossing.videoTimeSec.toFixed(1)}s
-                    </span>
+                    <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200/60 flex items-center justify-between">
+                      {isVisible ? (
+                        <>
+                          <span>Track IDs:</span>
+                          <span className="font-mono font-bold text-[#003366] truncate max-w-[90px]" title={activeTracks.map(t => `#${t.trackId}`).join(', ')}>
+                            {activeTracks.length > 0
+                              ? activeTracks.map(t => `#${t.trackId}`).slice(0, 3).join(', ') + (activeTracks.length > 3 ? ` +${activeTracks.length - 3}` : '')
+                              : '0 active'}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="italic text-slate-400">Camera zone not set</span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700">
-                    → Approach {recentCrossing.mappedDirection || mappedDirection}
-                  </span>
+                );
+              })}
+            </div>
+
+            {/* TOTAL VISIBLE QUEUE BANNER */}
+            <div className="p-3.5 rounded-xl bg-[#0F2942] text-white shadow-xs flex items-center justify-between">
+              <div>
+                <div className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
+                  Total Visible Queue (Direct Video Observation)
                 </div>
+                <div className="text-2xl font-black font-mono tracking-tight text-white mt-0.5">
+                  {totalVisibleQueue !== null ? `${String(totalVisibleQueue).padStart(2, '0')} VEHICLES` : 'N/A'}
+                </div>
+              </div>
+              <div className="text-right text-[10px] text-slate-300 max-w-[150px] leading-tight">
+                Physical count from camera perspective. Zero simulator estimation.
+              </div>
+            </div>
+
+            {/* Simulation Link Button */}
+            <div className="pt-1">
+              {videoReplayActive ? (
+                <button
+                  onClick={handleStopSimulation}
+                  className="w-full py-2.5 rounded-lg bg-[#0F2942] hover:bg-slate-900 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Pause size={16} /> Stop Video Replay (Return to Random Traffic)
+                </button>
               ) : (
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-xs flex items-center gap-2">
-                  <Info size={13} className="text-slate-400 flex-shrink-0" />
-                  <span className="text-[11px]">As vehicles cross the counting line, arrivals stream in real-time to Approach {mappedDirection}.</span>
-                </div>
+                <button
+                  onClick={handleStartSimulation}
+                  className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Play size={16} /> Stream Video Arrivals into Intersection Simulator
+                </button>
               )}
-
-              {/* Active Simulator Stream Status */}
-              {videoReplayActive && (
-                <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs animate-in fade-in duration-300">
-                  <div className="space-y-0.5">
-                    <div className="font-bold text-blue-900 flex items-center gap-1.5">
-                      <Activity size={14} className="text-blue-600" />
-                      Approach {mappedDirection} Active Queue: <span className="text-blue-700 font-black">{simState?.queues?.[mappedDirection] || 0}</span> vehicles
-                    </div>
-                    <div className="text-[11px] text-blue-700">
-                      Adaptive signal controller optimizing green time for incoming stream
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => onNavigate && onNavigate('live-intersection')}
-                    className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold text-[11px] hover:bg-blue-700 transition-all flex items-center gap-1 shadow-sm flex-shrink-0"
-                  >
-                    View Simulator <ArrowRight size={12} />
-                  </button>
-                </div>
-              )}
-
-              {/* Start Video Simulation Action Button */}
-              <div className="pt-1">
-                {videoReplayActive ? (
-                  <button
-                    onClick={handleStopSimulation}
-                    className="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
-                  >
-                    <Pause size={16} /> Stop Video Replay (Return to Random Traffic)
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleStartSimulation}
-                    className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-                  >
-                    <Play size={16} /> Start Video-Driven Simulation
-                  </button>
-                )}
-              </div>
-
-              {/* Offline Full Video Pre-Scan Details */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <span>Offline YOLOv8 Pre-Scan Info</span>
-                  <span className="text-slate-600 font-mono">{analysisResults.videoMetadata?.durationSec || 158.6}s duration</span>
-                </div>
-                <div className="text-xs space-y-1.5 text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100 font-mono">
-                  <div className="flex justify-between">
-                    <span>Total Crossings Detected:</span>
-                    <span className="font-bold text-slate-800">{totalEventsCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Unique Tracks:</span>
-                    <span className="font-bold text-slate-800">{analysisResults.analysisStats?.totalUniqueTracks}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Processing FPS:</span>
-                    <span className="font-bold text-slate-800">{analysisResults.analysisStats?.fpsAchieved} FPS</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Wall Time:</span>
-                    <span className="font-bold text-slate-800">{analysisResults.analysisStats?.wallTimeSec}s</span>
-                  </div>
-                </div>
-              </div>
-
             </div>
-          )}
-
-          {/* Honest Presentation Banner */}
-          <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 text-xs space-y-1.5">
-            <div className="font-bold flex items-center gap-1.5">
-              <Info size={15} className="text-amber-600" /> Technical Scope Notice
-            </div>
-            <p className="text-[11px] leading-relaxed text-amber-800">
-              This feature streams detected arrival events from a <strong>recorded traffic video</strong> into the simulated queue of approach <strong>{mappedDirection}</strong>. Other approach roads maintain simulated traffic schedules.
-            </p>
           </div>
+
 
         </div>
       </div>
 
-      {/* Predictive Traffic Intelligence Section */}
-      <PredictiveTrafficPanel />
+      {/* Live Vision Telemetry & Fleet Composition Section */}
+      <LiveVisionTelemetryPanel
+        currentFrameDetections={currentFrameDetections}
+        assignedTracksByApproach={assignedTracksByApproach}
+        liveApproachCounts={liveApproachCounts}
+        totalVisibleQueue={totalVisibleQueue}
+        analysisResults={analysisResults}
+        currentTimeSec={currentTimeSec}
+        isPlaying={isPlaying}
+      />
     </div>
   );
 };
