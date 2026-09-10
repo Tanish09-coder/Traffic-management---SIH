@@ -21,35 +21,35 @@ export const EmergencyCorridorPanel = () => {
   return (
     <div className="space-y-4">
       {/* CAD Top Dispatch Bar */}
-      <div className={`p-5 rounded-xl border ${
+      <div className={`p-5 rounded-lg border transition-all ${
         emergencyCorridor.isActive 
-          ? 'bg-[#1C1217] border-rose-500/50' 
-          : 'bg-[#0E121B] border-[#1D2638]'
-      }`}>
+          ? 'bg-[#FDF2F2] border-[#B42318]' 
+          : 'bg-white border-[#D6E0E7]'
+      } shadow-xs`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start space-x-3.5">
-            <div className={`p-2.5 rounded-lg border ${
+            <div className={`p-2.5 rounded-md border ${
               emergencyCorridor.isActive 
-                ? 'bg-rose-500/20 border-rose-500/50 text-rose-400' 
-                : 'bg-[#141A26] border-[#243046] text-slate-400'
+                ? 'bg-[#B42318] text-white border-[#B42318]' 
+                : 'bg-[#EAF3F8] border-[#D6E0E7] text-[#1D5D91]'
             }`}>
               <ShieldAlert className="w-6 h-6" />
             </div>
 
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-base font-bold text-white">
+                <h2 className={`text-base font-extrabold ${emergencyCorridor.isActive ? 'text-[#B42318]' : 'text-[#123B63]'}`}>
                   Emergency Green Corridor Preemption (CAD)
                 </h2>
-                <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded border ${
+                <span className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded border ${
                   emergencyCorridor.isActive 
-                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                    ? 'bg-[#B42318] text-white border-[#B42318]' 
+                    : 'bg-[#EAF3F8] text-[#1D5D91] border-[#D6E0E7]'
                 }`}>
-                  {emergencyCorridor.isActive ? 'ACTIVE PREEMPTION' : 'STANDBY'}
+                  {emergencyCorridor.isActive ? 'ACTIVE PREEMPTION' : 'STANDBY MODE'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[#526778] mt-0.5">
                 Automated continuous green-wave locking along multi-node GPS arterial routes for critical emergency response.
               </p>
             </div>
@@ -59,7 +59,7 @@ export const EmergencyCorridorPanel = () => {
             {emergencyCorridor.isActive ? (
               <button
                 onClick={cancelEmergencyCorridor}
-                className="px-3.5 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-white text-xs font-semibold transition-colors flex items-center space-x-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-md bg-[#B42318] hover:bg-[#C0392B] text-white text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer shadow-xs"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Disengage Preemption</span>
@@ -67,9 +67,9 @@ export const EmergencyCorridorPanel = () => {
             ) : (
               <button
                 onClick={() => triggerScenario('emergency_ambulance')}
-                className="px-4 py-2 rounded-lg bg-[#1B2435] hover:bg-[#25324A] text-cyan-300 border border-cyan-500/40 text-xs font-semibold transition-colors flex items-center space-x-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-md bg-[#1D5D91] hover:bg-[#123B63] text-white text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer shadow-xs"
               >
-                <ShieldAlert className="w-3.5 h-3.5 text-cyan-400" />
+                <ShieldAlert className="w-3.5 h-3.5 text-white" />
                 <span>Dispatch Priority Ambulance (Test)</span>
               </button>
             )}
@@ -78,47 +78,47 @@ export const EmergencyCorridorPanel = () => {
 
         {/* Telemetry Chips */}
         {emergencyCorridor.isActive && (
-          <div className="mt-4 pt-3.5 border-t border-rose-900/40 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="p-2.5 rounded bg-[#0A0D14] border border-[#1D2638]">
-              <span className="text-[10px] text-slate-500 block uppercase">Vehicle ID</span>
-              <span className="font-bold text-rose-400">{emergencyCorridor.vehicleId}</span>
+          <div className="mt-4 pt-3.5 border-t border-[#B42318]/20 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+            <div className="p-2.5 rounded-md bg-white border border-[#D6E0E7]">
+              <span className="text-[10px] text-[#718392] block uppercase font-sans font-semibold">Vehicle ID</span>
+              <span className="font-bold text-[#B42318]">{emergencyCorridor.vehicleId}</span>
             </div>
-            <div className="p-2.5 rounded bg-[#0A0D14] border border-[#1D2638]">
-              <span className="text-[10px] text-slate-500 block uppercase">Destination</span>
-              <span className="font-bold text-white truncate block">{emergencyCorridor.destination}</span>
+            <div className="p-2.5 rounded-md bg-white border border-[#D6E0E7]">
+              <span className="text-[10px] text-[#718392] block uppercase font-sans font-semibold">Destination</span>
+              <span className="font-bold text-[#17324D] truncate block">{emergencyCorridor.destination}</span>
             </div>
-            <div className="p-2.5 rounded bg-[#0A0D14] border border-[#1D2638]">
-              <span className="text-[10px] text-slate-500 block uppercase">Dynamic ETA</span>
-              <span className="font-bold text-amber-400 tabular-nums">{emergencyCorridor.etaSeconds}s</span>
+            <div className="p-2.5 rounded-md bg-white border border-[#D6E0E7]">
+              <span className="text-[10px] text-[#718392] block uppercase font-sans font-semibold">Dynamic ETA</span>
+              <span className="font-bold text-[#D98B19] tabular-nums">{emergencyCorridor.etaSeconds}s</span>
             </div>
-            <div className="p-2.5 rounded bg-[#0A0D14] border border-[#1D2638]">
-              <span className="text-[10px] text-slate-500 block uppercase">Clearance Buffer</span>
-              <span className="font-bold text-emerald-400">{emergencyCorridor.clearanceBufferSeconds}s Recovery</span>
+            <div className="p-2.5 rounded-md bg-white border border-[#D6E0E7]">
+              <span className="text-[10px] text-[#718392] block uppercase font-sans font-semibold">Clearance Buffer</span>
+              <span className="font-bold text-[#198754]">{emergencyCorridor.clearanceBufferSeconds}s Recovery</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Multi-Node Progression Route */}
-      <div className="p-5 rounded-xl bg-[#0E121B] border border-[#1D2638] space-y-4">
+      <div className="p-5 rounded-lg bg-white border border-[#D6E0E7] space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-xs font-semibold text-white">
-            <Navigation className="w-4 h-4 text-cyan-400" />
+          <div className="flex items-center space-x-2 text-xs font-bold text-[#123B63]">
+            <Navigation className="w-4 h-4 text-[#1D5D91]" />
             <span>Arterial Green Wave Corridor Sequence</span>
           </div>
-          <span className="text-[11px] font-mono text-slate-500">
+          <span className="text-[11px] font-mono text-[#526778]">
             Path: J1 (Worli) → J2 (Dadar TT) → J3 (BKC Connector)
           </span>
         </div>
 
         <div className="relative pt-2 pb-2">
           {/* Track Line */}
-          <div className="absolute top-1/2 left-6 right-6 h-1 bg-slate-800 rounded transform -translate-y-1/2" />
+          <div className="absolute top-1/2 left-6 right-6 h-1.5 bg-[#E5EBEF] rounded transform -translate-y-1/2" />
           
           {emergencyCorridor.isActive && (
             <div 
               style={{ width: `${emergencyCorridor.currentProgressPercent}%` }}
-              className="absolute top-1/2 left-6 h-1 bg-rose-500 rounded transform -translate-y-1/2 transition-all duration-300"
+              className="absolute top-1/2 left-6 h-1.5 bg-[#B42318] rounded transform -translate-y-1/2 transition-all duration-300"
             />
           )}
 
@@ -131,22 +131,22 @@ export const EmergencyCorridorPanel = () => {
 
               return (
                 <div key={nodeId} className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center border font-mono text-xs font-bold transition-colors ${
+                  <div className={`w-10 h-10 rounded-md flex items-center justify-center border font-mono text-xs font-bold transition-colors ${
                     isCurrent 
-                      ? 'bg-rose-600 border-white text-white' 
+                      ? 'bg-[#B42318] border-[#B42318] text-white shadow-xs' 
                       : isPassed
-                      ? 'bg-emerald-700 border-emerald-500 text-white'
-                      : 'bg-[#101520] border-slate-700 text-slate-400'
+                      ? 'bg-[#198754] border-[#198754] text-white shadow-xs'
+                      : 'bg-[#F4F6F8] border-[#D6E0E7] text-[#526778]'
                   }`}>
                     {isPassed ? <CheckCircle2 className="w-5 h-5" /> : nodeId}
                   </div>
 
                   <div className="mt-2 text-center">
-                    <span className="text-xs font-medium text-slate-300 block">
+                    <span className="text-xs font-semibold text-[#17324D] block">
                       {junction?.name.split(' ')[0]}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500">
-                      {isCurrent ? <><Zap size={14} className="inline" /> PASSING</> : isPassed ? 'CLEARED' : 'LOCKED'}
+                    <span className="text-[10px] font-mono text-[#718392]">
+                      {isCurrent ? <><Zap size={14} className="inline text-[#B42318]" /> PASSING</> : isPassed ? 'CLEARED' : 'LOCKED'}
                     </span>
                   </div>
                 </div>
@@ -158,16 +158,16 @@ export const EmergencyCorridorPanel = () => {
 
       {/* Protocol Descriptions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <div className="p-4 rounded-xl bg-[#0E121B] border border-[#1D2638] space-y-1.5">
-          <span className="font-semibold text-slate-200 block">Automated Clearance Wave Recovery</span>
-          <p className="text-slate-400 leading-relaxed">
+        <div className="p-4 rounded-lg bg-white border border-[#D6E0E7] space-y-1.5 shadow-xs">
+          <span className="font-extrabold text-[#123B63] block">Automated Clearance Wave Recovery</span>
+          <p className="text-[#526778] leading-relaxed">
             Following vehicle clearance, cross-arterial approaches receive an automated 15-second compensation phase to prevent secondary queue buildup.
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#0E121B] border border-[#1D2638] space-y-1.5">
-          <span className="font-semibold text-slate-200 block">Golden Hour Transit Optimization</span>
-          <p className="text-slate-400 leading-relaxed">
+        <div className="p-4 rounded-lg bg-white border border-[#D6E0E7] space-y-1.5 shadow-xs">
+          <span className="font-extrabold text-[#123B63] block">Golden Hour Transit Optimization</span>
+          <p className="text-[#526778] leading-relaxed">
             Dynamic green wave preemption eliminates multi-junction red cycle delays, reducing total transit duration by an estimated 68.4%.
           </p>
         </div>
