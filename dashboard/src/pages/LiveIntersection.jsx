@@ -276,7 +276,7 @@ const LiveIntersection = () => {
                 Integrated Traffic Management System (ITMS) • Live Junction
               </h1>
               <p className="text-xs text-slate-600 mt-0.5">
-                📍 BKC Financial District, Mumbai Metropolitan Region • Smart Cities Mission Grid
+                📍 BKC Financial District, Mumbai Metropolitan Region
               </p>
               
               {/* Target Achievement Indicator */}
@@ -287,7 +287,7 @@ const LiveIntersection = () => {
                     : 'bg-amber-50 text-amber-900 border-amber-300'
                 }`}>
                   <span className="mr-1">🎯</span>
-                  {targetAchieved ? 'Target Achieved (IRC:106)' : 'Target: 20-30s Avg Delay'}
+                  {targetAchieved ? 'Target Achieved' : 'Target: 20-30s Avg Delay'}
                 </div>
                 <div className="text-xs text-slate-600">
                   Current Wait: {(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s
@@ -300,16 +300,6 @@ const LiveIntersection = () => {
                   Police Manual Override
                 </div>
               )}
-              <div className="flex items-center space-x-2 mt-1">
-                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
-                  overrideActive ? 'bg-red-600' : 'bg-emerald-600'
-                }`}></div>
-                <span className={`text-xs font-bold ${
-                  overrideActive ? 'text-red-700' : 'text-emerald-700'
-                }`}>
-                  {overrideActive ? 'OVERRIDE ACTIVE' : 'RL ADAPTIVE CONTROL'}
-                </span>
-              </div>
               <div className="text-xs text-[#003366] font-bold mt-1">
                 Delay Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
               </div>
