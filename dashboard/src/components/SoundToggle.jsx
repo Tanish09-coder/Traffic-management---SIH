@@ -4,8 +4,8 @@ import { useSimulation } from '../context/SimulationContext';
 
 /**
  * SoundToggle Component
- * Plays the official emergency vehicle siren sound (from YouTube short tIbrjdFrYmU)
- * whenever an emergency vehicle arrives or Emergency Mode is turned on.
+ * Plays official ambulance siren audio (from YouTube D7swe2nqZ9o)
+ * whenever an emergency vehicle arrives or Emergency Mode is active.
  */
 export const SoundToggle = () => {
   const [isMuted, setIsMuted] = useState(() => {
