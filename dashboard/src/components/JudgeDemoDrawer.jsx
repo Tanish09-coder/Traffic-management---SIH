@@ -50,7 +50,7 @@ export const JudgeDemoDrawer = ({ isOpen, onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/80">
+    <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-black/70 backdrop-blur-sm">
       <div className="w-full max-w-md bg-[#0D111A] border-l border-[#1D2638] h-full flex flex-col justify-between overflow-y-auto">
 
         {/* Header */}

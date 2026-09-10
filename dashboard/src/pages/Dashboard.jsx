@@ -569,7 +569,7 @@ const Dashboard = () => {
 
             {/* Fullscreen Floating Controls (Weather & Exit) */}
             {isFullscreen && (
-              <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#172333] p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
+              <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#172333]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
                 {[
                   { mode: 'normal', label: 'Clear', icon: Sun },
                   { mode: 'rain', label: 'Rain', icon: CloudRain },
