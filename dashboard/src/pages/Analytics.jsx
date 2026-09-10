@@ -119,21 +119,6 @@ const Analytics = ({ onNavigate }) => {
                 <BarChart3 className="text-[#F59E0B]" size={28} />
                 <span>Traffic Analytics</span>
               </h1>
-
-              {/* Strict Data Source Indicator */}
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Data Source: Current Simulation
-              </span>
-
-              {/* Status Pill */}
-              <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full border ${
-                isSimulationActive 
-                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
-              }`}>
-                {isSimulationActive ? `Running (${simulationSpeed}x)` : 'Paused'}
-              </span>
             </div>
 
             <p className="text-sm sm:text-base text-slate-500 mt-1">

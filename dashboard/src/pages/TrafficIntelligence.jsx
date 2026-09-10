@@ -496,9 +496,6 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 <Sparkles size={13} />
                 Phase 2 Traffic Intelligence
               </span>
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                YOLOv8 Computer Vision
-              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
               Recorded Video Vehicle Detection & Tracking

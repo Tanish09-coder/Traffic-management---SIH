@@ -34,11 +34,11 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   }, []);
 
   const navItems = [
-    { id: 'dashboard', label: lang === 'HI' ? 'राष्ट्रीय डैशबोर्ड' : 'National Dashboard', icon: '📊' },
+    { id: 'dashboard', label: lang === 'HI' ? 'डैशबोर्ड' : 'Dashboard', icon: '📊' },
     { id: 'live-intersection', label: lang === 'HI' ? 'लाइव जंक्शन मॉनिटर' : 'Live Junction Monitor', icon: '🚦' },
     { id: 'traffic-intelligence', label: lang === 'HI' ? 'कैमरा एआई ग्रिड' : 'Camera AI Grid', icon: '📹' },
     { id: 'analytics', label: lang === 'HI' ? 'शहर एनालिटिक्स व कार्बन' : 'City Analytics & Carbon', icon: '📈' },
-    { id: 'about', label: lang === 'HI' ? 'नीति एवं आर्किटेक्चर' : 'MoRTH Docs & About', icon: '🏛️' }
+    { id: 'about', label: lang === 'HI' ? 'हमारे बारे में' : 'About Us', icon: '🏛️' }
   ];
 
   const zones = [
@@ -65,14 +65,8 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
             <span className="text-slate-300 font-medium hidden md:inline">सड़क परिवहन एवं राजमार्ग मंत्रालय (MoRTH)</span>
           </div>
 
-          {/* Right: Accessibility & Telemetry */}
+          {/* Right: Accessibility & Language */}
           <div className="flex items-center space-x-4">
-            {/* Live NIC Cloud Node Status */}
-            <div className="hidden sm:flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-950/70 px-3 py-1 rounded-md border border-emerald-500/30">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-mono font-medium">NIC-ICCC Gateway • 18ms</span>
-            </div>
-
             {/* Language Toggle */}
             <button
               onClick={() => setLang(prev => prev === 'EN' ? 'HI' : 'EN')}
@@ -135,40 +129,16 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                   <h1 className="font-black text-lg sm:text-xl tracking-tight text-[#0F2942] leading-snug">
                     Integrated Traffic Management System (ITMS)
                   </h1>
-                  <span className="inline-flex items-center text-[10px] font-extrabold px-2.5 py-0.5 bg-blue-50 text-[#003366] rounded-full border border-blue-200">
-                    Smart Cities Mission
-                  </span>
                 </div>
                 <p className="text-xs text-[#475569] font-medium mt-0.5 flex flex-wrap items-center gap-2">
                   <span>National Urban Transport Control • Ministry of Road Transport & Highways</span>
-                  <span className="text-slate-300 hidden sm:inline">•</span>
-                  <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.2 rounded border border-emerald-200">
-                    IRC:106 Compliant
-                  </span>
                 </p>
               </div>
             </div>
 
-            {/* Right: Dignitary Profile + Corridor Selector + Live Clock */}
+            {/* Right: Corridor Selector + Live Clock */}
             <div className="flex items-center flex-wrap gap-4 w-full lg:w-auto justify-between lg:justify-end pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-              
-              {/* 1. Prime Minister Dignitary Profile Card */}
-              <div className="flex items-center space-x-3 pr-4 lg:border-r border-[#CBD5E1]">
-                <div className="relative flex-shrink-0">
-                  <img
-                    src="/pm_modi.png"
-                    alt="Shri Narendra Modi, Prime Minister of India"
-                    className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#FF9933] shadow-md ring-2 ring-amber-100"
-                  />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="Active Governance" />
-                </div>
-                <div className="text-left select-none leading-tight">
-                  <div className="text-xs font-black text-[#0F2942]">Shri Narendra Modi</div>
-                  <div className="text-[11px] text-[#D97706] font-bold">Hon'ble Prime Minister</div>
-                </div>
-              </div>
-
-              {/* 2. Corridor / Zone Selector Dropdown */}
+              {/* Corridor / Zone Selector Dropdown */}
               <div className="relative pr-4 lg:border-r border-[#CBD5E1]" ref={zoneMenuRef}>
                 <button
                   onClick={() => setIsZoneMenuOpen(prev => !prev)}
@@ -256,7 +226,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
               </div>
               <div>
                 <span className="font-bold text-slate-200">
-                  National Informatics Centre (NIC) • Smart Cities Mission Portal
+                  National Informatics Centre (NIC) Portal
                 </span>
                 <p className="text-[11px] text-slate-400">
                   Ministry of Road Transport & Highways (MoRTH), Government of India
@@ -265,7 +235,6 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-300">
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">IRC:106-1990 Standard</span>
               <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">GIGW Compliant</span>
               <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">NCAP Carbon Audited</span>
             </div>

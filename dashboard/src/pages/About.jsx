@@ -16,7 +16,7 @@ const About = () => {
               </span>
             </div>
             <p className="text-xs text-[#64748B] mt-0.5">
-              Ministry of Road Transport & Highways • Smart Cities Mission Integrated Command & Control Center (ICCC)
+              Ministry of Road Transport & Highways • Integrated Command & Control Center (ICCC)
             </p>
           </div>
         </div>

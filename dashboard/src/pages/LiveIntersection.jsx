@@ -274,7 +274,7 @@ const LiveIntersection = () => {
                 Integrated Traffic Management System (ITMS) • Live Junction
               </h1>
               <p className="text-xs text-slate-600 mt-0.5">
-                📍 BKC Financial District, Mumbai Metropolitan Region • Smart Cities Mission Grid
+                📍 BKC Financial District, Mumbai Metropolitan Region
               </p>
               
               {/* Target Achievement Indicator */}
@@ -285,7 +285,7 @@ const LiveIntersection = () => {
                     : 'bg-amber-50 text-amber-900 border-amber-300'
                 }`}>
                   <span className="mr-1">🎯</span>
-                  {targetAchieved ? 'Target Achieved (IRC:106)' : 'Target: 20-30s Avg Delay'}
+                  {targetAchieved ? 'Target Achieved' : 'Target: 20-30s Avg Delay'}
                 </div>
                 <div className="text-xs text-slate-600">
                   Current Wait: {(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s
@@ -298,16 +298,6 @@ const LiveIntersection = () => {
                   Police Manual Override
                 </div>
               )}
-              <div className="flex items-center space-x-2 mt-1">
-                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
-                  overrideActive ? 'bg-red-600' : 'bg-emerald-600'
-                }`}></div>
-                <span className={`text-xs font-bold ${
-                  overrideActive ? 'text-red-700' : 'text-emerald-700'
-                }`}>
-                  {overrideActive ? 'OVERRIDE ACTIVE' : 'RL ADAPTIVE CONTROL'}
-                </span>
-              </div>
               <div className="text-xs text-[#003366] font-bold mt-1">
                 Delay Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
               </div>
@@ -390,7 +380,7 @@ const LiveIntersection = () => {
 
         {/* Mumbai Statistics Cards - Showing absolute improvements */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+          <div className="bg-white rounded-xl shadow-xs p-6 border border-slate-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Fuel Saved</p>
@@ -407,7 +397,7 @@ const LiveIntersection = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="bg-white rounded-xl shadow-xs p-6 border border-slate-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Time Saved</p>
@@ -424,7 +414,7 @@ const LiveIntersection = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+          <div className="bg-white rounded-xl shadow-xs p-6 border border-slate-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">CO₂ Reduced</p>
@@ -441,7 +431,7 @@ const LiveIntersection = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
+          <div className="bg-white rounded-xl shadow-xs p-6 border border-slate-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Savings</p>
