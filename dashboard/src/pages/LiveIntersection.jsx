@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Target, Zap, Fuel, Clock, Leaf, IndianRupee, AlertTriangle, Siren, TrafficCone, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, CircleDot, PersonStanding, Hand, ShieldCheck, CheckCircle2, XCircle, Radio, RotateCcw } from 'lucide-react';
+import { MapPin, Target, Zap, Fuel, Clock, Leaf, IndianRupee, AlertTriangle, Siren, TrafficCone, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, PersonStanding, Hand, ShieldCheck, CheckCircle2, XCircle, Radio, RotateCcw, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
@@ -275,19 +275,20 @@ const LiveIntersection = () => {
               <h1 className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">
                 Integrated Traffic Management System (ITMS) • Live Junction
               </h1>
-              <p className="text-xs text-slate-600 mt-0.5">
-                📍 BKC Financial District, Mumbai Metropolitan Region
+              <p className="text-xs text-slate-600 mt-0.5 flex items-center gap-1.5">
+                <MapPin size={14} className="text-blue-600" />
+                <span>BKC Financial District, Mumbai Metropolitan Region</span>
               </p>
               
               {/* Target Achievement Indicator */}
               <div className="mt-2.5 flex items-center space-x-3">
-                <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${
+                <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border flex items-center gap-1.5 ${
                   targetAchieved 
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                     : 'bg-amber-50 text-amber-900 border-amber-300'
                 }`}>
-                  <span className="mr-1">🎯</span>
-                  {targetAchieved ? 'Target Achieved' : 'Target: 20-30s Avg Delay'}
+                  <Target size={14} />
+                  <span>{targetAchieved ? 'Target Achieved' : 'Target: 20-30s Avg Delay'}</span>
                 </div>
                 <div className="text-xs text-slate-600">
                   Current Wait: {(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s
@@ -524,8 +525,9 @@ const LiveIntersection = () => {
 
         {/* Intelligent System Status */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            AI Traffic Analysis {overrideActive && <span className="text-red-500 text-sm">(Override Active)</span>}
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Brain size={18} className="text-slate-700" />
+            <span>AI Traffic Analysis {overrideActive && <span className="text-red-500 text-sm">(Override Active)</span>}</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {['N', 'S', 'E', 'W'].map(direction => {
@@ -560,7 +562,7 @@ const LiveIntersection = () => {
                     <div className="text-right">
                       {isActive && <CheckCircle2 size={20} className="text-emerald-500" />}
                       {isHighest && !isActive && <Zap size={16} className="text-amber-500" />}
-                      {!isActive && !isHighest && <CircleDot size={20} className="text-red-500" />}
+                      {!isActive && !isHighest && <XCircle size={20} className="text-red-500" />}
                     </div>
                   </div>
                 </div>
@@ -905,11 +907,12 @@ const LiveIntersection = () => {
             <div className="flex space-x-2">
               <button
                 onClick={switchToMock}
-                className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-1.5 ${
                   useMock ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                AI Simulation
+                <Brain size={18} className="text-slate-700" />
+                <span>AI Simulation</span>
               </button>
               {switchToBackend && (
                 <button

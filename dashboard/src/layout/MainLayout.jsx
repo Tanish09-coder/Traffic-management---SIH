@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck } from 'lucide-react';
+import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck, LayoutDashboard, TrafficCone, Video, LineChart, Landmark } from 'lucide-react';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const [timeString, setTimeString] = useState('');
@@ -34,11 +34,11 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   }, []);
 
   const navItems = [
-    { id: 'dashboard', label: lang === 'HI' ? 'डैशबोर्ड' : 'Dashboard', icon: '📊' },
-    { id: 'live-intersection', label: lang === 'HI' ? 'लाइव जंक्शन मॉनिटर' : 'Live Junction Monitor', icon: '🚦' },
-    { id: 'traffic-intelligence', label: lang === 'HI' ? 'कैमरा एआई ग्रिड' : 'Camera AI Grid', icon: '📹' },
-    { id: 'analytics', label: lang === 'HI' ? 'शहर एनालिटिक्स व कार्बन' : 'City Analytics & Carbon', icon: '📈' },
-    { id: 'about', label: lang === 'HI' ? 'हमारे बारे में' : 'About Us', icon: '🏛️' }
+    { id: 'dashboard', label: lang === 'HI' ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
+    { id: 'live-intersection', label: lang === 'HI' ? 'लाइव जंक्शन मॉनिटर' : 'Live Junction Monitor', icon: TrafficCone },
+    { id: 'traffic-intelligence', label: lang === 'HI' ? 'कैमरा एआई ग्रिड' : 'Camera AI Grid', icon: Video },
+    { id: 'analytics', label: lang === 'HI' ? 'शहर एनालिटिक्स व कार्बन' : 'City Analytics & Carbon', icon: LineChart },
+    { id: 'about', label: lang === 'HI' ? 'हमारे बारे में' : 'About Us', icon: Landmark }
   ];
 
   const zones = [
@@ -201,7 +201,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                         : 'text-slate-200 hover:bg-[#1E3A8A]/60 hover:text-white'
                     }`}
                   >
-                    <span className="text-sm">{item.icon}</span>
+                    <item.icon size={18} />
                     <span>{item.label}</span>
                   </button>
                 );

@@ -91,7 +91,13 @@ const StatCard = ({
           className="w-7 h-7 rounded-md flex items-center justify-center text-xs flex-shrink-0 border border-slate-200"
           style={{ backgroundColor: iconBg, color: iconColor }}
         >
-          {typeof Icon === 'string' ? <span className="text-base">{Icon}</span> : <Icon size={20} />}
+          {React.isValidElement(Icon) ? (
+            Icon
+          ) : typeof Icon === 'string' ? (
+            <span className="text-base">{Icon}</span>
+          ) : (
+            <Icon size={20} />
+          )}
         </div>
         <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
           {title}

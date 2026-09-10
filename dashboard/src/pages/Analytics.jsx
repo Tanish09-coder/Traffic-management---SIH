@@ -31,7 +31,9 @@ import {
   Leaf,
   IndianRupee,
   Play,
-  Pause
+  Pause,
+  TrafficCone,
+  Siren
 } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Loader from '../components/Loader';
@@ -356,7 +358,7 @@ const Analytics = ({ onNavigate }) => {
       {!hasData && (
         <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-3xl">
-            🚦
+            <TrafficCone size={18} className="text-slate-700" />
           </div>
           <h3 className="text-xl font-bold text-slate-900">No traffic data yet</h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
@@ -712,7 +714,7 @@ const Analytics = ({ onNavigate }) => {
                   <div key={evt.id} className="p-2.5 rounded-xl bg-red-50/60 border border-red-100 flex items-center justify-between text-sm">
                     <div>
                       <div className="flex items-center gap-1.5 font-bold text-red-900">
-                        <span>🚨</span>
+                        <Siren size={16} className="text-red-500" />
                         <span>Lane {evt.direction} Preemption</span>
                       </div>
                       <span className="text-xs text-slate-500 font-mono">{evt.timestamp} • {evt.id}</span>

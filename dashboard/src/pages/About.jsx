@@ -1,10 +1,12 @@
+import { Landmark, MapPin, Sparkles, Building2, Atom, Server, Target } from 'lucide-react';
+
 const About = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white shadow-sm border border-slate-200 rounded-2xl p-8 md:p-10">
         <div className="flex items-center space-x-3 mb-6">
           <div className="w-12 h-12 rounded-xl bg-[#0F2942] text-[#FF9933] flex items-center justify-center text-2xl font-bold border border-[#1E3A8A]">
-            🏛️
+            <Landmark size={24} />
           </div>
           <div>
             <div className="flex items-center space-x-2">
@@ -24,7 +26,7 @@ const About = () => {
         <div className="space-y-8">
           <div>
             <h2 className="text-lg font-semibold text-[#0F2942] mb-3 flex items-center space-x-2">
-              <span>📌</span>
+              <MapPin size={16} />
               <span>Executive Overview</span>
             </h2>
             <p className="text-slate-600 leading-relaxed">
@@ -36,7 +38,7 @@ const About = () => {
 
           <div>
             <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <span>✨</span>
+              <Sparkles size={16} />
               <span>Key Capabilities</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -58,13 +60,13 @@ const About = () => {
 
           <div>
             <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <span>🏗️</span>
+              <Building2 size={16} />
               <span>Technical Architecture</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h3 className="font-semibold text-slate-800 mb-3 text-sm flex items-center space-x-2">
-                  <span>⚛️</span>
+                  <Atom size={16} />
                   <span>Frontend Dashboard</span>
                 </h3>
                 <ul className="text-xs text-slate-600 space-y-2">
@@ -89,7 +91,7 @@ const About = () => {
 
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h3 className="font-semibold text-slate-800 mb-3 text-sm flex items-center space-x-2">
-                  <span>🐍</span>
+                  <Server size={16} />
                   <span>Backend & AI Engine</span>
                 </h3>
                 <ul className="text-xs text-slate-600 space-y-2">
@@ -116,7 +118,7 @@ const About = () => {
 
           <div>
             <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <span>🎯</span>
+              <Target size={16} />
               <span>Target Benchmarks (Mumbai BKC Pilot)</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

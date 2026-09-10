@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Minimize, Sun, CloudRain, CloudFog, Video, BarChart2, ChevronDown, ChevronUp, Sliders, RotateCcw } from 'lucide-react';
+import { Maximize, Minimize, Sun, CloudRain, CloudFog, Video, BarChart2, ChevronDown, ChevronUp, Sliders, RotateCcw, AlertTriangle, Siren, Car as CarIcon, Clock, BarChart3, PersonStanding, TrafficCone, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
@@ -175,7 +175,7 @@ const Dashboard = () => {
             exit={{ opacity: 0, y: -10 }}
             className="p-3.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl text-xs flex items-center space-x-2"
           >
-            <span>⚠️</span>
+            <AlertTriangle size={16} className="text-amber-500" />
             <span>{error}</span>
           </motion.div>
         )}
@@ -191,8 +191,9 @@ const Dashboard = () => {
             className="p-4 bg-red-50 border-2 border-red-500 text-red-800 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs"
           >
             <div className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping" />
+            <Siren size={18} className="text-red-600 shrink-0" />
             <span>
-              🚨 EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
+              EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
             </span>
           </motion.div>
         )}
@@ -203,8 +204,8 @@ const Dashboard = () => {
         <StatCard
           title="VEHICLES PASSED"
           value={state?.cars_passed ?? metrics?.total_cars ?? 0}
-          icon="🚗"
-          trend="↑ +12%"
+          icon={CarIcon}
+          trend="+12%"
           trendSubtext="vs. last 5 minutes"
           color="blue"
         />
@@ -212,8 +213,8 @@ const Dashboard = () => {
           title="AVERAGE WAIT TIME"
           value={Math.round(state?.avg_wait_time ?? metrics?.current_avg_wait_time ?? metrics?.avg_wait_time ?? 0)}
           unit="sec"
-          icon="⏱️"
-          trend="↓ -18%"
+          icon={Clock}
+          trend="-18%"
           trendSubtext="vs. last 5 minutes"
           color="orange"
         />
@@ -221,8 +222,8 @@ const Dashboard = () => {
           title="TOTAL THROUGHPUT"
           value={Math.round(state?.throughput ?? metrics?.throughput ?? 0)}
           unit="cars/min"
-          icon="📊"
-          trend="↑ +6%"
+          icon={BarChart3}
+          trend="+6%"
           trendSubtext="vs. last 5 minutes"
           color="green"
         />
@@ -230,7 +231,7 @@ const Dashboard = () => {
           title="EMERGENCY VEHICLES"
           value={state?.emergencyActive ? 1 : (metrics?.emergency_count ?? 0)}
           unit="active"
-          icon="⚠️"
+          icon={<AlertTriangle size={16} className="text-amber-500" />}
           trend="— 0%"
           trendSubtext="vs. last 5 minutes"
           color="purple"
@@ -238,7 +239,7 @@ const Dashboard = () => {
       </div>
 
       {/* 2. SIGNAL OPTIMIZATION & DEMAND CONTROL PANEL */}
-      <AIDecisionPanel />
+      <AIDecisionPanel showAllocationDetails={false} />
 
       {/* 3. MAIN SECTION: Left (70%) Live Intersection & Right (30%) Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-[70%_calc(30%-1.5rem)] gap-6 items-start">
@@ -376,7 +377,7 @@ const Dashboard = () => {
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -420,7 +421,7 @@ const Dashboard = () => {
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -462,7 +463,7 @@ const Dashboard = () => {
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -504,7 +505,7 @@ const Dashboard = () => {
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -665,7 +666,7 @@ const Dashboard = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#F1F5F9]">
               {/* Manual clearance status */}
               <div className="flex items-center space-x-1 text-xs text-[#475569]">
-                <span>🚦</span>
+                <TrafficCone size={16} className="text-slate-700" />
                 <span className="font-semibold text-[#0F2942]">IRC Safety Clearance:</span>
                 <span>Yellow {state?.yellow_duration || 3}s → All-red {state?.all_red_duration || 1}s</span>
               </div>
@@ -680,7 +681,7 @@ const Dashboard = () => {
                   }`}
                 title="Dispatch emergency vehicle priority clearance"
               >
-                <span>⚠️</span>
+                <AlertTriangle size={16} className="text-amber-500" />
                 <span>{state?.emergencyActive ? `EMERGENCY ACTIVE (${state?.emergencyDirection || ''})` : 'EMERGENCY DISPATCH'}</span>
               </button>
             </div>
@@ -705,7 +706,7 @@ const Dashboard = () => {
             {/* 1. Current Signal */}
             <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">🚦</span>
+                <TrafficCone size={16} className="text-slate-700" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#003366]">
                     Active Phase
@@ -720,7 +721,7 @@ const Dashboard = () => {
             {/* 2. Active Roads */}
             <div className="p-2.5 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">🚗</span>
+                <CarIcon size={16} className="text-slate-600" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#15803D]">
                     Active Approaches
@@ -735,7 +736,7 @@ const Dashboard = () => {
             {/* 3. Wait Time */}
             <div className="p-2.5 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">⏱️</span>
+                <Clock size={16} className="text-slate-600" />
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#D97706]">
                     Average Wait Time
@@ -746,8 +747,9 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-[#15803D]">
-                  ↓ -18%
+                <span className="text-[10px] font-bold text-[#15803D] flex items-center justify-end space-x-0.5">
+                  <TrendingDown size={12} />
+                  <span>-18%</span>
                 </span>
                 <div className="text-[9px] text-[#94A3B8]">
                   vs. fixed time
@@ -801,35 +803,8 @@ const Dashboard = () => {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden pt-4 mt-4 border-t border-[#CBD5E1]"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
-                {/* 1. Data Source */}
-                <div>
-                  <label className="block text-[11px] font-bold text-[#475569] uppercase tracking-wider mb-1.5">
-                    Data Feed
-                  </label>
-                  <div className="flex space-x-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
-                    <button
-                      onClick={switchToMock}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${useMock
-                          ? 'bg-[#003366] text-white shadow-xs'
-                          : 'text-[#475569] hover:text-[#0F2942]'
-                        }`}
-                    >
-                      Simulation
-                    </button>
-                    <button
-                      onClick={switchToBackend}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${!useMock
-                          ? 'bg-[#003366] text-white shadow-xs'
-                          : 'text-[#475569] hover:text-[#0F2942]'
-                        }`}
-                    >
-                      NIC Backend API
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. Generated Traffic */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                {/* 1. Generated Traffic */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">

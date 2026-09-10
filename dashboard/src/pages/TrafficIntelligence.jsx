@@ -16,7 +16,8 @@ import {
   Sparkles,
   RefreshCw,
   Eye,
-  Info
+  Info,
+  Zap
 } from 'lucide-react';
 import PredictiveTrafficPanel from '../components/PredictiveTrafficPanel';
 
@@ -366,7 +367,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
       // If active crossing event, draw energetic crossing badge
       if (crossingEvent) {
-        const badgeText = `⚡ CROSSING: ${(crossingEvent.vehicleType || 'car').toUpperCase()} #${crossingEvent.trackId}`;
+        const badgeText = `CROSSING: ${(crossingEvent.vehicleType || 'car').toUpperCase()} #${crossingEvent.trackId}`;
         ctx.font = 'bold 12px sans-serif';
         const tw = ctx.measureText(badgeText).width;
         ctx.fillStyle = 'rgba(16, 185, 129, 0.95)';
