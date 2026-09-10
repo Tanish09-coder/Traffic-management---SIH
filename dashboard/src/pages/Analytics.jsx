@@ -31,7 +31,9 @@ import {
   Leaf,
   IndianRupee,
   Play,
-  Pause
+  Pause,
+  TrafficCone,
+  Siren
 } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Loader from '../components/Loader';
@@ -115,8 +117,8 @@ const Analytics = ({ onNavigate }) => {
 
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <BarChart3 className="text-[#F59E0B]" size={28} />
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0A1F44] tracking-tight flex items-center gap-2">
+                <BarChart3 className="text-[#F5A623]" size={28} />
                 <span>Traffic Analytics</span>
               </h1>
             </div>
@@ -147,7 +149,7 @@ const Analytics = ({ onNavigate }) => {
 
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-4 py-2 text-sm font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-4 py-2 text-sm font-bold rounded-xl bg-[#0F2C59] hover:bg-[#163A6B] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Compass size={14} />
               <span>Live Intersection</span>
@@ -172,11 +174,11 @@ const Analytics = ({ onNavigate }) => {
           </div>
           <div>
             <span className="text-slate-400 block font-medium text-[11px]">Recorded Events</span>
-            <span className="font-semibold text-blue-600">{session.eventCount} events</span>
+            <span className="font-semibold text-[#0F2C59]">{session.eventCount} events</span>
           </div>
           <div className="col-span-2 sm:col-span-1">
             <span className="text-slate-400 block font-medium text-[11px]">Active Signal</span>
-            <span className="font-bold text-emerald-600">Lane {state?.signal || 'N'}</span>
+            <span className="font-bold text-[#0F2C59]">Lane {state?.signal || 'N'}</span>
           </div>
         </div>
       </div>
@@ -185,13 +187,13 @@ const Analytics = ({ onNavigate }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
 
         {/* Total Vehicles */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col justify-between hover:border-[#0F2C59]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Vehicles</span>
-            <Car size={16} className="text-blue-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Total Vehicles</span>
+            <Car size={16} className="text-[#0F2C59]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0A1F44] tracking-tight">
               {session.totalVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">Generated in session</p>
@@ -199,13 +201,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Vehicles Processed */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col justify-between hover:border-[#0F2C59]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Processed</span>
-            <CheckCircle2 size={16} className="text-emerald-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Processed</span>
+            <CheckCircle2 size={16} className="text-[#0F2C59]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-emerald-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0A1F44] tracking-tight">
               {session.vehiclesProcessed}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">Cleared intersection</p>
@@ -213,13 +215,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Active Vehicles */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col justify-between hover:border-[#0F2C59]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active in Grid</span>
-            <Activity size={16} className="text-indigo-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Active in Grid</span>
+            <Activity size={16} className="text-[#0F2C59]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0A1F44] tracking-tight">
               {session.activeVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">In approach lanes</p>
@@ -227,14 +229,14 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Average Waiting Time */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col justify-between hover:border-[#F5A623]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg Wait Time</span>
-            <Timer size={16} className="text-amber-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Avg Wait Time</span>
+            <Timer size={16} className="text-[#F5A623]" />
           </div>
           <div className="mt-2">
             {session.hasWaitTimeData ? (
-              <span className="text-3xl sm:text-4xl font-extrabold text-amber-600 tracking-tight">
+              <span className="text-3xl sm:text-4xl font-black text-[#F5A623] tracking-tight">
                 {session.averageWaitTime}s
               </span>
             ) : (
@@ -247,14 +249,14 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Peak Traffic */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col justify-between hover:border-[#0F2C59]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Peak Traffic</span>
-            <TrendingUp size={16} className="text-purple-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Peak Traffic</span>
+            <TrendingUp size={16} className="text-[#0F2C59]" />
           </div>
           <div className="mt-2">
             {session.peakActiveVehicles > 0 ? (
-              <span className="text-3xl sm:text-4xl font-extrabold text-purple-600 tracking-tight">
+              <span className="text-3xl sm:text-4xl font-black text-[#0A1F44] tracking-tight">
                 {session.peakActiveVehicles}
               </span>
             ) : (
@@ -267,13 +269,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Emergency Vehicles */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-xs flex flex-col justify-between hover:border-[#DC2626]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Emergency</span>
-            <ShieldAlert size={16} className="text-red-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Emergency</span>
+            <ShieldAlert size={16} className="text-[#DC2626]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-red-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0A1F44] tracking-tight">
               {session.emergencyVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">
@@ -285,52 +287,52 @@ const Analytics = ({ onNavigate }) => {
       </div>
 
       {/* Derived Environmental & Commuter Benefit Audit */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Derived Environmental & Commuter Impact</h3>
+            <h3 className="text-base font-bold text-[#0A1F44]">Derived Environmental & Commuter Impact</h3>
             <p className="text-sm text-slate-500">
               Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: 45.0s)
             </p>
           </div>
-          <span className="text-xs bg-teal-50 text-teal-700 font-bold px-2.5 py-0.5 rounded-full">
+          <span className="text-xs bg-[#0A1F44] text-[#F5A623] border border-[#1E4D8C] font-bold px-2.5 py-0.5 rounded-full">
             DERIVED MATRIX
           </span>
         </div>
 
         {session.sustainability.hasData ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
-              <div className="flex items-center justify-between text-emerald-700 text-sm font-bold">
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <div className="flex items-center justify-between text-[#0F2C59] text-sm font-bold">
                 <span>Fuel Conserved</span>
-                <Fuel size={16} />
+                <Fuel size={16} className="text-[#0F2C59]" />
               </div>
-              <div className="text-3xl font-black text-emerald-800">
+              <div className="text-3xl font-black text-[#0A1F44]">
                 {session.sustainability.fuelSavedLiters} L
               </div>
               <p className="text-[10px] text-slate-500">Rate: 0.00028 L/sec delay reduction</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-100 space-y-1">
-              <div className="flex items-center justify-between text-teal-700 text-sm font-bold">
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <div className="flex items-center justify-between text-[#0F2C59] text-sm font-bold">
                 <span>CO₂ Avoided</span>
-                <Leaf size={16} />
+                <Leaf size={16} className="text-[#0F2C59]" />
               </div>
-              <div className="text-3xl font-black text-teal-800">
+              <div className="text-3xl font-black text-[#0A1F44]">
                 {session.sustainability.co2ReducedKg} kg
               </div>
               <p className="text-[10px] text-slate-500">Factor: 2.31 kg CO₂ per liter</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-100 space-y-1">
-              <div className="flex items-center justify-between text-amber-700 text-sm font-bold">
+            <div className="p-4 rounded-xl bg-[#FFFBEB] border border-[#F5A623]/30 space-y-1">
+              <div className="flex items-center justify-between text-[#B8860B] text-sm font-bold">
                 <span>Economic Value</span>
-                <IndianRupee size={16} />
+                <IndianRupee size={16} className="text-[#B8860B]" />
               </div>
-              <div className="text-3xl font-black text-amber-800">
+              <div className="text-3xl font-black text-[#B8860B]">
                 ₹{session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}
               </div>
-              <p className="text-[10px] text-slate-500">Retail fuel + commuter time value</p>
+              <p className="text-[10px] text-amber-800/80">Retail fuel + commuter time value</p>
             </div>
           </div>
         ) : (
@@ -356,7 +358,7 @@ const Analytics = ({ onNavigate }) => {
       {!hasData && (
         <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-3xl">
-            🚦
+            <TrafficCone size={18} className="text-[#F5A623]" />
           </div>
           <h3 className="text-xl font-bold text-slate-900">No traffic data yet</h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
@@ -365,7 +367,7 @@ const Analytics = ({ onNavigate }) => {
           <div className="pt-2">
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-5 py-2.5 rounded-xl bg-[#07172E] text-white text-sm font-bold hover:bg-[#0D2E5C] transition"
+              className="px-5 py-2.5 rounded-xl bg-[#0F2C59] text-white text-sm font-bold hover:bg-[#163A6B] transition cursor-pointer"
             >
               Open Live Intersection
             </button>
@@ -384,10 +386,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Traffic Volume Over Time</h3>
+                  <h3 className="text-base font-bold text-[#0A1F44]">Traffic Volume Over Time</h3>
                   <p className="text-sm text-slate-500">Active vs Processed vehicle counts across simulation ticks</p>
                 </div>
-                <span className="text-xs bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 font-bold px-2.5 py-0.5 rounded-full">
                   LINE CHART
                 </span>
               </div>
@@ -396,11 +398,11 @@ const Analytics = ({ onNavigate }) => {
                 {session.hasTimeSeriesData ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                         labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
@@ -409,7 +411,7 @@ const Analytics = ({ onNavigate }) => {
                         type="monotone"
                         dataKey="activeVehicles"
                         name="Active in Lanes"
-                        stroke="#2563EB"
+                        stroke="#0F2C59"
                         strokeWidth={2.5}
                         dot={false}
                         isAnimationActive={false}
@@ -419,7 +421,7 @@ const Analytics = ({ onNavigate }) => {
                         type="monotone"
                         dataKey="processedVehicles"
                         name="Total Cleared"
-                        stroke="#059669"
+                        stroke="#16A34A"
                         strokeWidth={2.5}
                         dot={false}
                         isAnimationActive={false}
@@ -439,10 +441,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Traffic Throughput (Cars / Min)</h3>
+                  <h3 className="text-base font-bold text-[#0A1F44]">Traffic Throughput (Cars / Min)</h3>
                   <p className="text-sm text-slate-500">Real processing velocity derived from actual passed vehicles</p>
                 </div>
-                <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-[#FFFBEB] text-[#B8860B] border border-[#F5A623]/30 font-bold px-2.5 py-0.5 rounded-full">
                   RATE TREND
                 </span>
               </div>
@@ -451,11 +453,11 @@ const Analytics = ({ onNavigate }) => {
                 {session.hasTimeSeriesData ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} unit=" c/m" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} unit=" c/m" />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                         labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
@@ -464,9 +466,9 @@ const Analytics = ({ onNavigate }) => {
                         type="monotone"
                         dataKey="throughput"
                         name="Throughput (cars/min)"
-                        stroke="#D97706"
+                        stroke="#F5A623"
                         strokeWidth={2.5}
-                        dot={{ fill: '#D97706', r: 3 }}
+                        dot={{ fill: '#F5A623', r: 3 }}
                         isAnimationActive={false}
                         connectNulls={true}
                       />
@@ -489,10 +491,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Traffic by Lane / Direction</h3>
+                  <h3 className="text-base font-bold text-[#0A1F44]">Traffic by Lane / Direction</h3>
                   <p className="text-sm text-slate-500">Actual vehicle counts generated vs processed per approach</p>
                 </div>
-                <span className="text-xs bg-indigo-50 text-indigo-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 font-bold px-2.5 py-0.5 rounded-full">
                   BAR CHART
                 </span>
               </div>
@@ -501,18 +503,18 @@ const Analytics = ({ onNavigate }) => {
                 {session.laneData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={session.laneData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <XAxis dataKey="label" stroke="#475569" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#fff', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                         labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                      <Bar dataKey="arrivals" name="Total Spawned" fill="#2563EB" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                      <Bar dataKey="processed" name="Cleared" fill="#059669" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                      <Bar dataKey="activeQueue" name="Queued" fill="#D97706" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="arrivals" name="Total Spawned" fill="#0F2C59" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="processed" name="Cleared" fill="#16A34A" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="activeQueue" name="Queued" fill="#F5A623" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -527,10 +529,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Vehicle Type Distribution</h3>
+                  <h3 className="text-base font-bold text-[#0A1F44]">Vehicle Type Distribution</h3>
                   <p className="text-sm text-slate-500">Actual classification breakdown from current session traffic</p>
                 </div>
-                <span className="text-xs bg-purple-50 text-purple-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 font-bold px-2.5 py-0.5 rounded-full">
                   PIE CHART
                 </span>
               </div>
@@ -555,7 +557,7 @@ const Analytics = ({ onNavigate }) => {
                           ))}
                         </Pie>
                         <Tooltip
-                          contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                          contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                           itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                           labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                         />
@@ -594,10 +596,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Signal State Distribution</h3>
+                  <h3 className="text-base font-bold text-[#0A1F44]">Signal State Distribution</h3>
                   <p className="text-sm text-slate-500">Actual time allocated to green phase per direction</p>
                 </div>
-                <span className="text-xs bg-amber-50 text-amber-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-[#FFFBEB] text-[#B8860B] border border-[#F5A623]/30 font-bold px-2.5 py-0.5 rounded-full">
                   PHASE TIME
                 </span>
               </div>
@@ -622,7 +624,7 @@ const Analytics = ({ onNavigate }) => {
                           ))}
                         </Pie>
                         <Tooltip
-                          contentStyle={{ backgroundColor: '#07172E', borderRadius: '10px', border: '1px solid #1E293B', color: '#FFFFFF', fontSize: '11px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
+                          contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                           itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
                           labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                         />
@@ -660,10 +662,10 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Queue & Congestion Trend</h3>
+                  <h3 className="text-base font-bold text-[#0A1F44]">Queue & Congestion Trend</h3>
                   <p className="text-sm text-slate-500">Real cumulative queue sizes observed in all 4 approaches</p>
                 </div>
-                <span className="text-xs bg-red-50 text-red-700 font-bold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-red-50 text-red-700 border border-red-200 font-bold px-2.5 py-0.5 rounded-full">
                   QUEUE SIZES
                 </span>
               </div>
@@ -672,16 +674,16 @@ const Analytics = ({ onNavigate }) => {
                 {session.hasTimeSeriesData ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#07172E', borderRadius: '12px', color: '#fff', fontSize: '11px', border: 'none' }}
+                        contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                      <Line type="monotone" dataKey="totalQueue" name="Total Queue" stroke="#EF4444" strokeWidth={2.5} dot={false} />
-                      <Line type="monotone" dataKey="queueN" name="Queue N" stroke="#3B82F6" strokeWidth={1.5} dot={false} />
-                      <Line type="monotone" dataKey="queueS" name="Queue S" stroke="#10B981" strokeWidth={1.5} dot={false} />
+                      <Line type="monotone" dataKey="totalQueue" name="Total Queue" stroke="#DC2626" strokeWidth={2.5} dot={false} />
+                      <Line type="monotone" dataKey="queueN" name="Queue N" stroke="#0F2C59" strokeWidth={1.5} dot={false} />
+                      <Line type="monotone" dataKey="queueS" name="Queue S" stroke="#F5A623" strokeWidth={1.5} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
@@ -698,10 +700,10 @@ const Analytics = ({ onNavigate }) => {
           <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Emergency Priority Log</h3>
+                <h3 className="text-base font-bold text-[#0A1F44]">Emergency Priority Log</h3>
                 <p className="text-sm text-slate-500">Actual priority pre-emption activations</p>
               </div>
-              <span className="text-xs bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-red-50 text-red-700 border border-red-200 font-bold px-2 py-0.5 rounded-full">
                 {session.emergencyEvents.length} Events
               </span>
             </div>
@@ -712,7 +714,7 @@ const Analytics = ({ onNavigate }) => {
                   <div key={evt.id} className="p-2.5 rounded-xl bg-red-50/60 border border-red-100 flex items-center justify-between text-sm">
                     <div>
                       <div className="flex items-center gap-1.5 font-bold text-red-900">
-                        <span>🚨</span>
+                        <Siren size={16} className="text-red-500" />
                         <span>Lane {evt.direction} Preemption</span>
                       </div>
                       <span className="text-xs text-slate-500 font-mono">{evt.timestamp} • {evt.id}</span>

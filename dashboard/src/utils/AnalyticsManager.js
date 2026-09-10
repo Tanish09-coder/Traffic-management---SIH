@@ -314,13 +314,13 @@ export class AnalyticsManager {
           police: 'Police Patrol'
         };
         const colors = {
-          car: '#2563EB',
-          bike: '#059669',
-          bus: '#D97706',
+          car: '#0F2C59',
+          bike: '#16A34A',
+          bus: '#F5A623',
           truck: '#475569',
           ambulance: '#DC2626',
-          firetruck: '#EA580C',
-          police: '#7C3AED'
+          firetruck: '#DC2626',
+          police: '#1E4D8C'
         };
         return {
           name: labels[type] || type,
@@ -355,10 +355,10 @@ export class AnalyticsManager {
       const seconds = Math.round(this.signalPhaseSeconds[dir] || 0);
       const pct = totalSignalSeconds > 0 ? Number(((seconds / totalSignalSeconds) * 100).toFixed(1)) : 0;
       const colors = { 
-        N: '#2563EB',
-        S: '#059669',
-        E: '#D97706',
-        W: '#7C3AED'
+        N: '#F5A623',
+        S: '#16A34A',
+        E: '#0F2C59',
+        W: '#1E4D8C'
       };
       return {
         name: `Phase ${dir} (Green)`,

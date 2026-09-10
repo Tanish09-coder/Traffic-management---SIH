@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Minimize, Sun, CloudRain, CloudFog, Video, BarChart2, ChevronDown, ChevronUp, Sliders, RotateCcw } from 'lucide-react';
+import { Maximize, Minimize, Sun, CloudRain, CloudFog, Video, BarChart2, ChevronDown, ChevronUp, Sliders, RotateCcw, AlertTriangle, Siren, Car as CarIcon, Clock, BarChart3, PersonStanding, TrafficCone, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
@@ -125,29 +125,29 @@ const Dashboard = () => {
   const dirNames = { N: 'North Bound', S: 'South Bound', E: 'East Bound', W: 'West Bound' };
 
   const currentAvgWait = Math.round(state?.avg_wait_time ?? metrics?.current_avg_wait_time ?? metrics?.avg_wait_time ?? 0);
-  const losGrade = currentAvgWait <= 10 ? { grade: 'A', label: 'Free Flow', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' }
-    : currentAvgWait <= 20 ? { grade: 'B', label: 'Stable Flow', color: 'bg-teal-100 text-teal-800 border-teal-300' }
-      : currentAvgWait <= 35 ? { grade: 'C', label: 'Moderate Flow', color: 'bg-amber-100 text-amber-800 border-amber-300' }
-        : currentAvgWait <= 55 ? { grade: 'D', label: 'Approaching Limit', color: 'bg-orange-100 text-orange-800 border-orange-300' }
-          : { grade: 'E/F', label: 'High Congestion', color: 'bg-red-100 text-red-800 border-red-300' };
+  const losGrade = currentAvgWait <= 10 ? { grade: 'A', label: 'Free Flow', color: 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]' }
+    : currentAvgWait <= 20 ? { grade: 'B', label: 'Stable Flow', color: 'bg-[#F1F5F9] text-[#0F2C59] border-[#E2E8F0]' }
+      : currentAvgWait <= 35 ? { grade: 'C', label: 'Moderate Flow', color: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]' }
+        : currentAvgWait <= 55 ? { grade: 'D', label: 'Approaching Limit', color: 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]' }
+          : { grade: 'E/F', label: 'High Congestion', color: 'bg-[#FEE2E2] text-[#DC2626] border-[#FECACA]' };
 
   return (
     <div className="max-w-[1520px] mx-auto px-4 sm:px-8 space-y-6">
       {/* 0. Government ICCC Corridor Strip (Spacious & Clean) */}
-      <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+      <div className="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
-          <div className="px-2.5 py-1 rounded-md bg-[#0F2942] text-amber-300 text-xs font-black tracking-wider uppercase border border-[#1E3A8A]">
+          <div className="px-2.5 py-1 rounded-md bg-[#0A1F44] text-[#F5A623] text-xs font-black tracking-wider uppercase border border-[#1E4D8C]">
             MoRTH ICCC
           </div>
           <div>
-            <div className="text-sm font-bold text-[#0F2942] flex items-center space-x-2">
+            <div className="text-sm font-bold text-[#0A1F44] flex items-center space-x-2">
               <span>Mumbai Metropolitan Region • BKC Financial Corridor</span>
               <span className="text-slate-300">•</span>
-              <span className="text-xs font-extrabold text-[#003366] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              <span className="text-xs font-extrabold text-[#0F2C59] bg-[#F1F5F9] px-2 py-0.5 rounded border border-[#E2E8F0]">
                 Junction Node #04
               </span>
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
+            <div className="text-xs text-[#475569] mt-0.5">
               Sensor Telemetry: 4/4 Cameras Synchronized • Adaptive RL Control Active
             </div>
           </div>
@@ -156,8 +156,8 @@ const Dashboard = () => {
         {/* Level of Service (IRC:106 Standard) Badge */}
         <div className="flex items-center space-x-3">
           <div className="text-right hidden sm:block">
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Level of Service (IRC:106)</div>
-            <div className="text-xs font-bold text-[#0F2942]">{losGrade.label}</div>
+            <div className="text-[10px] font-bold text-[#475569] uppercase tracking-wider">Level of Service (IRC:106)</div>
+            <div className="text-xs font-bold text-[#0A1F44]">{losGrade.label}</div>
           </div>
           <div className={`px-3.5 py-1.5 rounded-lg border text-xs font-black flex items-center space-x-1.5 shadow-xs ${losGrade.color}`}>
             <span>LOS:</span>
@@ -175,7 +175,7 @@ const Dashboard = () => {
             exit={{ opacity: 0, y: -10 }}
             className="p-3.5 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-xl text-xs flex items-center space-x-2"
           >
-            <span>⚠️</span>
+            <AlertTriangle size={16} className="text-amber-500" />
             <span>{error}</span>
           </motion.div>
         )}
@@ -191,8 +191,9 @@ const Dashboard = () => {
             className="p-4 bg-red-50 border-2 border-red-500 text-red-800 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs"
           >
             <div className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping" />
+            <Siren size={18} className="text-red-600 shrink-0" />
             <span>
-              🚨 EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
+              EMERGENCY PRIORITY ACTIVE: Approach {state.emergencyDirection} → GREEN • Cross Traffic Halted
             </span>
           </motion.div>
         )}
@@ -203,8 +204,8 @@ const Dashboard = () => {
         <StatCard
           title="VEHICLES PASSED"
           value={state?.cars_passed ?? metrics?.total_cars ?? 0}
-          icon="🚗"
-          trend="↑ +12%"
+          icon={CarIcon}
+          trend="+12%"
           trendSubtext="vs. last 5 minutes"
           color="blue"
         />
@@ -212,8 +213,8 @@ const Dashboard = () => {
           title="AVERAGE WAIT TIME"
           value={Math.round(state?.avg_wait_time ?? metrics?.current_avg_wait_time ?? metrics?.avg_wait_time ?? 0)}
           unit="sec"
-          icon="⏱️"
-          trend="↓ -18%"
+          icon={Clock}
+          trend="-18%"
           trendSubtext="vs. last 5 minutes"
           color="orange"
         />
@@ -221,8 +222,8 @@ const Dashboard = () => {
           title="TOTAL THROUGHPUT"
           value={Math.round(state?.throughput ?? metrics?.throughput ?? 0)}
           unit="cars/min"
-          icon="📊"
-          trend="↑ +6%"
+          icon={BarChart3}
+          trend="+6%"
           trendSubtext="vs. last 5 minutes"
           color="green"
         />
@@ -230,7 +231,7 @@ const Dashboard = () => {
           title="EMERGENCY VEHICLES"
           value={state?.emergencyActive ? 1 : (metrics?.emergency_count ?? 0)}
           unit="active"
-          icon="⚠️"
+          icon={<AlertTriangle size={16} className="text-amber-500" />}
           trend="— 0%"
           trendSubtext="vs. last 5 minutes"
           color="purple"
@@ -238,18 +239,18 @@ const Dashboard = () => {
       </div>
 
       {/* 2. SIGNAL OPTIMIZATION & DEMAND CONTROL PANEL */}
-      <AIDecisionPanel />
+      <AIDecisionPanel showAllocationDetails={false} />
 
       {/* 3. MAIN SECTION: Left (70%) Live Intersection & Right (30%) Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-[70%_calc(30%-1.5rem)] gap-6 items-start">
 
         {/* LEFT COLUMN: Live Intersection View */}
-        <div className="bg-white rounded-xl shadow-xs p-4 sm:p-5 border border-[#CBD5E1]">
+        <div className="bg-white rounded-xl shadow-xs p-4 sm:p-5 border border-[#E2E8F0]">
           {/* Intersection Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
             <div className="flex items-center space-x-2">
-              <Video className="w-4 h-4 text-[#003366]" />
-              <h2 className="text-sm font-bold text-[#0F2942]">
+              <Video className="w-4 h-4 text-[#0F2C59]" />
+              <h2 className="text-sm font-bold text-[#0A1F44]">
                 Live Intersection CCTV & Actuation View
               </h2>
             </div>
@@ -266,10 +267,10 @@ const Dashboard = () => {
                   <div
                     key={dir}
                     className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all ${isGreen
-                        ? 'bg-[#15803D] text-white shadow-xs'
+                        ? 'bg-[#16A34A] text-white shadow-xs'
                         : isYellow
                           ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
-                          : 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]'
+                          : 'bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]'
                       }`}
                   >
                     {dirFullNames[dir]}: {label}
@@ -376,7 +377,7 @@ const Dashboard = () => {
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -420,7 +421,7 @@ const Dashboard = () => {
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -462,7 +463,7 @@ const Dashboard = () => {
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -504,7 +505,7 @@ const Dashboard = () => {
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          🚶‍♀️
+                          <PersonStanding size={16} className="text-slate-600" />
                         </motion.div>
                       )}
                     </div>
@@ -592,7 +593,7 @@ const Dashboard = () => {
 
             {/* Fullscreen Floating Controls (Weather & Exit) */}
             {isFullscreen && (
-              <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#172333]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
+              <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#0A1F44]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
                 {[
                   { mode: 'normal', label: 'Clear', icon: Sun },
                   { mode: 'rain', label: 'Rain', icon: CloudRain },
@@ -605,7 +606,7 @@ const Dashboard = () => {
                       key={mode}
                       onClick={() => setWeather && setWeather(mode)}
                       className={`px-3 py-1 text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer ${isActive
-                          ? 'bg-[#13B8B2] text-white shadow-xs'
+                          ? 'bg-[#0F2C59] text-white shadow-xs border border-[#1E4D8C]'
                           : 'text-slate-300 hover:text-white hover:bg-white/10'
                         }`}
                     >
@@ -631,12 +632,12 @@ const Dashboard = () => {
             {/* Row 1: Current status pill & weather pills */}
             <div className="flex flex-wrap items-center justify-between gap-2">
               {/* Current Signal status capsule */}
-              <div className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#0F2942] text-amber-300 shadow-xs border border-[#1E3A8A]">
+              <div className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#0A1F44] text-[#F5A623] shadow-xs border border-[#1E4D8C]">
                 Current Signal: {state?.signal || 'E'} ({state?.phase || 'GREEN'}) | Green remaining: {state?.phase_remaining_sec ?? 2}s
               </div>
 
               {/* Weather selector pills */}
-              <div className="flex items-center p-0.5 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
+              <div className="flex items-center p-0.5 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0]">
                 {[
                   { mode: 'normal', label: 'Clear', icon: Sun },
                   { mode: 'rain', label: 'Rain', icon: CloudRain },
@@ -649,8 +650,8 @@ const Dashboard = () => {
                       key={mode}
                       onClick={() => setWeather && setWeather(mode)}
                       className={`px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center space-x-1 cursor-pointer ${isActive
-                          ? 'bg-[#003366] text-white shadow-xs'
-                          : 'text-[#475569] hover:text-[#0F2942]'
+                          ? 'bg-[#0F2C59] text-white shadow-xs'
+                          : 'text-[#475569] hover:text-[#0A1F44]'
                         }`}
                     >
                       <Icon size={12} />
@@ -665,8 +666,8 @@ const Dashboard = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#F1F5F9]">
               {/* Manual clearance status */}
               <div className="flex items-center space-x-1 text-xs text-[#475569]">
-                <span>🚦</span>
-                <span className="font-semibold text-[#0F2942]">IRC Safety Clearance:</span>
+                <TrafficCone size={16} className="text-[#0F2C59]" />
+                <span className="font-semibold text-[#0A1F44]">IRC Safety Clearance:</span>
                 <span>Yellow {state?.yellow_duration || 3}s → All-red {state?.all_red_duration || 1}s</span>
               </div>
 
@@ -680,7 +681,7 @@ const Dashboard = () => {
                   }`}
                 title="Dispatch emergency vehicle priority clearance"
               >
-                <span>⚠️</span>
+                <AlertTriangle size={16} className="text-[#F5A623]" />
                 <span>{state?.emergencyActive ? `EMERGENCY ACTIVE (${state?.emergencyDirection || ''})` : 'EMERGENCY DISPATCH'}</span>
               </button>
             </div>
@@ -688,14 +689,14 @@ const Dashboard = () => {
         </div>
 
         {/* RIGHT COLUMN: Analytics Panel */}
-        <div className="bg-white rounded-xl shadow-xs p-4 sm:p-5 border border-[#CBD5E1]">
+        <div className="bg-white rounded-xl shadow-xs p-4 sm:p-5 border border-[#E2E8F0]">
           {/* Analytics Header */}
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center space-x-2">
-              <BarChart2 className="w-4 h-4 text-[#003366]" />
-              <h3 className="text-sm font-bold text-[#0F2942]">Real-Time Analytics</h3>
+              <BarChart2 className="w-4 h-4 text-[#0F2C59]" />
+              <h3 className="text-sm font-bold text-[#0A1F44]">Real-Time Analytics</h3>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded bg-blue-50 text-[#003366] border border-blue-200">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded bg-[#F1F5F9] text-[#0F2C59] border border-[#E2E8F0]">
               Live Telemetry
             </span>
           </div>
@@ -703,14 +704,14 @@ const Dashboard = () => {
           {/* 3 Quick Status Cards */}
           <div className="space-y-2 mb-3.5">
             {/* 1. Current Signal */}
-            <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-between">
+            <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">🚦</span>
+                <TrafficCone size={16} className="text-[#0F2C59]" />
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#003366]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#0F2C59]">
                     Active Phase
                   </div>
-                  <div className="text-sm font-extrabold text-[#0F2942]">
+                  <div className="text-sm font-extrabold text-[#0A1F44]">
                     {currentSignalDir} <span className="font-normal text-xs text-[#475569]">{dirNames[currentSignalDir] || ''}</span>
                   </div>
                 </div>
@@ -720,12 +721,12 @@ const Dashboard = () => {
             {/* 2. Active Roads */}
             <div className="p-2.5 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">🚗</span>
+                <CarIcon size={16} className="text-[#16A34A]" />
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#15803D]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#16A34A]">
                     Active Approaches
                   </div>
-                  <div className="text-sm font-extrabold text-[#0F2942]">
+                  <div className="text-sm font-extrabold text-[#0A1F44]">
                     {activeRoadsCount} / 4 <span className="font-normal text-xs text-[#475569]">N, S, E, W</span>
                   </div>
                 </div>
@@ -735,19 +736,20 @@ const Dashboard = () => {
             {/* 3. Wait Time */}
             <div className="p-2.5 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <span className="text-base">⏱️</span>
+                <Clock size={16} className="text-[#F5A623]" />
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#D97706]">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#B8860B]">
                     Average Wait Time
                   </div>
-                  <div className="text-sm font-extrabold text-[#D97706]">
+                  <div className="text-sm font-extrabold text-[#F5A623]">
                     {(state?.avg_wait_time ?? 0).toFixed(1)} s
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-[#15803D]">
-                  ↓ -18%
+                <span className="text-[10px] font-bold text-[#16A34A] flex items-center justify-end space-x-0.5">
+                  <TrendingDown size={12} />
+                  <span>-18%</span>
                 </span>
                 <div className="text-[9px] text-[#94A3B8]">
                   vs. fixed time
@@ -762,15 +764,15 @@ const Dashboard = () => {
       </div>
 
       {/* 4. SYSTEM CONTROLS */}
-      <div className="bg-white rounded-xl shadow-xs border border-[#CBD5E1] p-4 sm:p-5">
+      <div className="bg-white rounded-xl shadow-xs border border-[#E2E8F0] p-4 sm:p-5">
         {/* System Controls Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-[#0F2942] flex items-center justify-center border border-[#1E3A8A]">
-              <Sliders className="w-4 h-4 text-amber-300" />
+            <div className="w-8 h-8 rounded-lg bg-[#0A1F44] flex items-center justify-center border border-[#1E4D8C]">
+              <Sliders className="w-4 h-4 text-[#F5A623]" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#0F2942]">ICCC System & Simulation Controls</h3>
+              <h3 className="text-sm font-bold text-[#0A1F44]">ICCC System & Simulation Controls</h3>
               <p className="text-[11px] text-[#475569]">Configure data feeds, peak load multipliers, and node parameters</p>
             </div>
           </div>
@@ -784,7 +786,7 @@ const Dashboard = () => {
             {/* Chevron toggle to collapse/expand */}
             <button
               onClick={() => setShowControls(prev => !prev)}
-              className="p-1 rounded-lg text-[#64748B] hover:text-[#0F2942] hover:bg-slate-100 transition cursor-pointer"
+              className="p-1 rounded-lg text-[#64748B] hover:text-[#0A1F44] hover:bg-slate-100 transition cursor-pointer"
               title={showControls ? 'Collapse' : 'Expand'}
             >
               {showControls ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -799,55 +801,28 @@ const Dashboard = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden pt-4 mt-4 border-t border-[#CBD5E1]"
+              className="overflow-hidden pt-4 mt-4 border-t border-[#E2E8F0]"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
-                {/* 1. Data Source */}
-                <div>
-                  <label className="block text-[11px] font-bold text-[#475569] uppercase tracking-wider mb-1.5">
-                    Data Feed
-                  </label>
-                  <div className="flex space-x-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
-                    <button
-                      onClick={switchToMock}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${useMock
-                          ? 'bg-[#003366] text-white shadow-xs'
-                          : 'text-[#475569] hover:text-[#0F2942]'
-                        }`}
-                    >
-                      Simulation
-                    </button>
-                    <button
-                      onClick={switchToBackend}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${!useMock
-                          ? 'bg-[#003366] text-white shadow-xs'
-                          : 'text-[#475569] hover:text-[#0F2942]'
-                        }`}
-                    >
-                      NIC Backend API
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. Generated Traffic */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                {/* 1. Generated Traffic */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
                       Traffic Demand
                     </label>
                     {demandPendingReset && useMock && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#B45309]">
                         Next reset
                       </span>
                     )}
                   </div>
                   {useMock ? (
-                    <div className="flex space-x-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
+                    <div className="flex space-x-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0]">
                       <button
                         onClick={() => setGeneratedDemandMultiplier && setGeneratedDemandMultiplier(0.5)}
                         className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${stagedDemand === 0.5
-                            ? 'bg-[#003366] text-white shadow-xs'
-                            : 'text-[#475569] hover:text-[#0F2942]'
+                            ? 'bg-[#0F2C59] text-white shadow-xs'
+                            : 'text-[#475569] hover:text-[#0A1F44]'
                           }`}
                         title="Moderate demand: 0.5x"
                       >
@@ -856,8 +831,8 @@ const Dashboard = () => {
                       <button
                         onClick={() => setGeneratedDemandMultiplier && setGeneratedDemandMultiplier(1.0)}
                         className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${stagedDemand === 1.0
-                            ? 'bg-[#003366] text-white shadow-xs'
-                            : 'text-[#475569] hover:text-[#0F2942]'
+                            ? 'bg-[#0F2C59] text-white shadow-xs'
+                            : 'text-[#475569] hover:text-[#0A1F44]'
                           }`}
                         title="Peak time demand: 1.0x"
                       >
@@ -877,14 +852,14 @@ const Dashboard = () => {
                     Clock Multiplier
                   </label>
                   {useMock ? (
-                    <div className="flex space-x-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
+                    <div className="flex space-x-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0]">
                       {[1, 2, 3].map((spd) => (
                         <button
                           key={spd}
                           onClick={() => setSpeed(spd)}
                           className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${simulationSpeed === spd
-                              ? 'bg-white text-[#0F2942] font-black shadow-xs border border-[#CBD5E1]'
-                              : 'text-[#475569] hover:text-[#0F2942]'
+                              ? 'bg-white text-[#0A1F44] font-black shadow-xs border border-[#E2E8F0]'
+                              : 'text-[#475569] hover:text-[#0A1F44]'
                             }`}
                         >
                           {spd}x {spd === 1 ? '(1:1)' : ''}
@@ -905,9 +880,9 @@ const Dashboard = () => {
                   </label>
                   <button
                     onClick={resetSimulation}
-                    className="w-full py-2 px-3 text-xs font-bold rounded-lg bg-white border border-[#CBD5E1] text-[#0F2942] hover:bg-slate-50 transition shadow-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
+                    className="w-full py-2 px-3 text-xs font-bold rounded-lg bg-white border border-[#E2E8F0] text-[#0A1F44] hover:bg-[#F8FAFC] transition shadow-xs flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95"
                   >
-                    <RotateCcw size={13} className="text-[#003366]" />
+                    <RotateCcw size={13} className="text-[#0F2C59]" />
                     <span>Reset Intersection</span>
                   </button>
                 </div>
