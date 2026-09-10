@@ -52,9 +52,6 @@ export const AIDecisionPanel = () => {
               <h3 className="text-base font-bold text-[#0F2942]">
                 MoRTH Adaptive Signal Controller & Demand Optimization
               </h3>
-              <span className="hidden sm:inline-block text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded border border-amber-300">
-                ICCC Auto-Pilot
-              </span>
             </div>
             <p className="text-xs text-[#64748B]">
               Real-time PCU demand allocation, 35s starvation protection & dynamic weather clearance

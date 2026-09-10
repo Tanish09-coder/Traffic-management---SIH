@@ -776,12 +776,6 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            {/* System Online Status Indicator */}
-            <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#15803D]">
-              <span className="w-2 h-2 rounded-full bg-[#15803D] animate-pulse" />
-              <span>MoRTH Grid Online</span>
-            </div>
-
             {/* Timestamp */}
             <span className="text-xs text-[#475569] font-mono">
               {currentTimeFormatted}
