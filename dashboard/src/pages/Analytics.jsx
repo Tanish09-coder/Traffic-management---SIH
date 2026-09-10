@@ -174,11 +174,11 @@ const Analytics = ({ onNavigate }) => {
           </div>
           <div>
             <span className="text-slate-400 block font-medium text-[11px]">Recorded Events</span>
-            <span className="font-semibold text-blue-600">{session.eventCount} events</span>
+            <span className="font-semibold text-[#003366]">{session.eventCount} events</span>
           </div>
           <div className="col-span-2 sm:col-span-1">
             <span className="text-slate-400 block font-medium text-[11px]">Active Signal</span>
-            <span className="font-bold text-emerald-600">Lane {state?.signal || 'N'}</span>
+            <span className="font-bold text-[#003366]">Lane {state?.signal || 'N'}</span>
           </div>
         </div>
       </div>
@@ -187,13 +187,13 @@ const Analytics = ({ onNavigate }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
 
         {/* Total Vehicles */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between hover:border-[#003366]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Vehicles</span>
-            <Car size={16} className="text-blue-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Total Vehicles</span>
+            <Car size={16} className="text-[#003366]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0F2942] tracking-tight">
               {session.totalVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">Generated in session</p>
@@ -201,13 +201,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Vehicles Processed */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between hover:border-[#003366]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Processed</span>
-            <CheckCircle2 size={16} className="text-emerald-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Processed</span>
+            <CheckCircle2 size={16} className="text-[#003366]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-emerald-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0F2942] tracking-tight">
               {session.vehiclesProcessed}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">Cleared intersection</p>
@@ -215,13 +215,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Active Vehicles */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between hover:border-[#003366]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active in Grid</span>
-            <Activity size={16} className="text-indigo-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Active in Grid</span>
+            <Activity size={16} className="text-[#003366]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0F2942] tracking-tight">
               {session.activeVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">In approach lanes</p>
@@ -229,14 +229,14 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Average Waiting Time */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between hover:border-[#FDE68A] transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg Wait Time</span>
-            <Timer size={16} className="text-amber-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Avg Wait Time</span>
+            <Timer size={16} className="text-[#D97706]" />
           </div>
           <div className="mt-2">
             {session.hasWaitTimeData ? (
-              <span className="text-3xl sm:text-4xl font-extrabold text-amber-600 tracking-tight">
+              <span className="text-3xl sm:text-4xl font-black text-[#D97706] tracking-tight">
                 {session.averageWaitTime}s
               </span>
             ) : (
@@ -249,14 +249,14 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Peak Traffic */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between hover:border-[#003366]/40 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Peak Traffic</span>
-            <TrendingUp size={16} className="text-purple-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Peak Traffic</span>
+            <TrendingUp size={16} className="text-[#003366]" />
           </div>
           <div className="mt-2">
             {session.peakActiveVehicles > 0 ? (
-              <span className="text-3xl sm:text-4xl font-extrabold text-purple-600 tracking-tight">
+              <span className="text-3xl sm:text-4xl font-black text-[#0F2942] tracking-tight">
                 {session.peakActiveVehicles}
               </span>
             ) : (
@@ -269,13 +269,13 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {/* Emergency Vehicles */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between hover:border-[#FDE68A] transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Emergency</span>
-            <ShieldAlert size={16} className="text-red-500" />
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Emergency</span>
+            <ShieldAlert size={16} className="text-[#D97706]" />
           </div>
           <div className="mt-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-red-600 tracking-tight">
+            <span className="text-3xl sm:text-4xl font-black text-[#0F2942] tracking-tight">
               {session.emergencyVehicles}
             </span>
             <p className="text-[11px] text-slate-400 mt-0.5">
@@ -287,52 +287,52 @@ const Analytics = ({ onNavigate }) => {
       </div>
 
       {/* Derived Environmental & Commuter Benefit Audit */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-white rounded-2xl border border-[#CBD5E1] p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Derived Environmental & Commuter Impact</h3>
+            <h3 className="text-base font-bold text-[#0F2942]">Derived Environmental & Commuter Impact</h3>
             <p className="text-sm text-slate-500">
               Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: 45.0s)
             </p>
           </div>
-          <span className="text-xs bg-teal-50 text-teal-700 font-bold px-2.5 py-0.5 rounded-full">
+          <span className="text-xs bg-[#0F2942] text-[#FF9933] border border-[#1E3A8A] font-bold px-2.5 py-0.5 rounded-full">
             DERIVED MATRIX
           </span>
         </div>
 
         {session.sustainability.hasData ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-1">
-              <div className="flex items-center justify-between text-emerald-700 text-sm font-bold">
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] space-y-1">
+              <div className="flex items-center justify-between text-[#003366] text-sm font-bold">
                 <span>Fuel Conserved</span>
-                <Fuel size={16} />
+                <Fuel size={16} className="text-[#003366]" />
               </div>
-              <div className="text-3xl font-black text-emerald-800">
+              <div className="text-3xl font-black text-[#0F2942]">
                 {session.sustainability.fuelSavedLiters} L
               </div>
               <p className="text-[10px] text-slate-500">Rate: 0.00028 L/sec delay reduction</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-teal-50/70 border border-teal-100 space-y-1">
-              <div className="flex items-center justify-between text-teal-700 text-sm font-bold">
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] space-y-1">
+              <div className="flex items-center justify-between text-[#003366] text-sm font-bold">
                 <span>CO₂ Avoided</span>
-                <Leaf size={16} />
+                <Leaf size={16} className="text-[#003366]" />
               </div>
-              <div className="text-3xl font-black text-teal-800">
+              <div className="text-3xl font-black text-[#0F2942]">
                 {session.sustainability.co2ReducedKg} kg
               </div>
               <p className="text-[10px] text-slate-500">Factor: 2.31 kg CO₂ per liter</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-100 space-y-1">
-              <div className="flex items-center justify-between text-amber-700 text-sm font-bold">
+            <div className="p-4 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] space-y-1">
+              <div className="flex items-center justify-between text-[#D97706] text-sm font-bold">
                 <span>Economic Value</span>
-                <IndianRupee size={16} />
+                <IndianRupee size={16} className="text-[#D97706]" />
               </div>
-              <div className="text-3xl font-black text-amber-800">
+              <div className="text-3xl font-black text-[#D97706]">
                 ₹{session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}
               </div>
-              <p className="text-[10px] text-slate-500">Retail fuel + commuter time value</p>
+              <p className="text-[10px] text-amber-800/80">Retail fuel + commuter time value</p>
             </div>
           </div>
         ) : (
