@@ -1,38 +1,42 @@
-import { TrafficCone, MapPin, Sparkles, Building2, Atom, Server, Target } from 'lucide-react';
-
 const About = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-white shadow-sm border border-slate-200 rounded-2xl p-8 md:p-10">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl font-bold">
-            <TrafficCone size={24} />
+          <div className="w-12 h-12 rounded-xl bg-[#0F2942] text-[#FF9933] flex items-center justify-center text-2xl font-bold border border-[#1E3A8A]">
+            🏛️
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-              About Smart Traffic Management System
-            </h1>
-            
+            <div className="flex items-center space-x-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F2942]">
+                National Urban Traffic Control System (N-UTCS)
+              </h1>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded border border-amber-300">
+                MoRTH ITMS Standard
+              </span>
+            </div>
+            <p className="text-xs text-[#64748B] mt-0.5">
+              Ministry of Road Transport & Highways • Smart Cities Mission Integrated Command & Control Center (ICCC)
+            </p>
           </div>
         </div>
-        
+
         <div className="space-y-8">
           <div>
-            <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <MapPin size={16} />
-              <span>System Overview</span>
+            <h2 className="text-lg font-semibold text-[#0F2942] mb-3 flex items-center space-x-2">
+              <span>📌</span>
+              <span>Executive Overview</span>
             </h2>
             <p className="text-slate-600 leading-relaxed">
-              The Smart Traffic Management System (STMS) is an intelligent intersection 
-              control and telemetry platform designed to alleviate urban gridlock in high-density corridors like Mumbai. 
-              By leveraging real-time queue length estimation, adaptive reinforcement learning policies, and dynamic green wave timing, 
-              the system significantly reduces idle wait times, suppresses carbon emissions, and cuts fuel wastage.
+              The <strong>National Urban Traffic Control System (N-UTCS)</strong> is an enterprise-grade, AI-powered traffic optimization platform built under the Guidelines for Indian Government Websites (GIGW) and Indian Roads Congress (IRC:106) standards.
+              Designed for deployment in high-density metropolitan corridors like the Mumbai BKC Zone, it leverages real-time computer vision (YOLOv8) PCU mapping,
+              anti-starvation dynamic scheduling, emergency green wave corridors, and continuous carbon footprint telemetry to eliminate urban gridlock.
             </p>
           </div>
 
           <div>
             <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <Sparkles size={16} />
+              <span>✨</span>
               <span>Key Capabilities</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -54,13 +58,13 @@ const About = () => {
 
           <div>
             <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <Building2 size={16} />
+              <span>🏗️</span>
               <span>Technical Architecture</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h3 className="font-semibold text-slate-800 mb-3 text-sm flex items-center space-x-2">
-                  <Atom size={16} />
+                  <span>⚛️</span>
                   <span>Frontend Dashboard</span>
                 </h3>
                 <ul className="text-xs text-slate-600 space-y-2">
@@ -85,7 +89,7 @@ const About = () => {
 
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h3 className="font-semibold text-slate-800 mb-3 text-sm flex items-center space-x-2">
-                  <Server size={16} />
+                  <span>🐍</span>
                   <span>Backend & AI Engine</span>
                 </h3>
                 <ul className="text-xs text-slate-600 space-y-2">
@@ -112,7 +116,7 @@ const About = () => {
 
           <div>
             <h2 className="text-lg font-semibold text-slate-800 mb-3 flex items-center space-x-2">
-              <Target size={16} />
+              <span>🎯</span>
               <span>Target Benchmarks (Mumbai BKC Pilot)</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

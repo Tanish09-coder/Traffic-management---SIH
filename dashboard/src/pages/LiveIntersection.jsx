@@ -263,45 +263,55 @@ const LiveIntersection = () => {
         </AnimatePresence>
 
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6 border-2 border-[#D97706] border-l-4 border-l-amber-500">
-          <div className="flex justify-between items-center">
+        <div className="bg-white rounded-xl shadow-xs p-5 mb-5 border border-[#CBD5E1]">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Mumbai Smart Traffic Management System</h1>
-              <p className="text-sm text-blue-600 mt-1 flex items-center gap-1"><MapPin size={14} className="text-blue-600" /> Bandra-Kurla Complex, Mumbai - Junction 12A</p>
+              <div className="flex items-center space-x-2">
+                <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
+                  MoRTH Live Actuation
+                </span>
+                <span className="text-xs font-semibold text-slate-500">Node #04</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">
+                Integrated Traffic Management System (ITMS) • Live Junction
+              </h1>
+              <p className="text-xs text-slate-600 mt-0.5">
+                📍 BKC Financial District, Mumbai Metropolitan Region • Smart Cities Mission Grid
+              </p>
               
               {/* Target Achievement Indicator */}
-              <div className="mt-3 flex items-center space-x-4">
-                <div className={`px-3 py-1 rounded-full text-sm font-medium border ${
+              <div className="mt-2.5 flex items-center space-x-3">
+                <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border ${
                   targetAchieved 
-                    ? 'bg-green-100 text-green-800 border-green-200' 
-                    : 'border-amber-300 bg-amber-50/80 text-amber-900'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                    : 'bg-amber-50 text-amber-900 border-amber-300'
                 }`}>
-                  <Target size={14} className="mr-1" />
-                  {targetAchieved ? 'Target Achieved!' : 'Working towards 30-35s target'}
+                  <span className="mr-1">🎯</span>
+                  {targetAchieved ? 'Target Achieved (IRC:106)' : 'Target: 20-30s Avg Delay'}
                 </div>
-                <div className="text-sm text-gray-600">
-                  Current: {(state?.avg_wait_time || 0).toFixed(1)}s | Traditional: 45s
+                <div className="text-xs text-slate-600">
+                  Current Wait: {(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s
                 </div>
               </div>
             </div>
             <div className="text-right">
               {overrideActive && (
-                <div className="text-sm text-gray-500">
-                  Manual Override
+                <div className="text-xs text-red-600 font-bold">
+                  Police Manual Override
                 </div>
               )}
               <div className="flex items-center space-x-2 mt-1">
-                <div className={`w-3 h-3 rounded-full animate-pulse ${
-                  overrideActive ? 'bg-red-500' : 'bg-green-500'
+                <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
+                  overrideActive ? 'bg-red-600' : 'bg-emerald-600'
                 }`}></div>
-                <span className={`font-semibold ${
-                  overrideActive ? 'text-red-600' : 'text-green-600'
+                <span className={`text-xs font-bold ${
+                  overrideActive ? 'text-red-700' : 'text-emerald-700'
                 }`}>
-                  {overrideActive ? 'OVERRIDE' : 'ACTIVE'}
+                  {overrideActive ? 'OVERRIDE ACTIVE' : 'RL ADAPTIVE CONTROL'}
                 </span>
               </div>
-              <div className="text-xs text-blue-600 mt-1">
-                Wait Time Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
+              <div className="text-xs text-[#003366] font-bold mt-1">
+                Delay Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
               </div>
             </div>
           </div>

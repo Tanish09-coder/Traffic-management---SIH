@@ -82,34 +82,33 @@ const StatCard = ({
 
   return (
     <motion.div
-      className="bg-white rounded-2xl p-4 shadow-sm transition-all duration-200"
-      style={{ border: '1px solid #E3EAF0' }}
-      whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+      className="bg-white rounded-xl p-4 shadow-xs border border-[#CBD5E1] transition-all duration-200"
+      whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(15,41,66,0.08)' }}
       transition={{ duration: 0.15 }}
     >
-      <div className="flex items-center space-x-2.5 mb-2.5">
+      <div className="flex items-center space-x-2.5 mb-2">
         <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+          className="w-7 h-7 rounded-md flex items-center justify-center text-xs flex-shrink-0 border border-slate-200"
           style={{ backgroundColor: iconBg, color: iconColor }}
         >
-          <Icon size={20} />
+          {typeof Icon === 'string' ? <span className="text-base">{Icon}</span> : <Icon size={20} />}
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
           {title}
         </span>
       </div>
 
-      <div className="flex items-baseline space-x-1.5 mb-2">
+      <div className="flex items-baseline space-x-1.5 mb-1.5">
         <span
-          className="text-3xl font-extrabold tracking-tight"
+          className="text-3xl font-black tracking-tight"
           style={{
-            color: titleLower.includes('wait') ? '#EA580C' : '#172333'
+            color: titleLower.includes('wait') ? '#D97706' : '#0F2942'
           }}
         >
           {valuePrefix}{formattedValue}
         </span>
         {unit && (
-          <span className="text-xs font-semibold text-[#64748B]">
+          <span className="text-xs font-bold text-slate-500">
             {unit}
           </span>
         )}
