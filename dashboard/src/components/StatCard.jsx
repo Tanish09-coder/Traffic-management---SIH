@@ -1,11 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Car, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const StatCard = ({
   title = '',
   value = 0,
   unit = '',
-  icon = '🚗',
+  valuePrefix = '',
+  icon: Icon = Car,
   trend = '',
   trendSubtext = 'vs. last 5 minutes',
   color = 'blue'
@@ -15,20 +17,41 @@ const StatCard = ({
 
   let defaultTrend = trend;
   let trendColor = '#16A34A'; // green by default
+  let TrendIcon = null;
+  let trendText = '';
 
   if (!defaultTrend) {
     if (titleLower.includes('passed')) {
-      defaultTrend = '↑ +12%';
+      defaultTrend = '+12%';
       trendColor = '#16A34A';
+      TrendIcon = TrendingUp;
     } else if (titleLower.includes('wait')) {
-      defaultTrend = '↓ -18%';
+      defaultTrend = '-18%';
       trendColor = '#16A34A';
+      TrendIcon = TrendingDown;
     } else if (titleLower.includes('throughput')) {
-      defaultTrend = '↑ +6%';
+      defaultTrend = '+6%';
       trendColor = '#16A34A';
+      TrendIcon = TrendingUp;
     } else if (titleLower.includes('emergency')) {
-      defaultTrend = '— 0%';
+      defaultTrend = '0%';
       trendColor = '#64748B';
+      TrendIcon = Minus;
+    }
+  } else {
+    // Parse passed-in trend string for icon and text
+    if (defaultTrend.startsWith('↑') || defaultTrend.startsWith('+')) {
+      TrendIcon = TrendingUp;
+      trendText = defaultTrend.replace(/^[↑\s]+/, '');
+      defaultTrend = trendText;
+    } else if (defaultTrend.startsWith('↓') || defaultTrend.startsWith('-')) {
+      TrendIcon = TrendingDown;
+      trendText = defaultTrend.replace(/^[↓\s]+/, '');
+      defaultTrend = trendText;
+    } else if (defaultTrend.startsWith('—') || defaultTrend.startsWith('0')) {
+      TrendIcon = Minus;
+      trendText = defaultTrend.replace(/^[—\s]+/, '');
+      defaultTrend = trendText;
     }
   }
 
@@ -68,7 +91,7 @@ const StatCard = ({
           className="w-7 h-7 rounded-md flex items-center justify-center text-xs flex-shrink-0 border border-slate-200"
           style={{ backgroundColor: iconBg, color: iconColor }}
         >
-          <span>{icon}</span>
+          {typeof Icon === 'string' ? <span className="text-base">{Icon}</span> : <Icon size={20} />}
         </div>
         <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
           {title}
@@ -82,7 +105,7 @@ const StatCard = ({
             color: titleLower.includes('wait') ? '#D97706' : '#0F2942'
           }}
         >
-          {formattedValue}
+          {valuePrefix}{formattedValue}
         </span>
         {unit && (
           <span className="text-xs font-bold text-slate-500">
@@ -91,11 +114,14 @@ const StatCard = ({
         )}
       </div>
 
-      {defaultTrend && (
+      {(defaultTrend || trendSubtext !== 'vs. last 5 minutes') && (
         <div className="flex items-center space-x-1.5 text-xs">
-          <span className="font-bold" style={{ color: trendColor }}>
-            {defaultTrend}
-          </span>
+          {TrendIcon && <TrendIcon size={12} style={{ color: trendColor }} />}
+          {defaultTrend && (
+            <span className="font-bold" style={{ color: trendColor }}>
+              {defaultTrend}
+            </span>
+          )}
           <span className="text-[11px] text-[#94A3B8]">
             {trendSubtext}
           </span>

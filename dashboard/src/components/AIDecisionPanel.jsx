@@ -2,7 +2,7 @@ import React from 'react';
 import { Cpu, Layers, AlertCircle, Clock, Database, PlayCircle, Info, CheckCircle2, ArrowRight, Activity } from 'lucide-react';
 import { useSimulation } from '../context/SimulationContext';
 
-export const AIDecisionPanel = () => {
+export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
   const {
     state,
     strategy,
@@ -326,27 +326,31 @@ export const AIDecisionPanel = () => {
         </div>
       </div>
 
-      {/* 5. Allocation Snapshot Strip matching screenshot */}
-      <div className="mb-2 text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDFA] border border-[#CCFBF1]">
-        <Info className="w-4 h-4 text-[#13B8B2] flex-shrink-0" />
-        <div className="truncate">
-          <span className="font-bold text-[#172333] mr-1.5">Allocation Snapshot:</span>
-          <span className="font-mono text-[#0E8E89]">
-            {decision?.allocationExplanation || 'Allocated from 0 PCU: 10s base green allocation (Adaptive cycle initialized).'}
-          </span>
-        </div>
-      </div>
+      {showAllocationDetails && (
+        <>
+          {/* 5. Allocation Snapshot Strip matching screenshot */}
+          <div className="mb-2 text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDFA] border border-[#CCFBF1]">
+            <Info className="w-4 h-4 text-[#13B8B2] flex-shrink-0" />
+            <div className="truncate">
+              <span className="font-bold text-[#172333] mr-1.5">Allocation Snapshot:</span>
+              <span className="font-mono text-[#0E8E89]">
+                {decision?.allocationExplanation || 'Allocated from 0 PCU: 10s base green allocation (Adaptive cycle initialized).'}
+              </span>
+            </div>
+          </div>
 
-      {/* 6. Recommendation Reason Strip matching screenshot */}
-      <div className="text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDF4] border border-[#DCFCE7]">
-        <CheckCircle2 className="w-4 h-4 text-[#22C55E] flex-shrink-0" />
-        <div className="truncate">
-          <span className="font-bold text-[#172333] mr-1.5">Recommendation Reason:</span>
-          <span className="text-[#475569]">
-            {decision?.reason || 'Adaptive mode active: Monitoring real-time arrival queues across all approaches.'}
-          </span>
-        </div>
-      </div>
+          {/* 6. Recommendation Reason Strip matching screenshot */}
+          <div className="text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDF4] border border-[#DCFCE7]">
+            <CheckCircle2 className="w-4 h-4 text-[#22C55E] flex-shrink-0" />
+            <div className="truncate">
+              <span className="font-bold text-[#172333] mr-1.5">Recommendation Reason:</span>
+              <span className="text-[#475569]">
+                {decision?.reason || 'Adaptive mode active: Monitoring real-time arrival queues across all approaches.'}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
