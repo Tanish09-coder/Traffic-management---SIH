@@ -36,24 +36,24 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
 
   return (
     <div
-      className="rounded-xl p-5 shadow-xs select-none mb-4 bg-white border border-[#CBD5E1]"
+      className="rounded-xl p-5 shadow-xs select-none mb-4 bg-white border border-[#E2E8F0]"
     >
       {/* 1. Header & Quick SIH Action */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
         <div className="flex items-center space-x-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ backgroundColor: '#0F2942', border: '1px solid #1E3A8A' }}
+            style={{ backgroundColor: '#0A1F44', border: '1px solid #1E4D8C' }}
           >
-            <Cpu className="w-5 h-5 text-[#FF9933]" />
+            <Cpu className="w-5 h-5 text-[#F5A623]" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="text-base font-bold text-[#0F2942]">
+              <h3 className="text-base font-bold text-[#0A1F44]">
                 MoRTH Adaptive Signal Controller & Demand Optimization
               </h3>
             </div>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-[#475569]">
               Real-time PCU demand allocation, 35s starvation protection & dynamic weather clearance
             </p>
           </div>
@@ -62,17 +62,17 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         {/* Predict & Optimize Button matching screenshot */}
         <button
           onClick={activatePredictivePuneDemo}
-          className="flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg text-white shadow-xs transition-all hover:bg-[#1E3A8A] active:scale-95 cursor-pointer bg-[#003366] border border-[#1E3A8A]"
+          className="flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg text-white shadow-xs transition-all hover:bg-[#163A6B] active:scale-95 cursor-pointer bg-[#0F2C59] border border-[#1E4D8C]"
           title="Preset: Set Traffic Source to Pune Historical & Strategy to Predictive Adaptive"
         >
-          <PlayCircle className="w-4 h-4 text-[#FF9933]" />
+          <PlayCircle className="w-4 h-4 text-[#F5A623]" />
           <span>Predict & Optimize</span>
-          <span className="text-xs text-[#FF9933]">▶</span>
+          <span className="text-xs text-[#F5A623]">▶</span>
         </button>
       </div>
 
       {/* 2. Dual Control Bars (Optimization Mode + Demand Source) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 py-2 px-3 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 py-2 px-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
         {/* Optimization Mode */}
         <div className="flex items-center space-x-2">
           <span className="text-xs font-bold text-[#475569]">
@@ -91,8 +91,8 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                   onClick={() => setStrategy(id)}
                   className={`px-3.5 py-1 text-xs font-bold rounded transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#003366] text-white shadow-xs'
-                      : 'text-slate-600 hover:text-[#0F2942]'
+                      ? 'bg-[#0F2C59] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-[#0A1F44]'
                   }`}
                 >
                   {label}
@@ -112,8 +112,8 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
               onClick={() => setTrafficSource('simulation')}
               className={`px-3 py-1 text-xs font-bold rounded transition-all cursor-pointer ${
                 trafficSource === 'simulation'
-                  ? 'bg-[#003366] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-[#0F2942]'
+                  ? 'bg-[#0F2C59] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-[#0A1F44]'
               }`}
             >
               Synthetic
@@ -122,14 +122,14 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
               onClick={() => setTrafficSource('pune_historical')}
               className={`px-3 py-1 text-xs font-bold rounded transition-all cursor-pointer ${
                 trafficSource === 'pune_historical'
-                  ? 'bg-[#003366] text-white shadow-xs'
-                  : 'text-slate-600 hover:text-[#0F2942]'
+                  ? 'bg-[#0F2C59] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-[#0A1F44]'
               }`}
             >
               Pune Jan 17
             </button>
             {trafficSource === 'recorded_video' && (
-              <span className="px-3 py-1 text-xs font-bold rounded bg-[#D97706] text-white">
+              <span className="px-3 py-1 text-xs font-bold rounded bg-[#F5A623] text-white">
                 Recorded Video
               </span>
             )}
@@ -141,7 +141,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {trafficSource === 'pune_historical' && (
         <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A]">
           <div className="flex items-center space-x-2">
-            <Database className="w-3.5 h-3.5 text-[#22C55E]" />
+            <Database className="w-3.5 h-3.5 text-[#16A34A]" />
             <span className="font-bold">Traffic Source: Pune Historical Replay (Deterministic)</span>
             <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#DCFCE7] text-[#15803D]">
               Jan 17, 2023 ({state?.predictiveTimestamp || '09:00:00'})
@@ -153,17 +153,17 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             <span className="text-[#94A3B8]">
               (Road: {historicalReplayStats?.currentlyOnRoad ?? 0}, Backlog: {historicalReplayStats?.pendingBacklog ?? 0}, Exited: {historicalReplayStats?.completed ?? 0})
             </span>
-            <span className="font-bold px-1.5 rounded text-[#22C55E] bg-[#F0FDF4]">Loss: 0</span>
+            <span className="font-bold px-1.5 rounded text-[#16A34A] bg-[#F0FDF4]">Loss: 0</span>
           </div>
         </div>
       )}
 
       {/* Predictive Demand Indicator */}
       {strategy === 'predictive' && (
-        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center justify-between bg-[#FAF5FF] border border-[#E9D5FF] text-[#7C3AED]">
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center justify-between bg-[#FFFBEB] border border-[#FDE68A] text-[#B8860B]">
           <div className="flex items-center space-x-2">
             <span
-              className={`w-2 h-2 rounded-full ${state?.predictiveStatus === 'fallback' ? 'bg-[#F59E0B]' : 'bg-[#7C3AED] animate-pulse'}`}
+              className={`w-2 h-2 rounded-full ${state?.predictiveStatus === 'fallback' ? 'bg-[#F59E0B]' : 'bg-[#F5A623] animate-pulse'}`}
             />
             <span className="font-semibold">
               {state?.predictiveStatus === 'fallback'
@@ -172,7 +172,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             </span>
           </div>
           {state?.predictiveTimestamp && (
-            <span className="text-[10px] font-mono text-[#A78BFA]">
+            <span className="text-[10px] font-mono text-[#B8860B]">
               {state.predictiveDemoDate || '2023-01-17'} {state.predictiveTimestamp}
             </span>
           )}
@@ -182,7 +182,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {/* Staged strategy warning */}
       {isStaged && (
         <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-[#F5A623]" />
           <span>Strategy change to <strong>{stagedStrategy}</strong> staged; applying at next phase boundary.</span>
         </div>
       )}
@@ -190,15 +190,15 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {/* Extended Clearance status warning */}
       {clearance_status && (
         <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 animate-pulse bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B]">
-          <Clock className="w-3.5 h-3.5 flex-shrink-0 text-[#EF4444]" />
+          <Clock className="w-3.5 h-3.5 flex-shrink-0 text-[#DC2626]" />
           <span>{clearance_status}</span>
         </div>
       )}
 
       {/* Backend mode warning */}
       {!useMock && (
-        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#F0FDFA] border border-[#99F6E4] text-[#0E8E89]">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+        <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F2C59]">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-[#0F2C59]" />
           <span>Backend mode active. Local heuristic strategy controls are disabled.</span>
         </div>
       )}
@@ -206,15 +206,15 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {/* 3. 4 Signal Status Cards matching screenshot */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {/* Active Signal */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1]">
+        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
           <div className="flex items-center space-x-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#22C55E]" />
+            <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
               Active Signal
             </span>
           </div>
           <div className="flex items-center space-x-2 mt-1">
-            <span className="text-xl font-black text-[#0F2942]">
+            <span className="text-xl font-black text-[#0A1F44]">
               {signal || 'E'}
             </span>
             <span
@@ -230,7 +230,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         </div>
 
         {/* Green Remaining */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1]">
+        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
           <div className="flex items-center space-x-1.5 mb-1">
             <Clock className="w-3 h-3 text-[#475569]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
@@ -238,42 +238,42 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             </span>
           </div>
           <div className="flex items-baseline space-x-1 mt-1">
-            <span className="text-xl font-black text-[#0F2942]">
+            <span className="text-xl font-black text-[#0A1F44]">
               {clearance_status ? 'Clear' : `${phase_remaining_sec ?? 2}s`}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-[#94A3B8]">
               / {active_green_duration || 26}s cycle
             </span>
           </div>
         </div>
 
         {/* Next Pending */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1]">
+        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
           <div className="flex items-center space-x-1.5 mb-1">
-            <ArrowRight className="w-3 h-3 text-[#003366]" />
+            <ArrowRight className="w-3 h-3 text-[#0F2C59]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
               Next Pending
             </span>
           </div>
           <div className="flex items-baseline space-x-1 mt-1">
-            <span className="text-xl font-black text-[#0F2942]">
+            <span className="text-xl font-black text-[#0A1F44]">
               {pending_signal || signal || 'E'}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-[#94A3B8]">
               ({pending_green_duration || 36}s)
             </span>
           </div>
         </div>
 
         {/* Strategy Mode */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1]">
+        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
           <div className="flex items-center space-x-1.5 mb-1">
             <Activity className="w-3 h-3 text-[#475569]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
               Strategy Mode
             </span>
           </div>
-          <div className="text-base font-black text-[#0F2942] capitalize mt-1.5">
+          <div className="text-base font-black text-[#0A1F44] capitalize mt-1.5">
             {strategy || 'Adaptive'}
           </div>
         </div>
@@ -300,13 +300,13 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                 key={dir}
                 className={`p-3 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#003366]/5 border-2 border-[#003366] shadow-xs'
-                    : 'bg-[#F8FAFC] border border-[#CBD5E1]'
+                    ? 'bg-[#0F2C59]/5 border-2 border-[#0F2C59] shadow-xs'
+                    : 'bg-[#F8FAFC] border border-[#E2E8F0]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-[#0F2942]">{dir}</span>
-                  <span className="text-xs font-bold text-[#003366] font-mono">
+                  <span className="text-xs font-black text-[#0A1F44]">{dir}</span>
+                  <span className="text-xs font-bold text-[#0F2C59] font-mono">
                     {pcuVal.toFixed(1)} PCU
                   </span>
                 </div>
@@ -316,7 +316,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                 {/* Horizontal Progress Bar */}
                 <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#003366] rounded-full transition-all duration-300"
+                    className="h-full bg-[#0F2C59] rounded-full transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -329,11 +329,11 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {showAllocationDetails && (
         <>
           {/* 5. Allocation Snapshot Strip matching screenshot */}
-          <div className="mb-2 text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDFA] border border-[#CCFBF1]">
-            <Info className="w-4 h-4 text-[#13B8B2] flex-shrink-0" />
+          <div className="mb-2 text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F8FAFC] border border-[#E2E8F0]">
+            <Info className="w-4 h-4 text-[#0F2C59] flex-shrink-0" />
             <div className="truncate">
-              <span className="font-bold text-[#172333] mr-1.5">Allocation Snapshot:</span>
-              <span className="font-mono text-[#0E8E89]">
+              <span className="font-bold text-[#0A1F44] mr-1.5">Allocation Snapshot:</span>
+              <span className="font-mono text-[#0F2C59]">
                 {decision?.allocationExplanation || 'Allocated from 0 PCU: 10s base green allocation (Adaptive cycle initialized).'}
               </span>
             </div>
@@ -341,9 +341,9 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
 
           {/* 6. Recommendation Reason Strip matching screenshot */}
           <div className="text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDF4] border border-[#DCFCE7]">
-            <CheckCircle2 className="w-4 h-4 text-[#22C55E] flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
             <div className="truncate">
-              <span className="font-bold text-[#172333] mr-1.5">Recommendation Reason:</span>
+              <span className="font-bold text-[#0A1F44] mr-1.5">Recommendation Reason:</span>
               <span className="text-[#475569]">
                 {decision?.reason || 'Adaptive mode active: Monitoring real-time arrival queues across all approaches.'}
               </span>

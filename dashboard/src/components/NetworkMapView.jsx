@@ -18,37 +18,37 @@ export const NetworkMapView = ({ onSelectJunction }) => {
   const getJunction = (id) => junctions.find(j => j.id === id);
 
   return (
-    <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-lg overflow-hidden flex flex-col h-full min-h-[360px]">
+    <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden flex flex-col h-full min-h-[360px] shadow-xs">
       {/* Map Control Bar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-zinc-950 border-b border-zinc-800/80">
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
         <div className="flex items-center space-x-2">
-          <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-[11px] font-mono font-bold text-zinc-200 uppercase tracking-wider">
-            PRIMARY ARTERIAL GIS TOPOLOGY
+          <MapPin className="w-3.5 h-3.5 text-[#0F2C59]" />
+          <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
+            Primary Arterial GIS Topology
           </span>
-          <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline">
+          <span className="text-[10px] text-[#64748B] hidden sm:inline">
             [MUMBAI ZONE-1]
           </span>
         </div>
 
-        <div className="flex items-center space-x-2 text-[10px] font-mono text-zinc-400">
+        <div className="flex items-center space-x-3 text-[10px] text-[#475569]">
           <div className="flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>&lt;85 PCU</span>
+            <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
+            <span className="font-semibold">&lt;85 PCU</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span>85-140</span>
+            <span className="w-2 h-2 rounded-full bg-[#F5A623]" />
+            <span className="font-semibold">85-140</span>
           </div>
           <div className="flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            <span>&gt;140</span>
+            <span className="w-2 h-2 rounded-full bg-[#DC2626]" />
+            <span className="font-semibold">&gt;140</span>
           </div>
         </div>
       </div>
 
       {/* Vector GIS Map Body */}
-      <div className="relative flex-1 bg-[#090C12] overflow-hidden p-4 select-none flex items-center justify-center">
+      <div className="relative flex-1 bg-[#F4F6F9] overflow-hidden p-4 select-none flex items-center justify-center">
         
         {/* SVG Arterial Network Connections */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none">
@@ -60,11 +60,11 @@ export const NetworkMapView = ({ onSelectJunction }) => {
             const isCorridorActive = emergencyCorridor.isActive && route.isCorridor;
 
             // Route color based on congestion
-            let strokeColor = '#27272A';
-            if (isCorridorActive) strokeColor = '#06B6D4';
-            else if (route.status === 'congested') strokeColor = '#F43F5E';
-            else if (route.status === 'moderate') strokeColor = '#F59E0B';
-            else strokeColor = '#10B981';
+            let strokeColor = '#E2E8F0';
+            if (isCorridorActive) strokeColor = '#DC2626';
+            else if (route.status === 'congested') strokeColor = '#DC2626';
+            else if (route.status === 'moderate') strokeColor = '#F5A623';
+            else strokeColor = '#16A34A';
 
             return (
               <g key={idx}>
@@ -74,7 +74,7 @@ export const NetworkMapView = ({ onSelectJunction }) => {
                   y1={`${start.y}%`}
                   x2={`${end.x}%`}
                   y2={`${end.y}%`}
-                  stroke="#18181B"
+                  stroke="#E2E8F0"
                   strokeWidth="8"
                   strokeLinecap="round"
                 />
@@ -86,7 +86,7 @@ export const NetworkMapView = ({ onSelectJunction }) => {
                   x2={`${end.x}%`}
                   y2={`${end.y}%`}
                   stroke={strokeColor}
-                  strokeWidth={isCorridorActive ? '3.5' : '2'}
+                  strokeWidth={isCorridorActive ? '4' : '2.5'}
                   strokeDasharray={isCorridorActive ? '6 3' : 'none'}
                   strokeLinecap="round"
                 />
@@ -94,10 +94,11 @@ export const NetworkMapView = ({ onSelectJunction }) => {
                 {/* Route Label */}
                 <text
                   x={`${(start.x + end.x) / 2}%`}
-                  y={`${(start.y + end.y) / 2 - 2}%`}
-                  fill="#71717A"
-                  fontSize="8"
-                  fontFamily="ui-monospace, monospace"
+                  y={`${(start.y + end.y) / 2 - 3}%`}
+                  fill="#475569"
+                  fontSize="9"
+                  fontWeight="600"
+                  fontFamily="sans-serif"
                   textAnchor="middle"
                 >
                   {route.name}
@@ -108,18 +109,16 @@ export const NetworkMapView = ({ onSelectJunction }) => {
         </svg>
 
         {/* Junction Nodes */}
-        {junctions.map((j, idx) => {
+        {junctions.map((j) => {
           const isSelected = selectedJunctionId === j.id;
           const isEmergencyNode = emergencyCorridor.isActive && emergencyCorridor.routeNodeIds.includes(j.id);
 
-          const statusStyles = {
-            optimal: 'border-emerald-500/80 text-emerald-400 bg-zinc-900',
-            moderate: 'border-amber-500/80 text-amber-400 bg-zinc-900',
-            congested: 'border-rose-500 text-rose-400 bg-zinc-900',
-            failsafe: 'border-orange-500 text-orange-400 bg-zinc-900'
-          };
-
-          const style = statusStyles[j.status] || statusStyles.optimal;
+          const statusBorder = {
+            optimal: 'border-[#BBF7D0]',
+            moderate: 'border-[#FDE68A]',
+            congested: 'border-[#FECACA]',
+            failsafe: 'border-[#FDE68A]'
+          }[j.status] || 'border-[#E2E8F0]';
 
           return (
             <div
@@ -129,28 +128,28 @@ export const NetworkMapView = ({ onSelectJunction }) => {
               className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group"
             >
               {/* Main Node Box */}
-              <div className={`px-2 py-1 rounded border transition-all ${
+              <div className={`px-2.5 py-1.5 rounded-lg border bg-white shadow-xs transition-all ${
                 isSelected 
-                  ? 'border-cyan-400 bg-zinc-900 ring-1 ring-cyan-400 shadow-sm' 
-                  : `${style} hover:border-zinc-400`
+                  ? 'border-2 border-[#0F2C59] ring-2 ring-[#0F2C59]/20 shadow-md' 
+                  : `${statusBorder} hover:border-[#0F2C59]`
               }`}>
                 <div className="flex items-center space-x-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    isEmergencyNode ? 'bg-cyan-400 animate-ping' :
-                    j.status === 'optimal' ? 'bg-emerald-400' :
-                    j.status === 'moderate' ? 'bg-amber-400' : 'bg-rose-500'
+                  <span className={`w-2 h-2 rounded-full ${
+                    isEmergencyNode ? 'bg-[#DC2626] animate-ping' :
+                    j.status === 'optimal' ? 'bg-[#16A34A]' :
+                    j.status === 'moderate' ? 'bg-[#F5A623]' : 'bg-[#DC2626]'
                   }`} />
-                  <span className="text-[11px] font-bold font-mono text-zinc-100">
+                  <span className="text-xs font-bold font-mono text-[#0A1F44]">
                     {j.code}
                   </span>
-                  <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-black text-zinc-300">
+                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[#0A1F44] font-bold">
                     {j.activePhase} {j.phaseTimer}s
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[9px] text-zinc-400 font-mono mt-0.5">
+                <div className="flex items-center justify-between text-[10px] text-[#475569] mt-0.5">
                   <span>{j.name.split(' ')[0]}</span>
-                  <span className="text-zinc-200 ml-1.5 font-bold">{j.totalPcu} PCU</span>
+                  <span className="text-[#0F2C59] ml-1.5 font-bold font-mono">{j.totalPcu} PCU</span>
                 </div>
               </div>
             </div>
@@ -166,7 +165,7 @@ export const NetworkMapView = ({ onSelectJunction }) => {
             }}
             className="absolute transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none transition-all duration-300"
           >
-            <div className="px-1.5 py-0.5 rounded bg-cyan-600 border border-white text-[9px] font-bold font-mono text-white shadow-md flex items-center space-x-1">
+            <div className="px-2 py-0.5 rounded-full bg-[#DC2626] border border-white text-[9px] font-bold font-mono text-white shadow-md flex items-center space-x-1">
               <span>PRIORITY</span>
               <span>{emergencyCorridor.vehicleId}</span>
             </div>

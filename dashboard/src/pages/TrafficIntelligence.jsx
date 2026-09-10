@@ -288,9 +288,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
       });
       ctx.closePath();
 
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+      ctx.fillStyle = 'rgba(15, 44, 89, 0.15)';
       ctx.fill();
-      ctx.strokeStyle = '#3b82f6';
+      ctx.strokeStyle = '#0F2C59';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
       ctx.stroke();
@@ -300,7 +300,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
       regionPoints.forEach(([ptX, ptY]) => {
         ctx.beginPath();
         ctx.arc(ptX * w, ptY * h, 5, 0, Math.PI * 2);
-        ctx.fillStyle = '#2563eb';
+        ctx.fillStyle = '#0F2C59';
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
@@ -324,10 +324,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
       ctx.beginPath();
       ctx.moveTo(lx1, ly1);
       ctx.lineTo(lx2, ly2);
-      ctx.strokeStyle = crossingEvent ? '#10b981' : '#ef4444';
+      ctx.strokeStyle = crossingEvent ? '#16A34A' : '#DC2626';
       ctx.lineWidth = crossingEvent ? 6 : 3;
       if (crossingEvent) {
-        ctx.shadowColor = '#10b981';
+        ctx.shadowColor = '#16A34A';
         ctx.shadowBlur = 14;
       }
       ctx.stroke();
@@ -337,7 +337,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
       [ [lx1, ly1], [lx2, ly2] ].forEach(([x, y]) => {
         ctx.beginPath();
         ctx.arc(x, y, crossingEvent ? 8 : 6, 0, Math.PI * 2);
-        ctx.fillStyle = crossingEvent ? '#10b981' : '#dc2626';
+        ctx.fillStyle = crossingEvent ? '#16A34A' : '#DC2626';
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
@@ -361,7 +361,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
       ctx.beginPath();
       ctx.moveTo(mx, my);
       ctx.lineTo(ax, ay);
-      ctx.strokeStyle = crossingEvent ? '#10b981' : '#f59e0b';
+      ctx.strokeStyle = crossingEvent ? '#16A34A' : '#F5A623';
       ctx.lineWidth = 3;
       ctx.stroke();
 
@@ -493,12 +493,12 @@ const TrafficIntelligence = ({ onNavigate }) => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
-                <Sparkles size={13} />
+              <span className="bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+                <Sparkles size={13} className="text-[#F5A623]" />
                 Phase 2 Traffic Intelligence
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0A1F44]">
               Recorded Video Vehicle Detection & Tracking
             </h1>
             <p className="text-sm text-slate-500 leading-relaxed">
@@ -509,7 +509,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => onNavigate && onNavigate('live-intersection')}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#07172E] hover:bg-[#0D2E5C] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#0F2C59] hover:bg-[#163A6B] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Eye size={14} />
               <span>View Simulator</span>
@@ -535,7 +535,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   onClick={() => { setSelectedVideo('bellevue_trial'); setAnalysisResults(null); }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                     selectedVideo === 'bellevue_trial'
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-[#0F2C59] text-white shadow-sm'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -601,7 +601,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                         setIsReplayComplete(false);
                       }
                     }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md flex items-center gap-2"
+                    className="px-4 py-2 rounded-xl bg-[#0F2C59] hover:bg-[#163A6B] text-white text-xs font-semibold shadow-md flex items-center gap-2 cursor-pointer"
                   >
                     <RotateCcw size={14} /> Restart Replay
                   </button>
@@ -624,7 +624,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       }
                     }
                   }}
-                  className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
+                  className="p-2.5 rounded-xl bg-[#0F2C59] hover:bg-[#163A6B] text-white shadow-md transition-all cursor-pointer"
                 >
                   {isPlaying ? <Pause size={18} /> : <Play size={18} />}
                 </button>
@@ -635,7 +635,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       videoRef.current.currentTime = 0;
                     }
                   }}
-                  className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
+                  className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all cursor-pointer"
                   title="Rewind to start"
                 >
                   <RotateCcw size={18} />
@@ -648,7 +648,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       key={s}
                       onClick={() => setSpeed(s)}
                       className={`px-2 py-1 rounded-lg text-xs font-bold transition-all ${
-                        simulationSpeed === s ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        simulationSpeed === s ? 'bg-[#0A1F44] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
                       {s}x
@@ -661,9 +661,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setDrawingMode(drawingMode === 'region' ? 'none' : 'region')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
                     drawingMode === 'region'
-                      ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-sm'
+                      ? 'bg-[#0A1F44]/10 border-[#0F2C59] text-[#0F2C59] shadow-sm'
                       : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -673,9 +673,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
                 <button
                   onClick={() => setDrawingMode(drawingMode === 'line' ? 'none' : 'line')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
                     drawingMode === 'line'
-                      ? 'bg-red-50 border-red-300 text-red-700 shadow-sm'
+                      ? 'bg-[#FFFBEB] border-[#F5A623] text-[#B8860B] shadow-sm'
                       : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -703,8 +703,8 @@ const TrafficIntelligence = ({ onNavigate }) => {
           
           {/* Approach & Line Mapping Panel */}
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Sliders size={18} className="text-blue-600" />
+            <h3 className="text-base font-bold text-[#0A1F44] flex items-center gap-2">
+              <Sliders size={18} className="text-[#0F2C59]" />
               Approach Mapping
             </h3>
 
@@ -718,9 +718,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   <button
                     key={dir}
                     onClick={() => setMappedDirection(dir)}
-                    className={`py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                    className={`py-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       mappedDirection === dir
-                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                        ? 'bg-[#0F2C59] border-[#0F2C59] text-white shadow-md'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -741,7 +741,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setLineConfig({ ...lineConfig, incomingDirection: 'positive' })}
-                  className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
                     lineConfig.incomingDirection === 'positive'
                       ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                       : 'bg-white border-slate-200 text-slate-700'
@@ -751,7 +751,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 </button>
                 <button
                   onClick={() => setLineConfig({ ...lineConfig, incomingDirection: 'negative' })}
-                  className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
+                  className={`py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
                     lineConfig.incomingDirection === 'negative'
                       ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                       : 'bg-white border-slate-200 text-slate-700'
@@ -776,13 +776,13 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                     <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-[#0F2C59] h-2 rounded-full transition-all duration-300"
                       style={{ width: `${analysisProgress}%` }}
                     />
                   </div>
                   <button
                     onClick={handleCancelAnalysis}
-                    className="w-full py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100 transition-all"
+                    className="w-full py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100 transition-all cursor-pointer"
                   >
                     Cancel Analysis
                   </button>
@@ -790,9 +790,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
               ) : (
                 <button
                   onClick={handleStartAnalysis}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-2xl bg-[#0F2C59] hover:bg-[#163A6B] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Sparkles size={16} />
+                  <Sparkles size={16} className="text-[#F5A623]" />
                   Analyze Video (YOLO Tracking)
                 </button>
               )}
@@ -814,7 +814,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5 animate-in fade-in duration-300">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#0A1F44] flex items-center gap-2">
                     <Activity size={18} className="text-emerald-600" />
                     Detection & Arrival Stream
                   </h3>
@@ -826,7 +826,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   videoReplayActive 
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-400/20' 
                     : isPlaying && liveEventsCount > 0
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    ? 'bg-[#0A1F44]/5 text-[#0F2C59] border-[#0F2C59]/20'
                     : 'bg-slate-100 text-slate-600 border-slate-200'
                 }`}>
                   {videoReplayActive ? <><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1" /> Live Injected</> : isPlaying ? '▶ Live Playback' : 'Offline Scan'}: {liveEventsCount} / {totalEventsCount}
@@ -843,7 +843,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                       </span>
                     ) : isPlaying ? (
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0F2C59]"></span>
                     ) : (
                       <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-300"></span>
                     )}
@@ -855,7 +855,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 </div>
                 <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full transition-all duration-300 shadow-sm"
+                    className="bg-[#16A34A] h-2.5 rounded-full transition-all duration-300 shadow-sm"
                     style={{ width: `${livePercent}%` }}
                   />
                 </div>
@@ -920,19 +920,19 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
               {/* Active Simulator Stream Status */}
               {videoReplayActive && (
-                <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs animate-in fade-in duration-300">
+                <div className="p-3 rounded-2xl bg-[#0A1F44]/5 border border-[#0F2C59]/20 flex items-center justify-between text-xs animate-in fade-in duration-300">
                   <div className="space-y-0.5">
-                    <div className="font-bold text-blue-900 flex items-center gap-1.5">
-                      <Activity size={14} className="text-blue-600" />
-                      Approach {mappedDirection} Active Queue: <span className="text-blue-700 font-black">{simState?.queues?.[mappedDirection] || 0}</span> vehicles
+                    <div className="font-bold text-[#0A1F44] flex items-center gap-1.5">
+                      <Activity size={14} className="text-[#0F2C59]" />
+                      Approach {mappedDirection} Active Queue: <span className="text-[#0F2C59] font-black">{simState?.queues?.[mappedDirection] || 0}</span> vehicles
                     </div>
-                    <div className="text-[11px] text-blue-700">
+                    <div className="text-[11px] text-slate-600">
                       Adaptive signal controller optimizing green time for incoming stream
                     </div>
                   </div>
                   <button
                     onClick={() => onNavigate && onNavigate('live-intersection')}
-                    className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold text-[11px] hover:bg-blue-700 transition-all flex items-center gap-1 shadow-sm flex-shrink-0"
+                    className="px-2.5 py-1 rounded-lg bg-[#0F2C59] text-white font-semibold text-[11px] hover:bg-[#163A6B] transition-all flex items-center gap-1 shadow-sm flex-shrink-0 cursor-pointer"
                   >
                     View Simulator <ArrowRight size={12} />
                   </button>
@@ -944,14 +944,14 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 {videoReplayActive ? (
                   <button
                     onClick={handleStopSimulation}
-                    className="w-full py-3 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-2xl bg-[#0A1F44] hover:bg-[#0F2C59] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Pause size={16} /> Stop Video Replay (Return to Random Traffic)
                   </button>
                 ) : (
                   <button
                     onClick={handleStartSimulation}
-                    className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-2xl bg-[#0F2C59] hover:bg-[#163A6B] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Play size={16} /> Start Video-Driven Simulation
                   </button>

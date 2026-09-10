@@ -111,7 +111,7 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
               className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 transition-colors cursor-pointer"
               title="Open Hardware & Scenario Simulator Drawer"
             >
-              <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
+              <SlidersHorizontal className="w-3 h-3 text-[#F5A623]" />
               <span className="hidden sm:inline font-sans font-medium">Scenarios</span>
               <kbd>[S]</kbd>
             </button>
@@ -137,7 +137,7 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-400' : 'text-zinc-500'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#F5A623]' : 'text-zinc-500'}`} />
                   <span>{tab.label}</span>
                   {tab.shortcut && (
                     <kbd className="hidden md:inline-block">{tab.shortcut}</kbd>

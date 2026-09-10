@@ -55,28 +55,28 @@ export const KpiRibbon = ({ layout = 'horizontal' }) => {
         {kpis.map(kpi => (
           <div
             key={kpi.id}
-            className="bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-2.5 flex flex-col justify-between"
+            className="bg-white border border-[#E2E8F0] rounded-xl p-3 shadow-xs flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-medium text-zinc-500 uppercase tracking-wider truncate">
+              <span className="text-[10px] font-bold text-[#475569] uppercase tracking-wider truncate">
                 {kpi.title}
               </span>
-              <span className={`px-1.5 py-0.2 text-[9px] font-mono font-bold rounded border ${
-                kpi.status === 'critical' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' :
-                kpi.status === 'warning' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
-                'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+              <span className={`px-2 py-0.5 text-[9px] font-bold rounded border ${
+                kpi.status === 'critical' ? 'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]' :
+                kpi.status === 'warning' ? 'bg-[#FFFBEB] border-[#FDE68A] text-[#B45309]' :
+                'bg-[#F0FDF4] border-[#DCFCE7] text-[#15803D]'
               }`}>
                 {kpi.badge}
               </span>
             </div>
 
             <div className="my-1">
-              <span className="text-base font-bold font-mono text-zinc-100 tabular-nums">
+              <span className="text-base font-black font-mono text-[#0A1F44] tabular-nums">
                 {kpi.value}
               </span>
             </div>
 
-            <span className="text-[10px] font-mono text-zinc-400 truncate">
+            <span className="text-[10px] text-[#64748B] truncate">
               {kpi.trend}
             </span>
           </div>
@@ -86,32 +86,32 @@ export const KpiRibbon = ({ layout = 'horizontal' }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
       {kpis.map(kpi => (
         <div
           key={kpi.id}
-          className="bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-3 flex flex-col justify-between"
+          className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-[#475569] uppercase tracking-wider">
               {kpi.title}
             </span>
-            <span className={`px-1.5 py-0.2 text-[9px] font-mono font-bold rounded border ${
-              kpi.status === 'critical' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' :
-              kpi.status === 'warning' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
-              'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${
+              kpi.status === 'critical' ? 'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]' :
+              kpi.status === 'warning' ? 'bg-[#FFFBEB] border-[#FDE68A] text-[#B45309]' :
+              'bg-[#F0FDF4] border-[#DCFCE7] text-[#15803D]'
             }`}>
               {kpi.badge}
             </span>
           </div>
 
-          <div className="my-1.5">
-            <span className="text-xl font-bold font-mono text-zinc-100 tracking-tight tabular-nums">
+          <div className="my-2">
+            <span className="text-2xl font-black tracking-tight text-[#0A1F44] tabular-nums">
               {kpi.value}
             </span>
           </div>
 
-          <span className="text-[11px] font-mono text-zinc-400 truncate">
+          <span className="text-xs text-[#64748B] truncate">
             {kpi.trend}
           </span>
         </div>

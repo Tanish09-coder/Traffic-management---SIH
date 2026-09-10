@@ -263,20 +263,20 @@ const LiveIntersection = () => {
         </AnimatePresence>
 
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-xs p-5 mb-5 border border-[#CBD5E1]">
+        <div className="bg-white rounded-xl shadow-xs p-5 mb-5 border border-[#E2E8F0]">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
               <div className="flex items-center space-x-2">
-                <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
+                <span className="px-2 py-0.5 rounded bg-[#0A1F44] text-[#F5A623] text-[10px] font-extrabold uppercase tracking-wider border border-[#1E4D8C]">
                   MoRTH Live Actuation
                 </span>
-                <span className="text-xs font-semibold text-slate-500">Node #04</span>
+                <span className="text-xs font-semibold text-[#475569]">Node #04</span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">
+              <h1 className="text-xl sm:text-2xl font-black text-[#0A1F44] mt-1">
                 Integrated Traffic Management System (ITMS) • Live Junction
               </h1>
-              <p className="text-xs text-slate-600 mt-0.5 flex items-center gap-1.5">
-                <MapPin size={14} className="text-blue-600" />
+              <p className="text-xs text-[#475569] mt-0.5 flex items-center gap-1.5">
+                <MapPin size={14} className="text-[#0F2C59]" />
                 <span>BKC Financial District, Mumbai Metropolitan Region</span>
               </p>
               
@@ -284,24 +284,24 @@ const LiveIntersection = () => {
               <div className="mt-2.5 flex items-center space-x-3">
                 <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border flex items-center gap-1.5 ${
                   targetAchieved 
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
-                    : 'bg-amber-50 text-amber-900 border-amber-300'
+                    ? 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]' 
+                    : 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
                 }`}>
                   <Target size={14} />
                   <span>{targetAchieved ? 'Target Achieved' : 'Target: 20-30s Avg Delay'}</span>
                 </div>
-                <div className="text-xs text-slate-600">
+                <div className="text-xs text-[#475569]">
                   Current Wait: {(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s
                 </div>
               </div>
             </div>
             <div className="text-right">
               {overrideActive && (
-                <div className="text-xs text-red-600 font-bold">
+                <div className="text-xs text-[#DC2626] font-bold">
                   Police Manual Override
                 </div>
               )}
-              <div className="text-xs text-[#003366] font-bold mt-1">
+              <div className="text-xs text-[#0F2C59] font-bold mt-1">
                 Delay Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
               </div>
             </div>
@@ -315,23 +315,23 @@ const LiveIntersection = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 bg-red-100 border-2 border-red-400 text-red-800 rounded-lg"
+              className="mb-6 p-4 bg-[#FEF2F2] border-2 border-[#FECACA] text-[#991B1B] rounded-xl shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+                  <div className="w-4 h-4 bg-[#DC2626] rounded-full animate-ping"></div>
                   <div>
-                    <p className="font-semibold flex items-center gap-2">
+                    <p className="font-bold flex items-center gap-2">
                       <Siren size={16} /> MUMBAI MANUAL OVERRIDE ACTIVE
                     </p>
-                    <p className="text-sm">
+                    <p className="text-sm text-[#991B1B]">
                       Signal manually controlled • Auto-disable in {overrideStartTime ? 60 - Math.floor((Date.now() - overrideStartTime) / 1000) : 60}s
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={disableOverride}
-                  className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                  className="px-3 py-1.5 bg-[#DC2626] text-white text-xs font-bold rounded-lg hover:bg-[#B91C1C] transition shadow-xs cursor-pointer"
                 >
                   Disable Override
                 </button>
@@ -347,16 +347,16 @@ const LiveIntersection = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 bg-orange-100 border-2 border-orange-400 text-orange-800 rounded-lg"
+              className="mb-6 p-4 bg-[#FEF2F2] border-2 border-[#FECACA] text-[#991B1B] rounded-xl shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-orange-500 rounded-full animate-ping"></div>
-                  <p className="font-semibold flex items-center gap-2">
-                    <Siren size={16} className="text-red-600" /> EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
+                  <div className="w-4 h-4 bg-[#DC2626] rounded-full animate-ping"></div>
+                  <p className="font-bold flex items-center gap-2">
+                    <Siren size={16} className="text-[#DC2626]" /> EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
                   </p>
                 </div>
-                <div className="text-sm font-medium bg-orange-200 px-3 py-1 rounded">
+                <div className="text-sm font-bold bg-[#FEE2E2] px-3 py-1 rounded-lg text-[#DC2626]">
                   Way {state.emergencyDirection} Priority Preemption
                 </div>
               </div>
@@ -366,15 +366,15 @@ const LiveIntersection = () => {
 
         {/* Smart Queue Alert */}
         {highestQueueLane && state?.queues[highestQueueLane] > 10 && !overrideActive && (
-          <div className="mb-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg">
+          <div className="mb-6 p-4 bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] rounded-xl shadow-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Zap size={18} className="text-amber-600" />
-                <p className="font-medium">
-                  Mumbai AI Detection: Heavy congestion in {highestQueueLane} direction ({state.queues[highestQueueLane]} vehicles)
+                <Zap size={18} className="text-[#F5A623]" />
+                <p className="font-bold">
+                  MoRTH AI Detection: Heavy congestion in {highestQueueLane} direction ({state.queues[highestQueueLane]} vehicles)
                 </p>
               </div>
-              <div className="text-sm">
+              <div className="text-sm font-bold text-[#B8860B]">
                 Extended Signal Duration: {state?.signal_duration}s
               </div>
             </div>
@@ -405,7 +405,7 @@ const LiveIntersection = () => {
             value={mumbaiStats.co2ReducedKg}
             unit="kg"
             icon={Leaf}
-            color="purple"
+            color="blue"
             trendSubtext="per hour"
           />
           <StatCard
@@ -423,15 +423,15 @@ const LiveIntersection = () => {
           <AIDecisionPanel />
         </div>
 
-        {/* Manual Override Control Buttons - FIXED SECTION */}
-        <div className="mb-8 bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
+        {/* Manual Override Control Buttons */}
+        <div className="mb-8 bg-white rounded-xl shadow-xs p-6 border-l-4 border-[#DC2626] border-t border-r border-b border-[#E2E8F0]">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2"><TrafficCone size={18} /> Mumbai Traffic Control Override</h3>
-              <p className="text-sm text-gray-600">Emergency traffic control - Use only when necessary</p>
+              <h3 className="text-lg font-bold text-[#0A1F44] flex items-center gap-2"><TrafficCone size={18} className="text-[#DC2626]" /> MoRTH Traffic Control Override</h3>
+              <p className="text-xs text-[#475569]">Emergency traffic control - Use only when necessary</p>
             </div>
-            <div className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-              Monitored by Mumbai Traffic Police
+            <div className="text-xs text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] px-2.5 py-1 rounded-md font-bold">
+              Monitored by Traffic Police ICCC
             </div>
           </div>
           
@@ -440,40 +440,40 @@ const LiveIntersection = () => {
               {
                 direction: 'N',
                 location: 'Kurla',
-                bg: '#EFF6FF',
+                bg: '#F1F5F9',
                 labelColor: '#475569',
-                titleColor: '#1E40AF',
-                badgeBg: '#2563EB',
+                titleColor: '#0F2C59',
+                badgeBg: '#0F2C59',
                 badgeText: '#FFFFFF',
                 arrow: <ArrowUp size={16} />
               },
               {
                 direction: 'E',
                 location: 'Chembur',
-                bg: '#EBF7EE',
+                bg: '#F0FDF4',
                 labelColor: '#16A34A',
-                titleColor: '#065F46',
-                badgeBg: '#22C55E',
+                titleColor: '#15803D',
+                badgeBg: '#16A34A',
                 badgeText: '#FFFFFF',
                 arrow: <ArrowRight size={16} />
               },
               {
                 direction: 'S',
                 location: 'Fort',
-                bg: '#FDF2E9',
-                labelColor: '#D9531E',
-                titleColor: '#9A3412',
-                badgeBg: '#F97316',
+                bg: '#FFFBEB',
+                labelColor: '#B8860B',
+                titleColor: '#92400E',
+                badgeBg: '#F5A623',
                 badgeText: '#FFFFFF',
                 arrow: <ArrowDown size={16} />
               },
               {
                 direction: 'W',
                 location: 'Bandra',
-                bg: '#F5EEFD',
-                labelColor: '#9333EA',
-                titleColor: '#581C87',
-                badgeBg: '#A855F7',
+                bg: '#F8FAFC',
+                labelColor: '#475569',
+                titleColor: '#1E4D8C',
+                badgeBg: '#1E4D8C',
                 badgeText: '#FFFFFF',
                 arrow: <ArrowLeft size={16} />
               }
@@ -486,14 +486,14 @@ const LiveIntersection = () => {
                   onClick={() => handleOverrideRequest(direction)}
                   disabled={overrideActive || state?.emergencyActive}
                   style={{ backgroundColor: bg }}
-                  className={`p-4 rounded-2xl transition-all duration-200 text-left flex flex-col justify-between border disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`p-4 rounded-xl transition-all duration-200 text-left flex flex-col justify-between border disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                     isSelected
-                      ? 'ring-2 ring-amber-500 border-[#D97706] shadow-md'
-                      : 'border-transparent hover:shadow-sm'
+                      ? 'ring-2 ring-[#F5A623] border-[#F5A623] shadow-md'
+                      : 'border-[#E2E8F0] hover:shadow-xs'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-bold text-2xl" style={{ color: titleColor }}>
+                    <span className="font-black text-2xl" style={{ color: titleColor }}>
                       {direction}
                     </span>
                     <div
@@ -505,10 +505,10 @@ const LiveIntersection = () => {
                   </div>
 
                   <div>
-                    <div className="font-medium text-sm mb-0.5" style={{ color: labelColor }}>
+                    <div className="font-bold text-xs mb-0.5" style={{ color: labelColor }}>
                       {location}
                     </div>
-                    <div className="font-semibold text-xs" style={{ color: titleColor }}>
+                    <div className="font-bold text-xs" style={{ color: titleColor }}>
                       Queue: {state?.queues?.[direction] || 0}
                     </div>
                   </div>
@@ -517,52 +517,52 @@ const LiveIntersection = () => {
             })}
           </div>
           
-          <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+          <div className="mt-4 text-xs text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] p-3 rounded-lg">
             <p><strong>Warning:</strong> Manual overrides are logged with timestamp, reason, and operator details. 
             Use only for emergency situations, VIP movements, or when AI system requires intervention.</p>
           </div>
         </div>
 
         {/* Intelligent System Status */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Brain size={18} className="text-slate-700" />
-            <span>AI Traffic Analysis {overrideActive && <span className="text-red-500 text-sm">(Override Active)</span>}</span>
+        <div className="bg-white rounded-xl shadow-xs p-6 mb-8 border border-[#E2E8F0]">
+          <h3 className="text-lg font-bold text-[#0A1F44] mb-4 flex items-center gap-2">
+            <Brain size={18} className="text-[#0F2C59]" />
+            <span>AI Traffic Analysis {overrideActive && <span className="text-[#DC2626] text-sm">(Override Active)</span>}</span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {['N', 'S', 'E', 'W'].map(direction => {
               const queueCount = state?.queues?.[direction] || 0;
               const isActive = state?.signal === direction;
               const isHighest = direction === highestQueueLane;
               
               return (
-                <div key={direction} className={`p-4 rounded-lg border-2 ${
+                <div key={direction} className={`p-4 rounded-xl border transition-all ${
                   isActive 
-                    ? 'border-green-400 bg-green-50' 
+                    ? 'border-[#BBF7D0] bg-[#F0FDF4]' 
                     : isHighest 
-                      ? 'border-yellow-400 bg-yellow-50'
-                      : 'border-gray-200 bg-gray-50'
+                      ? 'border-[#FDE68A] bg-[#FFFBEB]'
+                      : 'border-[#E2E8F0] bg-[#F8FAFC]'
                 }`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold">
+                      <div className="font-bold text-sm text-[#0A1F44]">
                         {direction === 'N' ? 'North (Kurla)' : 
                          direction === 'S' ? 'South (Fort)' : 
                          direction === 'E' ? 'East (Chembur)' : 'West (Bandra)'}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-xs text-[#475569] mt-0.5">
                         Queue: {queueCount} vehicles
                       </div>
                       {isActive && (
-                        <div className="text-xs text-green-600 font-medium">
+                        <div className="text-xs text-[#16A34A] font-bold mt-1">
                           Duration: {state?.signal_duration}s
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      {isActive && <CheckCircle2 size={20} className="text-emerald-500" />}
-                      {isHighest && !isActive && <Zap size={16} className="text-amber-500" />}
-                      {!isActive && !isHighest && <XCircle size={20} className="text-red-500" />}
+                      {isActive && <CheckCircle2 size={20} className="text-[#16A34A]" />}
+                      {isHighest && !isActive && <Zap size={16} className="text-[#F5A623]" />}
+                      {!isActive && !isHighest && <XCircle size={20} className="text-[#94A3B8]" />}
                     </div>
                   </div>
                 </div>
@@ -572,22 +572,22 @@ const LiveIntersection = () => {
         </div>
 
         {/* Live Intersection View */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">
+        <div className="bg-white rounded-xl shadow-xs p-6 mb-8 border border-[#E2E8F0]">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-xl font-bold text-[#0A1F44]">
               Live Traffic Flow
             </h2>
-            <div className={`text-sm px-3 py-2 rounded-full ${
+            <div className={`text-xs px-3.5 py-1.5 rounded-lg font-bold border shadow-xs ${
               overrideActive 
-                ? 'bg-red-100 text-red-800' 
-                : 'bg-blue-100 text-blue-800'
+                ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' 
+                : 'bg-[#0A1F44] text-[#F5A623] border-[#1E4D8C]'
             }`}>
               {overrideActive ? 'Manual Control' : 'Smart Signal'}: {state?.signal} ({state?.phase || 'GREEN'}) | {state?.clearance_status ? state.clearance_status : `${state?.phase_label || 'Remaining'}: ${state?.phase_remaining_sec ?? 0}s`}
             </div>
           </div>
 
           {/* Intersection Container */}
-          <div className="relative w-full h-[540px] bg-[#EAECEF] rounded-2xl overflow-hidden border-2 border-[#1E293B] shadow-sm">
+          <div className="relative w-full h-[540px] bg-[#EAECEF] rounded-2xl overflow-hidden border border-[#E2E8F0] shadow-xs">
             {/* Road lanes with improved styling */}
             <div className="absolute inset-0">
               {/* Horizontal road */}
@@ -769,7 +769,7 @@ const LiveIntersection = () => {
             {state?.queues && Object.entries(state.queues).map(([lane, count]) => (
               <div
                 key={lane}
-                className={`absolute text-xs font-bold text-white bg-[#1E2939] px-2.5 py-1 rounded-md shadow-sm z-30 ${
+                className={`absolute text-xs font-bold text-white bg-[#0A1F44] px-2.5 py-1 rounded-md shadow-xs z-30 border border-[#1E4D8C] ${
                   lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
                   lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
                   lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
@@ -783,40 +783,40 @@ const LiveIntersection = () => {
 
           {/* Enhanced Signal Status */}
           <div className="mt-6 flex justify-center space-x-6">
-            <div className={`text-white px-6 py-3 rounded-xl shadow-lg ${
-              overrideActive ? 'bg-red-600' : 'bg-[#1E2939]'
+            <div className={`text-white px-6 py-3 rounded-xl shadow-xs border ${
+              overrideActive ? 'bg-[#DC2626] border-[#B91C1C]' : 'bg-[#0A1F44] border-[#1E4D8C] text-[#F5A623]'
             }`}>
-              <span className="text-lg font-semibold">
+              <span className="text-sm font-bold">
                 {overrideActive ? 'Manual Control' : 'Smart Signal'}: {state?.signal} ({state?.phase || 'GREEN'}) | 
                 Duration: {state?.active_green_duration || state?.signal_duration || 30}s | 
                 {state?.clearance_status ? state.clearance_status : `${state?.phase_label || 'Remaining'}: ${state?.phase_remaining_sec ?? 0}s`}
               </span>
             </div>
             {state?.emergencyActive && (
-              <div className="bg-orange-600 text-white px-6 py-3 rounded-xl animate-pulse shadow-lg">
-                <span className="text-lg font-semibold flex items-center gap-2"><Siren size={18} /> EMERGENCY MODE</span>
+              <div className="bg-[#DC2626] border border-[#B91C1C] text-white px-6 py-3 rounded-xl animate-pulse shadow-xs">
+                <span className="text-sm font-bold flex items-center gap-2"><Siren size={18} /> EMERGENCY MODE</span>
               </div>
             )}
           </div>
         </div>
 
         {/* 🚶‍♂️ Automatic Intelligent Pedestrian Safety Monitor */}
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border-l-4 border-emerald-500">
+        <div className="mt-8 bg-white rounded-xl shadow-xs p-6 border-l-4 border-[#16A34A] border-t border-r border-b border-[#E2E8F0]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <PersonStanding size={20} className="text-slate-700" />
+              <PersonStanding size={20} className="text-[#0F2C59]" />
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-bold text-[#0A1F44]">
                   Automated Pedestrian Crosswalk Intelligence
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[#475569]">
                   Continuous AI signal scanning • Dynamic non-conflicting crossing allocation
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                <ShieldCheck size={16} className="text-emerald-600" /> 100% Zero-Conflict Active
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]">
+                <ShieldCheck size={16} className="text-[#16A34A]" /> 100% Zero-Conflict Active
               </span>
             </div>
           </div>
@@ -838,33 +838,33 @@ const LiveIntersection = () => {
               return (
                 <div
                   key={dir}
-                  className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                  className={`p-4 rounded-xl border transition-all duration-300 ${
                     state?.emergencyActive
-                      ? 'border-red-300 bg-red-50/70'
+                      ? 'border-[#FECACA] bg-[#FEF2F2]'
                       : isWalk
-                        ? 'border-emerald-400 bg-emerald-50 shadow-sm'
-                        : 'border-slate-200 bg-slate-50'
+                        ? 'border-[#BBF7D0] bg-[#F0FDF4] shadow-xs'
+                        : 'border-[#E2E8F0] bg-[#F8FAFC]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-sm text-gray-800">{name}</span>
+                    <span className="font-bold text-xs text-[#0A1F44]">{name}</span>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                       state?.emergencyActive
-                        ? 'bg-rose-600 text-white animate-pulse'
+                        ? 'bg-[#DC2626] text-white animate-pulse'
                         : isWalk
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-slate-300 text-slate-700'
+                          ? 'bg-[#16A34A] text-white shadow-xs'
+                          : 'bg-[#E2E8F0] text-[#475569]'
                     }`}>
-                      {state?.emergencyActive ? <><Hand size={16} className="inline" /> CLEAR</> : isWalk ? <><PersonStanding size={16} className="inline" /> WALK</> : <><Hand size={16} className="inline" /> WAIT</>}
+                      {state?.emergencyActive ? <><Hand size={14} className="inline" /> CLEAR</> : isWalk ? <><PersonStanding size={14} className="inline" /> WALK</> : <><Hand size={14} className="inline" /> WAIT</>}
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-[#475569]">
                     {state?.emergencyActive
-                      ? <span className="flex items-center gap-1"><Siren size={14} /> Emergency corridor priority — Crossing held</span>
+                      ? <span className="flex items-center gap-1 text-[#DC2626]"><Siren size={14} /> Emergency corridor priority — Crossing held</span>
                       : isWalk
-                        ? <span className="flex items-center gap-1"><CheckCircle2 size={14} className="text-emerald-600" /> Safe to walk ({laneType} halted)</span>
-                        : <span className="flex items-center gap-1"><XCircle size={14} className="text-red-600" /> Stopped — {state?.signal} vehicular flow active</span>}
+                        ? <span className="flex items-center gap-1 text-[#15803D]"><CheckCircle2 size={14} className="text-[#16A34A]" /> Safe to walk ({laneType} halted)</span>
+                        : <span className="flex items-center gap-1 text-[#64748B]"><XCircle size={14} className="text-[#94A3B8]" /> Stopped — {state?.signal} vehicular flow active</span>}
                   </p>
                 </div>
               );
@@ -873,52 +873,52 @@ const LiveIntersection = () => {
         </div>
 
         {/* Enhanced Real-time Statistics */}
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Performance Metrics</h3>
+        <div className="mt-8 bg-white rounded-xl shadow-xs p-6 border border-[#E2E8F0]">
+          <h3 className="text-lg font-bold text-[#0A1F44] mb-4">Performance Metrics</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{state?.cars_passed || 0}</div>
-              <div className="text-sm text-gray-600">Vehicles Processed</div>
+            <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+              <div className="text-3xl font-black text-[#0A1F44]">{state?.cars_passed || 0}</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">Vehicles Processed</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">{(state?.avg_wait_time || 0).toFixed(1)}s</div>
-              <div className="text-sm text-gray-600">Avg Wait Time</div>
-              <div className="text-xs text-green-600">
+            <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+              <div className="text-3xl font-black text-[#F5A623]">{(state?.avg_wait_time || 0).toFixed(1)}s</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">Avg Wait Time</div>
+              <div className="text-xs text-[#16A34A] font-bold mt-0.5">
                 {mumbaiStats.efficiencyGain.toFixed(1)}% improvement
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{(metrics?.throughput || 0).toFixed(1)}</div>
-              <div className="text-sm text-gray-600">Cars per Minute</div>
+            <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+              <div className="text-3xl font-black text-[#16A34A]">{(metrics?.throughput || 0).toFixed(1)}</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">Cars per Minute</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
+            <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+              <div className="text-3xl font-black text-[#0F2C59]">
                 {Math.max(...Object.values(state?.queues || {0: 0}))}
               </div>
-              <div className="text-sm text-gray-600">Highest Queue</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">Highest Queue</div>
             </div>
           </div>
         </div>
 
         {/* System Controls */}
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Intelligent System Controls</h3>
+        <div className="mt-8 bg-white rounded-xl shadow-xs p-6 border border-[#E2E8F0]">
+          <h3 className="text-lg font-bold text-[#0A1F44] mb-4">Intelligent System Controls</h3>
           <div className="flex flex-wrap items-center space-x-4">
             <div className="flex space-x-2">
               <button
                 onClick={switchToMock}
-                className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-1.5 ${
-                  useMock ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition shadow-xs cursor-pointer ${
+                  useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
                 }`}
               >
-                <Brain size={18} className="text-slate-700" />
+                <Brain size={16} className={useMock ? 'text-[#F5A623]' : 'text-slate-500'} />
                 <span>AI Simulation</span>
               </button>
               {switchToBackend && (
                 <button
                   onClick={switchToBackend}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg ${
-                    !useMock ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition shadow-xs cursor-pointer ${
+                    !useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
                   }`}
                 >
                   <Radio size={14} className="inline mr-1" /> Live Data
@@ -928,7 +928,7 @@ const LiveIntersection = () => {
             
             {useMock && (
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">Speed: {simulationSpeed}x</label>
+                <label className="text-xs font-bold text-[#475569]">Speed: {simulationSpeed}x</label>
                 <input
                   type="range"
                   min="0.1"
@@ -936,7 +936,7 @@ const LiveIntersection = () => {
                   step="0.1"
                   value={simulationSpeed}
                   onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                  className="w-24 h-2 bg-gray-200 rounded-lg"
+                  className="w-24 h-2 bg-[#E2E8F0] rounded-lg accent-[#0F2C59]"
                 />
               </div>
             )}
@@ -945,10 +945,10 @@ const LiveIntersection = () => {
               <button
                 onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
                 disabled={state?.emergencyActive}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-all ${
+                className={`px-4 py-2 text-xs font-bold text-white rounded-lg transition shadow-xs cursor-pointer ${
                   state?.emergencyActive
                     ? 'bg-red-700 animate-pulse cursor-default'
-                    : 'bg-red-600 hover:bg-red-700 active:scale-95'
+                    : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
                 }`}
                 title="Dispatch emergency vehicle (Random approach)"
               >
@@ -959,9 +959,9 @@ const LiveIntersection = () => {
             {useMock && (
               <button
                 onClick={resetSimulation}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600"
+                className="px-4 py-2 text-xs font-bold text-[#0A1F44] bg-white border border-[#E2E8F0] rounded-lg hover:bg-[#F8FAFC] transition shadow-xs cursor-pointer"
               >
-                <RotateCcw size={16} className="inline mr-1" /> Reset System
+                <RotateCcw size={14} className="inline mr-1 text-[#0F2C59]" /> Reset System
               </button>
             )}
           </div>

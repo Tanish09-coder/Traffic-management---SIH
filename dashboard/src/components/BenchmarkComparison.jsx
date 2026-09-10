@@ -46,7 +46,7 @@ export const BenchmarkComparison = ({
           {onRerun && (
             <button
               onClick={() => onRerun?.()}
-              className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-2xl bg-[#0F2C59] hover:bg-[#163A6B] text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer shrink-0"
             >
               <Play size={14} /> Run Comparison
             </button>
@@ -54,7 +54,7 @@ export const BenchmarkComparison = ({
         </div>
 
         <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto text-indigo-600">
+          <div className="w-12 h-12 rounded-full bg-[#0A1F44]/5 border border-[#0F2C59]/20 flex items-center justify-center mx-auto text-[#0F2C59]">
             <BarChart2 size={24} />
           </div>
           <div>
@@ -90,7 +90,7 @@ export const BenchmarkComparison = ({
           {onRerun && (
             <button
               onClick={() => onRerun?.()}
-              className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-2xl bg-[#0F2C59] hover:bg-[#163A6B] text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer shrink-0"
             >
               <RefreshCw size={14} /> Retry Comparison
             </button>
@@ -300,7 +300,7 @@ export const BenchmarkComparison = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full bg-[#0A1F44]/5 border border-[#0F2C59]/20 text-[#0F2C59] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
               <BarChart2 size={14} /> Computed Simulation Comparison
             </span>
 
@@ -344,7 +344,7 @@ export const BenchmarkComparison = ({
             <button
               onClick={() => onRerun?.()}
               disabled={status === 'RUNNING'}
-              className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer"
+              className="px-4 py-2.5 rounded-2xl bg-[#0F2C59] hover:bg-[#163A6B] disabled:opacity-50 text-white font-bold text-xs flex items-center gap-2 transition shadow-xs cursor-pointer"
             >
               <RefreshCw size={14} className={status === 'RUNNING' ? 'animate-spin' : ''} />
               {status === 'RUNNING' ? 'Computing...' : 'Rerun Comparison'}
@@ -352,7 +352,7 @@ export const BenchmarkComparison = ({
           )}
 
           <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs text-slate-600 font-mono">
-            <Database size={15} className="text-indigo-500 shrink-0" />
+            <Database size={15} className="text-[#0F2C59] shrink-0" />
             <div>
               <span className="text-[10px] text-slate-400 block font-sans uppercase font-bold">Fingerprint</span>
               <span className="font-bold text-slate-800">{(metadata.timelineFingerprint || '').slice(0, 16)}...</span>
@@ -374,7 +374,7 @@ export const BenchmarkComparison = ({
       {/* ── 1. Overall Metrics Comparison Table ─────────────── */}
       <div className="space-y-4">
         <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-          <Layers size={16} className="text-blue-600" />
+          <Layers size={16} className="text-[#0F2C59]" />
           Overall Session Comparison
         </h3>
 
@@ -384,7 +384,7 @@ export const BenchmarkComparison = ({
               <tr className="bg-slate-50 border-b border-slate-200 font-bold uppercase tracking-wider text-[11px] text-slate-500">
                 <th className="py-3.5 px-4">Metric</th>
                 <th className="py-3.5 px-4 bg-slate-100/50">Fixed (45s Baseline)</th>
-                <th className="py-3.5 px-4 bg-indigo-50/50">Adaptive (Heuristic)</th>
+                <th className="py-3.5 px-4 bg-[#0A1F44]/5 text-[#0A1F44]">Adaptive (Heuristic)</th>
                 <th className="py-3.5 px-4">Change</th>
               </tr>
             </thead>
@@ -400,7 +400,7 @@ export const BenchmarkComparison = ({
                       )}
                     </td>
                     <td className="py-3.5 px-4 bg-slate-50/30 font-mono text-slate-700">{row.fixed}</td>
-                    <td className="py-3.5 px-4 bg-indigo-50/20 font-mono font-bold text-indigo-950">{row.adaptive}</td>
+                    <td className="py-3.5 px-4 bg-[#0A1F44]/5 font-mono font-bold text-[#0A1F44]">{row.adaptive}</td>
                     <td className="py-3.5 px-4">
                       {c.isUnchanged && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px]">
@@ -430,7 +430,7 @@ export const BenchmarkComparison = ({
       <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Sliders size={16} className="text-indigo-600" />
+            <Sliders size={16} className="text-[#0F2C59]" />
             Per-Approach Trade-Off Analysis
           </h3>
           <span className="text-[11px] text-slate-500 italic">
@@ -462,9 +462,9 @@ export const BenchmarkComparison = ({
                       <span>{app.name}</span>
                     </td>
                     <td className="py-3 px-4 text-slate-700">{app.fixedDepartures}</td>
-                    <td className="py-3 px-4 font-bold text-indigo-900">{app.adaptiveDepartures}</td>
+                    <td className="py-3 px-4 font-bold text-[#0A1F44]">{app.adaptiveDepartures}</td>
                     <td className="py-3 px-4 text-slate-700">{(app.fixedWaitSec || 0).toLocaleString()}s</td>
-                    <td className="py-3 px-4 font-bold text-indigo-900">{(app.adaptiveWaitSec || 0).toLocaleString()}s</td>
+                    <td className="py-3 px-4 font-bold text-[#0A1F44]">{(app.adaptiveWaitSec || 0).toLocaleString()}s</td>
                     <td className="py-3 px-4 font-sans">
                       {c.isUnchanged && (
                         <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold text-[11px]">
@@ -489,11 +489,11 @@ export const BenchmarkComparison = ({
           </table>
         </div>
 
-        <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-xs text-indigo-950 space-y-1">
-          <div className="font-bold flex items-center gap-1.5 text-indigo-900">
+        <div className="p-4 rounded-2xl bg-[#0A1F44]/5 border border-[#0F2C59]/15 text-xs text-[#0A1F44] space-y-1">
+          <div className="font-bold flex items-center gap-1.5 text-[#0A1F44]">
             <Cpu size={14} /> Controller Trade-Off Observation
           </div>
-          <p className="text-[11px] leading-relaxed text-indigo-900">
+          <p className="text-[11px] leading-relaxed text-slate-700">
             {dynamicTradeOffText || 'Identical traffic simulation complete.'}
           </p>
         </div>
@@ -532,7 +532,7 @@ export const BenchmarkComparison = ({
           </div>
           <div>
             <span className="text-[10px] text-slate-400 block font-bold uppercase">Demand Multiplier</span>
-            <span className="font-mono font-semibold text-indigo-700">
+            <span className="font-mono font-semibold text-[#0F2C59]">
               {metadata?.inputConfig?.demandMultiplier !== undefined
                 ? `${metadata.inputConfig.demandMultiplier}× (${metadata.inputConfig.demandMultiplier === 0.5 ? 'Moderate' : 'Peak Time'})`
                 : '0.5× (Moderate)'}

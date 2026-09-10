@@ -3,10 +3,10 @@ import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tool
 import { FileText } from 'lucide-react';
 
 const LANE_COLORS = {
-  N: '#D97706', // Saffron / Amber
-  E: '#003366', // Ashoka Blue
-  S: '#15803D', // India Green
-  W: '#0284C7'  // Sky Blue
+  N: '#F5A623', // Gold / Amber
+  E: '#0F2C59', // Primary Navy
+  S: '#16A34A', // India Green
+  W: '#1E4D8C'  // Secondary Navy
 };
 
 const ChartPanel = ({ metrics, state }) => {
@@ -63,7 +63,7 @@ const ChartPanel = ({ metrics, state }) => {
     return {
       lane,
       count,
-      color: LANE_COLORS[lane] || '#003366'
+      color: LANE_COLORS[lane] || '#0F2C59'
     };
   });
 
@@ -78,10 +78,10 @@ const ChartPanel = ({ metrics, state }) => {
   return (
     <div className="space-y-3">
       {/* 1. Average Wait Time Chart */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
+      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#E2E8F0]">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold text-[#0F2942]">Average Wait Time (IRC:106)</h4>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#CBD5E1] text-[#475569]">
+          <h4 className="text-xs font-bold text-[#0A1F44]">Average Wait Time (IRC:106)</h4>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#E2E8F0] text-[#475569]">
             Live Trend
           </span>
         </div>
@@ -92,13 +92,13 @@ const ChartPanel = ({ metrics, state }) => {
               <XAxis
                 dataKey="time"
                 stroke="#94A3B8"
-                tick={{ fill: '#64748B', fontSize: 9 }}
+                tick={{ fill: '#475569', fontSize: 9 }}
                 minTickGap={20}
                 interval="preserveStartEnd"
               />
               <YAxis
                 stroke="#94A3B8"
-                tick={{ fill: '#64748B', fontSize: 9 }}
+                tick={{ fill: '#475569', fontSize: 9 }}
                 domain={[minWaitVal, maxWaitVal]}
                 width={28}
                 tickFormatter={(val) => `${Math.round(val)}`}
@@ -106,21 +106,22 @@ const ChartPanel = ({ metrics, state }) => {
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '6px',
-                  boxShadow: '0 2px 8px rgba(15,41,66,0.1)',
+                  boxShadow: '0 4px 12px rgba(10,31,68,0.08)',
                   fontSize: '11px',
-                  padding: '4px 8px'
+                  padding: '4px 8px',
+                  color: '#0A1F44'
                 }}
                 formatter={(value) => [`${value} sec`, 'Avg Delay']}
               />
               <Line
                 type="monotone"
                 dataKey="wait_time"
-                stroke="#003366"
+                stroke="#0F2C59"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#FF9933' }}
+                activeDot={{ r: 4, fill: '#F5A623' }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -128,10 +129,10 @@ const ChartPanel = ({ metrics, state }) => {
       </div>
 
       {/* 2. Current Queue Lengths Chart */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
+      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#E2E8F0]">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold text-[#0F2942]">Approach Queue Lengths</h4>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#CBD5E1] text-[#475569]">
+          <h4 className="text-xs font-bold text-[#0A1F44]">Approach Queue Lengths</h4>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#E2E8F0] text-[#475569]">
             Live Vehicles
           </span>
         </div>
@@ -142,11 +143,11 @@ const ChartPanel = ({ metrics, state }) => {
               <XAxis
                 dataKey="lane"
                 stroke="#94A3B8"
-                tick={{ fill: '#0F2942', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: '#0A1F44', fontSize: 10, fontWeight: 700 }}
               />
               <YAxis
                 stroke="#94A3B8"
-                tick={{ fill: '#64748B', fontSize: 9 }}
+                tick={{ fill: '#475569', fontSize: 9 }}
                 domain={[0, queueYMax]}
                 allowDecimals={false}
                 width={26}
@@ -155,11 +156,12 @@ const ChartPanel = ({ metrics, state }) => {
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
+                  border: '1px solid #E2E8F0',
                   borderRadius: '6px',
-                  boxShadow: '0 2px 8px rgba(15,41,66,0.1)',
+                  boxShadow: '0 4px 12px rgba(10,31,68,0.08)',
                   fontSize: '11px',
-                  padding: '4px 8px'
+                  padding: '4px 8px',
+                  color: '#0A1F44'
                 }}
                 formatter={(value, name, props) => [
                   `${value} vehicles`,
@@ -177,27 +179,27 @@ const ChartPanel = ({ metrics, state }) => {
       </div>
 
       {/* 3. Traffic Summary */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
+      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#E2E8F0]">
         <div className="flex items-center space-x-1.5 mb-2">
-          <FileText className="w-3.5 h-3.5 text-[#003366]" />
-          <h4 className="text-xs font-bold text-[#0F2942]">MoRTH Node Summary</h4>
+          <FileText className="w-3.5 h-3.5 text-[#0F2C59]" />
+          <h4 className="text-xs font-bold text-[#0A1F44]">MoRTH Node Summary</h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 text-[11px]">
           <div className="flex justify-between">
             <span className="text-[#475569]">Total Vehicles:</span>
-            <span className="font-bold text-[#0F2942]">{totalCars}</span>
+            <span className="font-bold text-[#0A1F44]">{totalCars}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#475569]">Avg Delay:</span>
-            <span className="font-bold text-[#0F2942]">{(Number(currentWait) || 0).toFixed(1)}s</span>
+            <span className="font-bold text-[#0A1F44]">{(Number(currentWait) || 0).toFixed(1)}s</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#475569]">Throughput:</span>
-            <span className="font-bold text-[#0F2942]">{(Number(throughput) || 0).toFixed(1)} veh/min</span>
+            <span className="font-bold text-[#0A1F44]">{(Number(throughput) || 0).toFixed(1)} veh/min</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#475569]">Active Backlog:</span>
-            <span className="font-bold text-[#0F2942]">{totalActiveQueues} veh</span>
+            <span className="font-bold text-[#0A1F44]">{totalActiveQueues} veh</span>
           </div>
         </div>
       </div>

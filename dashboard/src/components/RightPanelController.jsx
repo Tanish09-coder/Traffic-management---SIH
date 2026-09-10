@@ -38,7 +38,7 @@ export const RightPanelController = () => {
       <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-lg p-3 space-y-2.5">
         <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
           <div className="flex items-center space-x-1.5">
-            <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+            <Cpu className="w-3.5 h-3.5 text-[#0F2C59]" />
             <span className="text-[11px] font-mono font-bold text-zinc-200 uppercase tracking-wider">
               SIGNAL CONTROLLER // {selectedJunction.code}
             </span>
@@ -134,7 +134,7 @@ export const RightPanelController = () => {
 
           <button
             onClick={() => setJunctionOverride(selectedJunction.id, 'auto')}
-            className="p-1.5 rounded text-[10px] font-mono font-medium bg-zinc-800 hover:bg-zinc-700 text-cyan-300 border border-zinc-700 transition-colors cursor-pointer flex items-center justify-center space-x-1"
+            className="p-1.5 rounded text-[10px] font-mono font-medium bg-zinc-800 hover:bg-zinc-700 text-[#F5A623] border border-zinc-700 transition-colors cursor-pointer flex items-center justify-center space-x-1"
           >
             <RotateCcw className="w-2.5 h-2.5" />
             <span>Reset Auto AI</span>
@@ -208,7 +208,7 @@ export const RightPanelController = () => {
             </p>
             <button
               onClick={() => triggerScenario('emergency_ambulance')}
-              className="w-full py-1.5 px-2.5 rounded bg-zinc-800 hover:bg-zinc-700 text-cyan-300 border border-zinc-700 text-xs font-mono font-semibold transition-colors cursor-pointer flex items-center justify-between"
+              className="w-full py-1.5 px-2.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[#F5A623] border border-zinc-700 text-xs font-mono font-semibold transition-colors cursor-pointer flex items-center justify-between"
             >
               <span>Dispatch Priority Ambulance</span>
               <kbd>[E]</kbd>

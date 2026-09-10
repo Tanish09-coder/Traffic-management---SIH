@@ -55,22 +55,22 @@ const StatCard = ({
     }
   }
 
-  // Icon badge colors matching screenshot
+  // Icon badge colors matching design palette
   let iconBg = '#F1F5F9';
-  let iconColor = '#475569';
+  let iconColor = '#0F2C59';
 
   if (titleLower.includes('passed') || color === 'blue') {
     iconBg = '#F1F5F9';
-    iconColor = '#475569';
-  } else if (titleLower.includes('wait') || color === 'orange') {
+    iconColor = '#0F2C59';
+  } else if (titleLower.includes('wait') || color === 'orange' || color === 'yellow') {
     iconBg = '#FFFBEB';
-    iconColor = '#F59E0B';
+    iconColor = '#F5A623';
   } else if (titleLower.includes('throughput') || color === 'green') {
     iconBg = '#F0FDF4';
-    iconColor = '#22C55E';
+    iconColor = '#16A34A';
   } else if (titleLower.includes('emergency') || color === 'purple' || color === 'red') {
-    iconBg = '#FAF5FF';
-    iconColor = '#8B5CF6';
+    iconBg = '#FEF2F2';
+    iconColor = '#DC2626';
   }
 
   const numValue = Number(value);
@@ -82,13 +82,13 @@ const StatCard = ({
 
   return (
     <motion.div
-      className="bg-white rounded-xl p-4 shadow-xs border border-[#CBD5E1] transition-all duration-200"
-      whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(15,41,66,0.08)' }}
+      className="bg-white rounded-xl p-4 shadow-xs border border-[#E2E8F0] transition-all duration-200"
+      whileHover={{ y: -2, boxShadow: '0 4px 12px rgba(10,31,68,0.08)' }}
       transition={{ duration: 0.15 }}
     >
       <div className="flex items-center space-x-2.5 mb-2">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center text-xs flex-shrink-0 border border-slate-200"
+          className="w-7 h-7 rounded-md flex items-center justify-center text-xs flex-shrink-0 border border-[#E2E8F0]"
           style={{ backgroundColor: iconBg, color: iconColor }}
         >
           {React.isValidElement(Icon) ? (
@@ -108,13 +108,13 @@ const StatCard = ({
         <span
           className="text-3xl font-black tracking-tight"
           style={{
-            color: titleLower.includes('wait') ? '#D97706' : '#0F2942'
+            color: titleLower.includes('wait') ? '#F5A623' : '#0A1F44'
           }}
         >
           {valuePrefix}{formattedValue}
         </span>
         {unit && (
-          <span className="text-xs font-bold text-slate-500">
+          <span className="text-xs font-bold text-[#64748B]">
             {unit}
           </span>
         )}

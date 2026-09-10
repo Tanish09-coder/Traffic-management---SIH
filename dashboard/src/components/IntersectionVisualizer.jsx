@@ -56,7 +56,7 @@ export const IntersectionVisualizer = () => {
       {/* Junction Selector Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#0E121B] border border-[#1D2638]">
         <div className="flex items-center space-x-2.5">
-          <Cpu className="w-4 h-4 text-cyan-400" />
+          <Cpu className="w-4 h-4 text-[#F5A623]" />
           <span className="text-xs font-semibold text-white">
             SCADA Signal Phase Controller & Geometry
           </span>
@@ -69,7 +69,7 @@ export const IntersectionVisualizer = () => {
               onClick={() => setSelectedJunctionId(j.id)}
               className={`px-3 py-1 rounded text-xs font-mono font-medium transition-colors cursor-pointer ${
                 selectedJunction.id === j.id
-                  ? 'bg-[#1E293B] text-cyan-300 border border-cyan-500/50'
+                  ? 'bg-[#1E293B] text-[#F5A623] border border-[#F5A623]/50'
                   : 'bg-[#101520] text-slate-400 hover:text-slate-200 border border-[#1D2638]'
               }`}
             >
@@ -234,7 +234,7 @@ export const IntersectionVisualizer = () => {
               </button>
               <button
                 onClick={() => setJunctionOverride(selectedJunction.id, 'auto')}
-                className="p-2 rounded text-xs font-medium bg-[#141A26] hover:bg-[#1D2638] text-cyan-400 border border-[#2B3950] transition-colors cursor-pointer flex items-center justify-center space-x-1"
+                className="p-2 rounded text-xs font-medium bg-[#141A26] hover:bg-[#1D2638] text-[#F5A623] border border-[#2B3950] transition-colors cursor-pointer flex items-center justify-center space-x-1"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Auto AI</span>
