@@ -292,7 +292,7 @@ const Analytics = ({ onNavigate }) => {
           <div>
             <h3 className="text-base font-bold text-[#0A1F44]">Derived Environmental & Commuter Impact</h3>
             <p className="text-sm text-slate-500">
-              Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: 45.0s)
+              Calculated strictly from {session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: {session.sustainability?.baselineDelay ? `${session.sustainability.baselineDelay}s` : '45.0s'})
             </p>
           </div>
           <span className="text-xs bg-[#0A1F44] text-[#F5A623] border border-[#1E4D8C] font-bold px-2.5 py-0.5 rounded-full">
@@ -468,7 +468,7 @@ const Analytics = ({ onNavigate }) => {
                         name="Throughput (cars/min)"
                         stroke="#F5A623"
                         strokeWidth={2.5}
-                        dot={{ fill: '#F5A623', r: 3 }}
+                        dot={{ fill: '#F5A623', r: 2 }}
                         isAnimationActive={false}
                         connectNulls={true}
                       />
@@ -663,7 +663,7 @@ const Analytics = ({ onNavigate }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-[#0A1F44]">Queue & Congestion Trend</h3>
-                  <p className="text-sm text-slate-500">Real cumulative queue sizes observed in all 4 approaches</p>
+                  <p className="text-sm text-slate-500">Real cumulative queue sizes observed across approaches</p>
                 </div>
                 <span className="text-xs bg-red-50 text-red-700 border border-red-200 font-bold px-2.5 py-0.5 rounded-full">
                   QUEUE SIZES
@@ -676,14 +676,18 @@ const Analytics = ({ onNavigate }) => {
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                       <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#475569" fontSize={11} tickLine={false} label={{ value: 'Cars', angle: -90, position: 'insideLeft' }} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} allowDecimals={false} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
+                        itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                        labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
                       />
                       <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                      <Line type="monotone" dataKey="totalQueue" name="Total Queue" stroke="#DC2626" strokeWidth={2.5} dot={false} />
-                      <Line type="monotone" dataKey="queueN" name="Queue N" stroke="#0F2C59" strokeWidth={1.5} dot={false} />
-                      <Line type="monotone" dataKey="queueS" name="Queue S" stroke="#F5A623" strokeWidth={1.5} dot={false} />
+                      <Line type="monotone" dataKey="totalQueue" name="Total Queue" stroke="#DC2626" strokeWidth={2.5} dot={false} isAnimationActive={false} connectNulls={true} />
+                      <Line type="monotone" dataKey="queueN" name="Lane N" stroke="#F5A623" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls={true} />
+                      <Line type="monotone" dataKey="queueS" name="Lane S" stroke="#16A34A" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls={true} />
+                      <Line type="monotone" dataKey="queueE" name="Lane E" stroke="#0F2C59" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls={true} />
+                      <Line type="monotone" dataKey="queueW" name="Lane W" stroke="#1E4D8C" strokeWidth={1.5} dot={false} isAnimationActive={false} connectNulls={true} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (

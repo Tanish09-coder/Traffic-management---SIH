@@ -511,31 +511,34 @@ export class VehicleManager {
       this.emergencyCooldown -= deltaSec;
     }
 
-    const ql = this.getQueueLengths();
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    const snapshot = {
-      time: timeStr,
-      ...ql,
-      queues: { ...ql }
-    };
-    this._queueHistory = [...this._queueHistory.slice(-29), snapshot];
-
-    const currentAvgWait = this.calculateAverageWaitTime();
-    this._waitTimeHistory = [
-      ...this._waitTimeHistory.slice(-29),
-      {
+    if (!this._lastHistoryTime || this.sessionDurationSeconds - this._lastHistoryTime >= 1.0) {
+      this._lastHistoryTime = this.sessionDurationSeconds;
+      const ql = this.getQueueLengths();
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const snapshot = {
         time: timeStr,
-        wait_time: currentAvgWait
-      }
-    ];
+        ...ql,
+        queues: { ...ql }
+      };
+      this._queueHistory = [...this._queueHistory.slice(-29), snapshot];
 
-    this._throughputHistory = [
-      ...this._throughputHistory.slice(-119),
-      {
-        timestamp: Date.now(),
-        throughput: this.calculateThroughput()
-      }
-    ];
+      const currentAvgWait = this.calculateAverageWaitTime();
+      this._waitTimeHistory = [
+        ...this._waitTimeHistory.slice(-29),
+        {
+          time: timeStr,
+          wait_time: currentAvgWait
+        }
+      ];
+
+      this._throughputHistory = [
+        ...this._throughputHistory.slice(-119),
+        {
+          timestamp: Date.now(),
+          throughput: this.calculateThroughput()
+        }
+      ];
+    }
 
     return { departedCars: stepDepartedCars };
   }
@@ -573,24 +576,51 @@ export class VehicleManager {
     let totalWait = 0;
     let count = 0;
 
-    // 1. Check currently stopped vehicles waiting at red lights on the road
+    // 1. Accumulate wait times of all visible cars currently on road with delay
     Object.values(this.cars).forEach(lane => {
       lane.forEach(car => {
-        if (car.isStopped && car.waitTime > 0) {
+        if (typeof car.waitTime === 'number' && car.waitTime > 0) {
           totalWait += car.waitTime;
           count++;
         }
       });
     });
 
-    if (count > 0) {
-      return parseFloat((totalWait / count).toFixed(1));
+    // 2. Accumulate wait times of off-screen backlog vehicles
+    Object.values(this.backlog).forEach(bList => {
+      bList.forEach(bVeh => {
+        if (typeof bVeh.waitTime === 'number' && bVeh.waitTime > 0) {
+          totalWait += bVeh.waitTime;
+          count++;
+        }
+      });
+    });
+
+    // 3. Include active emergency vehicle if delayed
+    if (this.emergencyVehicle && this.emergencyVehicle.waitTime > 0) {
+      totalWait += this.emergencyVehicle.waitTime;
+      count++;
     }
 
-    // 2. If no vehicles are currently waiting, fall back to recent completed wait times
+    // If active vehicles are experiencing delay, calculate their average
+    if (count > 0) {
+      const activeAvg = totalWait / count;
+      // If we also have recent completed departures, blend gently for stable telemetry
+      if (this._completedWaitTimes.length > 0) {
+        const recent = this._completedWaitTimes.slice(-10);
+        const compAvg = recent.reduce((sum, v) => sum + v, 0) / recent.length;
+        // 70% active current delay, 30% recent completed departure baseline
+        const blended = 0.7 * activeAvg + 0.3 * compAvg;
+        return parseFloat(blended.toFixed(1));
+      }
+      return parseFloat(activeAvg.toFixed(1));
+    }
+
+    // If no vehicles are currently waiting, use the recent completed departures
     if (this._completedWaitTimes.length > 0) {
-      const sum = this._completedWaitTimes.reduce((acc, val) => acc + val, 0);
-      return parseFloat((sum / this._completedWaitTimes.length).toFixed(1));
+      const recent = this._completedWaitTimes.slice(-10);
+      const sum = recent.reduce((acc, val) => acc + val, 0);
+      return parseFloat((sum / recent.length).toFixed(1));
     }
 
     return 0;
@@ -641,6 +671,7 @@ export class VehicleManager {
     this._completedDepartures = [];
     this._waitTimeHistory = [];
     this._throughputHistory = [];
+    this._lastHistoryTime = 0;
     this._initScheduleAndSimulation();
   }
 

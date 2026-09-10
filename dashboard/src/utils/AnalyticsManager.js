@@ -73,7 +73,9 @@ export class AnalyticsManager {
     // Time-series history for charts (chronological snapshots)
     this.timeSeries = [];
     this.lastSnapshotTick = 0;
+    this.lastSnapshotTime = 0;
     this.tickCounter = 0;
+    this.recentDepartures = [];
   }
 
   /**
@@ -183,8 +185,9 @@ export class AnalyticsManager {
         this.laneProcessed[dir] = (this.laneProcessed[dir] || 0) + 1;
 
         const delay = typeof dep.delay === 'number' ? dep.delay : 0;
-        this.completedWaitTimes.push(delay);
+        this.completedWaitTimes = [...this.completedWaitTimes.slice(-499), delay];
         this.totalWaitTimeSum += delay;
+        this.recentDepartures.push(this.sessionDurationSeconds);
       }
     });
 
@@ -222,13 +225,16 @@ export class AnalyticsManager {
     if (isEmergencyActive && !this.lastEmergencyActive) {
       this.emergencyPreemptions++;
       this.eventCount++;
-      this.emergencyEvents.push({
-        id: `EMG-${Date.now().toString().slice(-4)}`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        direction: data.emergencyDirection || currentSignal,
-        vehicleType: 'Emergency Vehicle',
-        resolved: false
-      });
+      this.emergencyEvents = [
+        ...this.emergencyEvents.slice(-29),
+        {
+          id: `EMG-${Date.now().toString().slice(-4)}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          direction: data.emergencyDirection || currentSignal,
+          vehicleType: 'Emergency Vehicle',
+          resolved: false
+        }
+      ];
     } else if (!isEmergencyActive && this.lastEmergencyActive && this.emergencyEvents.length > 0) {
       const lastEmg = this.emergencyEvents[this.emergencyEvents.length - 1];
       if (lastEmg && !lastEmg.resolved) {
@@ -237,43 +243,47 @@ export class AnalyticsManager {
     }
     this.lastEmergencyActive = isEmergencyActive;
 
-    // Record Periodic Time-Series Snapshots
-    if (this.tickCounter - this.lastSnapshotTick >= 2 || this.timeSeries.length === 0) {
+    // Record Periodic Time-Series Snapshots (once every 1.0s of simulation time or first tick)
+    if (this.sessionDurationSeconds - this.lastSnapshotTime >= 1.0 || this.timeSeries.length === 0) {
+      this.lastSnapshotTime = this.sessionDurationSeconds;
       this.lastSnapshotTick = this.tickCounter;
 
       const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const currentThroughput = this.sessionDurationSeconds > 0
-        ? Math.round((this.totalProcessed / this.sessionDurationSeconds) * 60)
-        : 0;
 
-      if (currentThroughput > this.peakThroughput) {
-        this.peakThroughput = currentThroughput;
+      // Rolling window throughput calculation (cars per minute over last 30s)
+      const windowSec = 30;
+      const cutoff = this.sessionDurationSeconds - windowSec;
+      this.recentDepartures = this.recentDepartures.filter(t => t >= cutoff);
+      const effectiveWindow = Math.min(windowSec, Math.max(5, this.sessionDurationSeconds));
+      const rollingThroughput = Math.round((this.recentDepartures.length / effectiveWindow) * 60);
+
+      if (rollingThroughput > this.peakThroughput) {
+        this.peakThroughput = rollingThroughput;
       }
 
       const avgWaitSoFar = this.completedWaitTimes.length > 0
         ? Number((this.totalWaitTimeSum / this.completedWaitTimes.length).toFixed(1))
         : null;
 
-      this.timeSeries.push({
-        time: timeLabel,
-        tick: this.tickCounter,
-        activeVehicles: currentActiveCount,
-        processedVehicles: this.totalProcessed,
-        throughput: currentThroughput,
-        avgWaitTime: avgWaitSoFar,
-        totalQueue: currentTotalQueue,
-        queueN: queues.N || 0,
-        queueS: queues.S || 0,
-        queueE: queues.E || 0,
-        queueW: queues.W || 0,
-        signal: currentSignal,
-        phase: phase,
-        isEmergency: isEmergencyActive
-      });
-
-      if (this.timeSeries.length > 40) {
-        this.timeSeries.shift();
-      }
+      this.timeSeries = [
+        ...this.timeSeries.slice(-89), // Keep up to 90 seconds (1.5 min) of chronological telemetry
+        {
+          time: timeLabel,
+          tick: this.tickCounter,
+          activeVehicles: currentActiveCount,
+          processedVehicles: this.totalProcessed,
+          throughput: rollingThroughput,
+          avgWaitTime: avgWaitSoFar,
+          totalQueue: currentTotalQueue,
+          queueN: queues.N || 0,
+          queueS: queues.S || 0,
+          queueE: queues.E || 0,
+          queueW: queues.W || 0,
+          signal: currentSignal,
+          phase: phase,
+          isEmergency: isEmergencyActive
+        }
+      ];
     }
   }
 
@@ -287,8 +297,15 @@ export class AnalyticsManager {
       ? Number((this.totalWaitTimeSum / totalRecordedWait).toFixed(1))
       : null;
 
+    // Rolling throughput over last 30s with fallback to cumulative session average
+    const windowSec = 30;
+    const cutoff = this.sessionDurationSeconds - windowSec;
+    const recentCount = this.recentDepartures.filter(t => t >= cutoff).length;
+    const effectiveWindow = Math.min(windowSec, Math.max(5, this.sessionDurationSeconds));
     const currentThroughput = this.sessionDurationSeconds > 0
-      ? Math.round((this.totalProcessed / this.sessionDurationSeconds) * 60)
+      ? (recentCount > 0
+          ? Math.round((recentCount / effectiveWindow) * 60)
+          : Math.round((this.totalProcessed / this.sessionDurationSeconds) * 60))
       : 0;
 
     const activeVehiclesCount = Math.max(0, this.totalGenerated - this.totalProcessed);
@@ -296,7 +313,7 @@ export class AnalyticsManager {
     // Authoritative Environmental & Commuter Economic Impact Calculation
     const sustainability = calculateEnvironmentalImpact(
       this.totalProcessed,
-      avgWaitTime || 0,
+      avgWaitTime,
       TRAFFIC_CONSTANTS.TRADITIONAL_WAIT_TIME
     );
 
@@ -399,11 +416,11 @@ export class AnalyticsManager {
       signalSwitchCount: this.signalSwitchCount,
 
       // Time Series
-      timeSeries: this.timeSeries,
+      timeSeries: [...this.timeSeries],
       hasTimeSeriesData: this.timeSeries.length > 0,
 
       // Emergency logs
-      emergencyEvents: this.emergencyEvents,
+      emergencyEvents: [...this.emergencyEvents],
 
       // Environmental & economic ROI
       sustainability
