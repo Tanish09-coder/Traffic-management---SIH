@@ -122,8 +122,10 @@ const ChartPanel = ({ metrics, state }) => {
                 dataKey="wait_time"
                 stroke="#003366"
                 strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: '#D97706' }}
+                isAnimationActive={false}
+                dot={{ fill: '#003366', strokeWidth: 1, r: 2.5 }}
+                activeDot={{ r: 5, fill: '#D97706', stroke: '#FFFFFF', strokeWidth: 2 }}
+                connectNulls={true}
               />
             </LineChart>
           </ResponsiveContainer>
