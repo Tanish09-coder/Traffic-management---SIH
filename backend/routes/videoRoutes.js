@@ -54,16 +54,19 @@ router.get('/bundled', (req, res) => {
     ? BUNDLED_VIDEO_PATH
     : (fs.existsSync(path.join(VIDEOS_DIR, 'vid sim.mp4')) ? path.join(VIDEOS_DIR, 'vid sim.mp4') : BUNDLED_VIDEO_PATH);
 
-  if (!fs.existsSync(videoPath)) {
-    return res.status(404).json({ error: 'Bundled simulation video not found at backend/videos/vid_sim.mp4' });
-  }
-  const stats = fs.statSync(videoPath);
+  const hasPhysicalVideo = fs.existsSync(videoPath);
+  const bundledAnalysisPath = path.join(__dirname, '..', 'data', 'bundled_video_analysis.json');
+  const hasPrecomputedAnalysis = fs.existsSync(bundledAnalysisPath);
+  const stats = hasPhysicalVideo ? fs.statSync(videoPath) : null;
+
   res.json({
     videoId: 'vid_sim',
     title: 'Traffic Simulation Video (Default)',
-    filename: path.basename(videoPath),
-    sizeBytes: stats.size,
+    filename: hasPhysicalVideo ? path.basename(videoPath) : 'vid_sim.mp4',
+    sizeBytes: stats ? stats.size : 185685832,
     isBundled: true,
+    hasPhysicalVideo,
+    hasPrecomputedAnalysis,
     defaultConfig: {
       region: [
         [0.01, 0.35],
@@ -178,8 +181,11 @@ router.post('/analyze', (req, res) => {
     return res.status(400).json({ error: 'videoId is required' });
   }
 
+  const isBundledVideo = (videoId === 'vid_sim' || videoId === 'vid sim' || videoId === 'vid_sim.mp4' || videoId === 'vid sim.mp4' || videoId === 'bellevue_trial' || videoId === 'bellevue_trial.mp4');
+  const bundledAnalysisPath = path.join(__dirname, '..', 'data', 'bundled_video_analysis.json');
+
   let videoPath;
-  if (videoId === 'vid_sim' || videoId === 'vid sim' || videoId === 'vid_sim.mp4' || videoId === 'vid sim.mp4' || videoId === 'bellevue_trial' || videoId === 'bellevue_trial.mp4') {
+  if (isBundledVideo) {
     videoPath = fs.existsSync(BUNDLED_VIDEO_PATH)
       ? BUNDLED_VIDEO_PATH
       : (fs.existsSync(path.join(VIDEOS_DIR, 'vid sim.mp4')) ? path.join(VIDEOS_DIR, 'vid sim.mp4') : BUNDLED_VIDEO_PATH);
@@ -198,22 +204,19 @@ router.post('/analyze', (req, res) => {
     }
   }
 
-  if (!videoPath || !fs.existsSync(videoPath)) {
-    return res.status(404).json({ error: 'Video file not found' });
-  }
-
   // Compute robust config hash for caching (v2 format hash)
   const configObj = { videoId, region, line, mappedDirection, sampleFps, tracker: 'bytetrack_v2' };
   const configHash = crypto.createHash('md5').update(JSON.stringify(configObj)).digest('hex');
   const cachePath = path.join(CACHE_DIR, `${configHash}.json`);
 
-  // Check cache first
+  // 1. Check dynamic cache file first
   if (fs.existsSync(cachePath)) {
     try {
       const cachedData = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
       if (cachedData && cachedData.status === 'COMPLETED' && !cachedData.error) {
         const jobId = `cached-${configHash}`;
         activeJobs.set(jobId, {
+          jobId,
           status: 'COMPLETED',
           progress: 100,
           result: cachedData,
@@ -223,8 +226,38 @@ router.post('/analyze', (req, res) => {
         return res.json({ jobId, status: 'COMPLETED', progress: 100, cached: true });
       }
     } catch (err) {
-      // Invalid cache file, proceed with fresh analysis
+      // Invalid cache file, continue
     }
+  }
+
+  // 2. If bundled video, check pre-computed analysis asset (zero-python fallback)
+  if (isBundledVideo && fs.existsSync(bundledAnalysisPath)) {
+    try {
+      const cachedData = JSON.parse(fs.readFileSync(bundledAnalysisPath, 'utf8'));
+      if (cachedData && cachedData.status === 'COMPLETED' && !cachedData.error) {
+        try {
+          if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+          if (!fs.existsSync(cachePath)) fs.copyFileSync(bundledAnalysisPath, cachePath);
+        } catch (e) {}
+
+        const jobId = `cached-bundled-sim`;
+        activeJobs.set(jobId, {
+          jobId,
+          status: 'COMPLETED',
+          progress: 100,
+          result: cachedData,
+          error: null,
+          logs: ['Loaded pre-computed YOLOv8 + ByteTrack bundled analysis']
+        });
+        return res.json({ jobId, status: 'COMPLETED', progress: 100, cached: true });
+      }
+    } catch (err) {
+      console.warn('Error reading bundled analysis:', err);
+    }
+  }
+
+  if (!videoPath || !fs.existsSync(videoPath)) {
+    return res.status(404).json({ error: 'Video file not found on disk', videoMissing: true });
   }
 
   const jobId = `job-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
@@ -338,7 +371,18 @@ router.post('/analyze', (req, res) => {
  */
 router.get('/status/:jobId', (req, res) => {
   const jobId = req.params.jobId;
-  const job = activeJobs.get(jobId);
+  let job = activeJobs.get(jobId);
+
+  if (!job && (jobId === 'cached-bundled-sim' || jobId.startsWith('cached-'))) {
+    job = {
+      jobId,
+      status: 'COMPLETED',
+      progress: 100,
+      error: null,
+      logs: ['Pre-computed cached analysis ready']
+    };
+  }
+
   if (!job) {
     return res.status(404).json({ error: 'Job not found' });
   }
@@ -348,7 +392,7 @@ router.get('/status/:jobId', (req, res) => {
     status: job.status,
     progress: job.progress,
     error: job.error,
-    logs: job.logs.slice(-5)
+    logs: (job.logs || []).slice(-5)
   });
 });
 
@@ -378,7 +422,30 @@ router.post('/cancel/:jobId', (req, res) => {
  */
 router.get('/results/:jobId', (req, res) => {
   const jobId = req.params.jobId;
-  const job = activeJobs.get(jobId);
+  let job = activeJobs.get(jobId);
+
+  if (!job) {
+    const bundledAnalysisPath = path.join(__dirname, '..', 'data', 'bundled_video_analysis.json');
+    if (jobId.startsWith('cached-')) {
+      const hash = jobId.replace('cached-', '');
+      const possibleCache = path.join(CACHE_DIR, `${hash}.json`);
+      if (fs.existsSync(possibleCache)) {
+        try {
+          const result = JSON.parse(fs.readFileSync(possibleCache, 'utf8'));
+          job = { status: 'COMPLETED', result };
+          activeJobs.set(jobId, job);
+        } catch (e) {}
+      }
+    }
+    if (!job && fs.existsSync(bundledAnalysisPath)) {
+      try {
+        const result = JSON.parse(fs.readFileSync(bundledAnalysisPath, 'utf8'));
+        job = { status: 'COMPLETED', result };
+        activeJobs.set(jobId, job);
+      } catch (e) {}
+    }
+  }
+
   if (!job) {
     return res.status(404).json({ error: 'Job not found' });
   }

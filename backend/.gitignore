@@ -3,5 +3,5 @@ node_modules
 uploads/
 cache/
 *.pt
-videos/*.mp4
-backend/videos/*.mp4
+!videos/vid_sim.mp4
+!backend/videos/vid_sim.mp4

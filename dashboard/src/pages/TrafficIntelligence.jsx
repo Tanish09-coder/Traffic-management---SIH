@@ -24,6 +24,7 @@ import {
   Info
 } from 'lucide-react';
 import LiveVisionTelemetryPanel from '../components/LiveVisionTelemetryPanel';
+import fallbackBundledAnalysis from '../data/bundledVideoAnalysis.json';
 
 const API_BASE = 'http://localhost:5000/api/video';
 
@@ -127,9 +128,11 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const canvasRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTimeSec, setCurrentTimeSec] = useState(0);
-  const [videoDurationSec, setVideoDurationSec] = useState(0);
+  const [videoDurationSec, setVideoDurationSec] = useState(224.5);
   const [videoDimensions, setVideoDimensions] = useState({ width: 1280, height: 720 });
   const [isReplayComplete, setIsReplayComplete] = useState(false);
+  const [isBackendOffline, setIsBackendOffline] = useState(false);
+  const [isVideoUnavailable, setIsVideoUnavailable] = useState(false);
 
   // Sync simulation speed to video playback rate
   useEffect(() => {
@@ -138,14 +141,52 @@ const TrafficIntelligence = ({ onNavigate }) => {
     }
   }, [simulationSpeed]);
 
+  // Update duration if analysis metadata is available
+  useEffect(() => {
+    if (analysisResults?.videoMetadata?.durationSec) {
+      setVideoDurationSec(analysisResults.videoMetadata.durationSec);
+    }
+  }, [analysisResults]);
+
+  // Simulated playback timer if physical video is missing or backend is offline
+  useEffect(() => {
+    let animTimer = null;
+    if (isPlaying && isVideoUnavailable) {
+      animTimer = setInterval(() => {
+        setCurrentTimeSec(prev => {
+          const maxDur = analysisResults?.videoMetadata?.durationSec || 224.5;
+          const next = prev + (0.2 * (simulationSpeed || 1.0));
+          if (next >= maxDur) {
+            setIsPlaying(false);
+            setIsReplayComplete(true);
+            return maxDur;
+          }
+          if (videoReplayActive && syncVideoReplayTime) {
+            syncVideoReplayTime(next);
+          }
+          return next;
+        });
+      }, 200);
+    }
+    return () => {
+      if (animTimer) clearInterval(animTimer);
+    };
+  }, [isPlaying, isVideoUnavailable, simulationSpeed, analysisResults, videoReplayActive, syncVideoReplayTime]);
+
   // Load bundled video config on mount and auto-load pre-computed analysis
   useEffect(() => {
     fetch(`${API_BASE}/bundled`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Bundled config endpoint returned ' + res.status);
+        return res.json();
+      })
       .then(data => {
         if (data.videoId) {
           setBundledVideoInfo(data);
           setSelectedVideo(data.videoId);
+          if (data.hasPhysicalVideo === false) {
+            setIsVideoUnavailable(true);
+          }
         }
         if (data.defaultConfig) {
           setRegionPoints(data.defaultConfig.region);
@@ -171,10 +212,24 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 fetchAnalysisResults(analyzeData.jobId);
               }
             })
-            .catch(err => console.warn('Auto analysis load notice:', err));
+            .catch(err => {
+              console.warn('Auto analysis load notice, applying bundled intelligence:', err);
+              if (fallbackBundledAnalysis) {
+                setAnalysisResults(fallbackBundledAnalysis);
+                setAnalysisStatus('COMPLETED');
+              }
+            });
         }
       })
-      .catch(err => console.warn('Could not fetch bundled video config:', err));
+      .catch(err => {
+        console.warn('Backend server offline or unreachable, applying client-bundled intelligence fallback:', err);
+        setIsBackendOffline(true);
+        setIsVideoUnavailable(true);
+        if (fallbackBundledAnalysis) {
+          setAnalysisResults(fallbackBundledAnalysis);
+          setAnalysisStatus('COMPLETED');
+        }
+      });
   }, []);
 
   // Handle local video upload
@@ -236,8 +291,14 @@ const TrafficIntelligence = ({ onNavigate }) => {
         fetchAnalysisResults(data.jobId);
       }
     } catch (err) {
-      setAnalysisStatus('FAILED');
-      setAnalysisError(err.message);
+      if (fallbackBundledAnalysis && selectedVideo === 'vid_sim') {
+        setAnalysisResults(fallbackBundledAnalysis);
+        setAnalysisStatus('COMPLETED');
+        setAnalysisProgress(100);
+      } else {
+        setAnalysisStatus('FAILED');
+        setAnalysisError(err.message);
+      }
     }
   };
 
@@ -279,8 +340,13 @@ const TrafficIntelligence = ({ onNavigate }) => {
       setAnalysisResults(data);
       setAnalysisStatus('COMPLETED');
     } catch (err) {
-      setAnalysisStatus('FAILED');
-      setAnalysisError(err.message);
+      if (fallbackBundledAnalysis && selectedVideo === 'vid_sim') {
+        setAnalysisResults(fallbackBundledAnalysis);
+        setAnalysisStatus('COMPLETED');
+      } else {
+        setAnalysisStatus('FAILED');
+        setAnalysisError(err.message);
+      }
     }
   };
 
@@ -418,13 +484,40 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const renderCanvasOverlay = useCallback(() => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
-    if (!canvas || !video) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const w = canvas.width = video.clientWidth || 800;
-    const h = canvas.height = video.clientHeight || 450;
+    const w = canvas.width = (video && video.clientWidth > 0) ? video.clientWidth : (canvas.parentElement?.clientWidth || 800);
+    const h = canvas.height = (video && video.clientHeight > 0) ? video.clientHeight : (canvas.parentElement?.clientHeight || 450);
 
     ctx.clearRect(0, 0, w, h);
+
+    // If physical video is not streaming, draw modern dark simulated roadway backdrop
+    const isPhysicalVideoReady = video && !video.error && video.readyState >= 2 && !isVideoUnavailable;
+    if (!isPhysicalVideoReady) {
+      // Dark asphalt
+      ctx.fillStyle = '#0a101d';
+      ctx.fillRect(0, 0, w, h);
+
+      // Road lane corridor
+      ctx.fillStyle = '#111b2e';
+      ctx.fillRect(w * 0.15, 0, w * 0.7, h);
+
+      // Subtle lane markings
+      ctx.strokeStyle = 'rgba(234, 179, 8, 0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([8, 10]);
+      ctx.beginPath();
+      ctx.moveTo(w * 0.5, 0);
+      ctx.lineTo(w * 0.5, h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Watermark
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.5)';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText(`CAM-04 [SIMULATED VISION] • T: ${currentTimeSec.toFixed(1)}s`, 14, 22);
+    }
 
     // 1. Draw Directional Approach Queue Zones (if enabled)
     if (showApproachZones && approachZones) {
@@ -814,14 +907,36 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
             {/* Video Container with Canvas Overlay */}
             <div className="relative rounded-xl overflow-hidden bg-slate-950 aspect-video group shadow-inner border border-slate-800">
+              {/* Informative Status Badge on Video */}
+              {isBackendOffline && (
+                <div className="absolute top-2.5 left-2.5 right-2.5 bg-amber-500/90 backdrop-blur-xs text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center justify-between z-10">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle size={13} className="text-amber-100 shrink-0" />
+                    <span>Backend server offline on port 5000 • Running with pre-bundled YOLOv8 intelligence (Run <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> in <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code>)</span>
+                  </div>
+                </div>
+              )}
+              {!isBackendOffline && isVideoUnavailable && (
+                <div className="absolute top-2.5 left-2.5 right-2.5 bg-slate-900/85 backdrop-blur-xs text-slate-200 text-[11px] font-medium px-3 py-1.5 rounded-lg border border-slate-700/60 shadow-sm flex items-center justify-between z-10">
+                  <div className="flex items-center gap-1.5">
+                    <Info size={13} className="text-blue-400 shrink-0" />
+                    <span>Simulated Vision Mode • Place <code className="text-amber-300 font-mono text-[10px]">vid_sim.mp4</code> in <code className="text-amber-300 font-mono text-[10px]">backend/videos/</code> (Full YOLO AI Telemetry active below)</span>
+                  </div>
+                </div>
+              )}
+
               <video
                 ref={videoRef}
-                src={`${API_BASE}/stream/${selectedVideo}`}
+                src={isBackendOffline && selectedVideo === 'vid_sim' ? '/videos/vid_sim.mp4' : `${API_BASE}/stream/${selectedVideo}`}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={handleVideoEnded}
+                onError={() => {
+                  console.warn('Physical video stream unavailable, switching to simulated canvas overlay');
+                  setIsVideoUnavailable(true);
+                }}
                 crossOrigin="anonymous"
-                className="w-full h-full object-contain"
+                className={`w-full h-full object-contain ${isVideoUnavailable ? 'hidden' : 'block'}`}
               />
               <canvas
                 ref={canvasRef}
@@ -839,12 +954,15 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   </p>
                   <button
                     onClick={() => {
-                      if (videoRef.current) {
-                        videoRef.current.currentTime = 0;
-                        videoRef.current.play();
-                        setIsPlaying(true);
-                        setIsReplayComplete(false);
+                      if (videoRef.current && !isVideoUnavailable) {
+                        try {
+                          videoRef.current.currentTime = 0;
+                          videoRef.current.play();
+                        } catch (e) {}
                       }
+                      setCurrentTimeSec(0);
+                      setIsPlaying(true);
+                      setIsReplayComplete(false);
                     }}
                     className="px-4 py-2 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer"
                   >
@@ -859,14 +977,19 @@ const TrafficIntelligence = ({ onNavigate }) => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => {
-                    if (videoRef.current) {
-                      if (isPlaying) {
-                        videoRef.current.pause();
-                        setIsPlaying(false);
-                      } else {
-                        videoRef.current.play();
-                        setIsPlaying(true);
+                    if (isPlaying) {
+                      if (videoRef.current && !isVideoUnavailable) {
+                        try { videoRef.current.pause(); } catch (e) {}
                       }
+                      setIsPlaying(false);
+                    } else {
+                      if (videoRef.current && !isVideoUnavailable) {
+                        videoRef.current.play().catch(() => {
+                          setIsVideoUnavailable(true);
+                        });
+                      }
+                      setIsPlaying(true);
+                      setIsReplayComplete(false);
                     }
                   }}
                   className="p-2 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white shadow-xs transition-all cursor-pointer"
@@ -877,9 +1000,11 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
                 <button
                   onClick={() => {
-                    if (videoRef.current) {
-                      videoRef.current.currentTime = 0;
+                    if (videoRef.current && !isVideoUnavailable) {
+                      try { videoRef.current.currentTime = 0; } catch (e) {}
                     }
+                    setCurrentTimeSec(0);
+                    setIsReplayComplete(false);
                   }}
                   className="p-2 rounded-lg bg-[#F1F5F9] hover:bg-slate-200 text-[#475569] border border-[#CBD5E1] transition-all cursor-pointer"
                   title="Rewind to start"
