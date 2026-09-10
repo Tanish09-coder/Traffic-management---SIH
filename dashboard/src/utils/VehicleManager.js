@@ -209,38 +209,6 @@ export class VehicleManager {
     this.cars = { N: [], E: [], S: [], W: [] };
     this.backlog = { N: [], E: [], S: [], W: [] };
     this._completedArrivals = [];
-    const initialCounts = { N: 3, E: 2, S: 4, W: 1 };
-    const vehicleTypes = ['car', 'bike', 'bus', 'truck'];
-
-    Object.entries(initialCounts).forEach(([dir, count]) => {
-      let lastPos = 2;
-      for (let i = 0; i < count; i++) {
-        const spacing = 5 + (i * 1.5);
-        const pos = Math.min(STOP_LINE_POSITION - 0.5, lastPos + spacing);
-        lastPos = pos;
-        const vType = vehicleTypes[i % vehicleTypes.length];
-        const speed = vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : vType === 'truck' ? 4.0 : 6.0;
-        const vehId = `init-${dir}-${this.carIdCounter++}`;
-
-        this.cars[dir].push({
-          id: vehId,
-          position: pos,
-          speed,
-          type: vType,
-          waitTime: pos >= (STOP_LINE_POSITION - 2) ? 5 + (i * 2) : 0,
-          isStopped: pos >= (STOP_LINE_POSITION - 2),
-          inIntersection: false
-        });
-
-        this._completedArrivals.push({
-          id: vehId,
-          direction: dir,
-          type: vType,
-          timeSec: 0
-        });
-      }
-      this.cars[dir].sort((a, b) => b.position - a.position);
-    });
   }
 
   getQueueLengths() {
@@ -553,15 +521,13 @@ export class VehicleManager {
     this._queueHistory = [...this._queueHistory.slice(-29), snapshot];
 
     const currentAvgWait = this.calculateAverageWaitTime();
-    if (this._completedWaitTimes.length > 0) {
-      this._waitTimeHistory = [
-        ...this._waitTimeHistory.slice(-29),
-        {
-          time: timeStr,
-          wait_time: currentAvgWait
-        }
-      ];
-    }
+    this._waitTimeHistory = [
+      ...this._waitTimeHistory.slice(-29),
+      {
+        time: timeStr,
+        wait_time: currentAvgWait
+      }
+    ];
 
     this._throughputHistory = [
       ...this._throughputHistory.slice(-119),
@@ -604,9 +570,30 @@ export class VehicleManager {
   }
 
   calculateAverageWaitTime() {
-    if (this._completedWaitTimes.length === 0) return 0;
-    const sum = this._completedWaitTimes.reduce((acc, val) => acc + val, 0);
-    return parseFloat((sum / this._completedWaitTimes.length).toFixed(1));
+    let totalWait = 0;
+    let count = 0;
+
+    // 1. Check currently stopped vehicles waiting at red lights on the road
+    Object.values(this.cars).forEach(lane => {
+      lane.forEach(car => {
+        if (car.isStopped && car.waitTime > 0) {
+          totalWait += car.waitTime;
+          count++;
+        }
+      });
+    });
+
+    if (count > 0) {
+      return parseFloat((totalWait / count).toFixed(1));
+    }
+
+    // 2. If no vehicles are currently waiting, fall back to recent completed wait times
+    if (this._completedWaitTimes.length > 0) {
+      const sum = this._completedWaitTimes.reduce((acc, val) => acc + val, 0);
+      return parseFloat((sum / this._completedWaitTimes.length).toFixed(1));
+    }
+
+    return 0;
   }
 
   calculateThroughput() {
