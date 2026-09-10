@@ -588,7 +588,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
               {/* Replay Complete Alert */}
               {isReplayComplete && (
-                <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-3 z-20">
+                <div className="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-white space-y-3 z-20">
                   <CheckCircle2 size={48} className="text-emerald-400" />
                   <h3 className="text-xl font-bold">Replay Complete</h3>
                   <p className="text-xs text-slate-300 max-w-sm text-center">
@@ -599,13 +599,13 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       if (videoRef.current) {
                         videoRef.current.currentTime = 0;
                         videoRef.current.play();
-                        setIsPlaying(true);
-                        setIsReplayComplete(false);
                       }
+                      setIsReplayComplete(false);
                     }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md flex items-center gap-2"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
                   >
-                    <RotateCcw size={14} /> Restart Replay
+                    <RotateCcw size={14} />
+                    <span>Restart Replay</span>
                   </button>
                 </div>
               )}
@@ -792,7 +792,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
               ) : (
                 <button
                   onClick={handleStartAnalysis}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-2xl bg-blue-800 hover:bg-blue-900 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles size={16} />
                   Analyze Video (YOLO Tracking)
@@ -857,7 +857,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 </div>
                 <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full transition-all duration-300 shadow-sm"
+                    className="bg-blue-800 h-2.5 rounded-full transition-all duration-300 shadow-sm"
                     style={{ width: `${livePercent}%` }}
                   />
                 </div>
