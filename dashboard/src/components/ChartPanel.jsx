@@ -3,14 +3,14 @@ import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tool
 import { FileText } from 'lucide-react';
 
 const LANE_COLORS = {
-  N: '#F5A623', // Gold / Amber
-  E: '#0F2C59', // Primary Navy
-  S: '#16A34A', // India Green
-  W: '#1E4D8C'  // Secondary Navy
+  N: '#D97706', // Saffron / Amber
+  E: '#003366', // Ashoka Blue
+  S: '#15803D', // India Green
+  W: '#0284C7'  // Sky Blue
 };
 
 const ChartPanel = ({ metrics, state }) => {
-  if (!metrics) {
+  if (!metrics && !state) {
     return (
       <div className="space-y-4">
         <div className="bg-slate-50 p-4 rounded-lg text-center border border-slate-200">
@@ -22,11 +22,11 @@ const ChartPanel = ({ metrics, state }) => {
 
   const currentWait = Number(state?.avg_wait_time ?? metrics?.current_avg_wait_time ?? metrics?.avg_wait_time ?? 0);
 
-  // 1. Prepare dynamic wait time history data (last 15 points)
+  // 1. Prepare dynamic wait time history data (last 15 chronological points)
   const rawWaitHistory = metrics?.wait_time_history || state?.wait_time_history || [];
   const waitTimeData = React.useMemo(() => {
-    if (rawWaitHistory.length > 0) {
-      return rawWaitHistory.slice(-15).map((item, idx) => {
+    if (rawWaitHistory && rawWaitHistory.length > 0) {
+      const formatted = rawWaitHistory.slice(-15).map((item, idx) => {
         let timeLabel = item.time || '';
         if (timeLabel.includes(':')) {
           const parts = timeLabel.split(':');
@@ -36,9 +36,11 @@ const ChartPanel = ({ metrics, state }) => {
         const val = Number(item.wait_time ?? currentWait);
         return {
           time: timeLabel || `${idx * 2}s`,
-          wait_time: Number(val.toFixed(1))
+          wait_time: isNaN(val) ? 0 : Number(val.toFixed(1))
         };
       });
+
+      return formatted.length > 0 ? formatted : [{ time: '00:00', wait_time: 0 }];
     }
 
     return [{ time: '00:00', wait_time: 0 }];
@@ -49,7 +51,7 @@ const ChartPanel = ({ metrics, state }) => {
   // Compute adaptive Y-domain for wait time
   const waitValues = displayWaitData.map((d) => d.wait_time);
   const minWaitVal = 0;
-  const maxWaitVal = Math.max(15, Math.ceil(Math.max(...waitValues, 0) * 1.2));
+  const maxWaitVal = Math.max(15, Math.ceil(Math.max(...waitValues, 0) * 1.25));
 
   // 2. Prepare live queue data for bar chart
   const lanesOrder = ['N', 'E', 'S', 'W'];
@@ -63,7 +65,7 @@ const ChartPanel = ({ metrics, state }) => {
     return {
       lane,
       count,
-      color: LANE_COLORS[lane] || '#0F2C59'
+      color: LANE_COLORS[lane] || '#003366'
     };
   });
 
@@ -71,17 +73,17 @@ const ChartPanel = ({ metrics, state }) => {
   const maxQueueCount = Math.max(5, ...queueChartData.map((d) => d.count));
   const queueYMax = Math.ceil(maxQueueCount * 1.25);
 
-  const totalCars = metrics?.total_cars ?? state?.cars_passed ?? 0;
+  const totalCars = state?.cars_passed ?? metrics?.total_cars ?? 0;
   const avgTripTime = metrics?.avg_trip_time ?? (currentWait > 0 ? Number((currentWait * 0.85).toFixed(1)) : 0);
-  const throughput = metrics?.throughput ?? state?.throughput ?? 0;
+  const throughput = Math.round(state?.throughput ?? metrics?.throughput ?? 0);
 
   return (
     <div className="space-y-3">
       {/* 1. Average Wait Time Chart */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#E2E8F0]">
+      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold text-[#0A1F44]">Average Wait Time (IRC:106)</h4>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#E2E8F0] text-[#475569]">
+          <h4 className="text-xs font-bold text-[#0F2942]">Average Wait Time (IRC:106)</h4>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#CBD5E1] text-[#475569]">
             Live Trend
           </span>
         </div>
@@ -106,22 +108,22 @@ const ChartPanel = ({ metrics, state }) => {
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid #CBD5E1',
                   borderRadius: '6px',
-                  boxShadow: '0 4px 12px rgba(10,31,68,0.08)',
+                  boxShadow: '0 4px 12px rgba(15,41,66,0.08)',
                   fontSize: '11px',
                   padding: '4px 8px',
-                  color: '#0A1F44'
+                  color: '#0F2942'
                 }}
                 formatter={(value) => [`${value} sec`, 'Avg Delay']}
               />
               <Line
                 type="monotone"
                 dataKey="wait_time"
-                stroke="#0F2C59"
+                stroke="#003366"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#F5A623' }}
+                activeDot={{ r: 4, fill: '#D97706' }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -129,10 +131,10 @@ const ChartPanel = ({ metrics, state }) => {
       </div>
 
       {/* 2. Current Queue Lengths Chart */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#E2E8F0]">
+      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold text-[#0A1F44]">Approach Queue Lengths</h4>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#E2E8F0] text-[#475569]">
+          <h4 className="text-xs font-bold text-[#0F2942]">Approach Queue Lengths</h4>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#CBD5E1] text-[#475569]">
             Live Vehicles
           </span>
         </div>
@@ -143,7 +145,7 @@ const ChartPanel = ({ metrics, state }) => {
               <XAxis
                 dataKey="lane"
                 stroke="#94A3B8"
-                tick={{ fill: '#0A1F44', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: '#0F2942', fontSize: 10, fontWeight: 700 }}
               />
               <YAxis
                 stroke="#94A3B8"
@@ -156,12 +158,12 @@ const ChartPanel = ({ metrics, state }) => {
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid #CBD5E1',
                   borderRadius: '6px',
-                  boxShadow: '0 4px 12px rgba(10,31,68,0.08)',
+                  boxShadow: '0 4px 12px rgba(15,41,66,0.08)',
                   fontSize: '11px',
                   padding: '4px 8px',
-                  color: '#0A1F44'
+                  color: '#0F2942'
                 }}
                 formatter={(value, name, props) => [
                   `${value} vehicles`,
@@ -179,27 +181,27 @@ const ChartPanel = ({ metrics, state }) => {
       </div>
 
       {/* 3. Traffic Summary */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#E2E8F0]">
+      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
         <div className="flex items-center space-x-1.5 mb-2">
-          <FileText className="w-3.5 h-3.5 text-[#0F2C59]" />
-          <h4 className="text-xs font-bold text-[#0A1F44]">MoRTH Node Summary</h4>
+          <FileText className="w-3.5 h-3.5 text-[#003366]" />
+          <h4 className="text-xs font-bold text-[#0F2942]">MoRTH Node Summary</h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 text-[11px]">
           <div className="flex justify-between">
             <span className="text-[#475569]">Total Vehicles:</span>
-            <span className="font-bold text-[#0A1F44]">{totalCars}</span>
+            <span className="font-bold text-[#0F2942]">{totalCars}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#475569]">Avg Delay:</span>
-            <span className="font-bold text-[#0A1F44]">{(Number(currentWait) || 0).toFixed(1)}s</span>
+            <span className="font-bold text-[#0F2942]">{(Number(currentWait) || 0).toFixed(1)}s</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#475569]">Throughput:</span>
-            <span className="font-bold text-[#0A1F44]">{(Number(throughput) || 0).toFixed(1)} veh/min</span>
+            <span className="font-bold text-[#0F2942]">{throughput} veh/min</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#475569]">Active Backlog:</span>
-            <span className="font-bold text-[#0A1F44]">{totalActiveQueues} veh</span>
+            <span className="font-bold text-[#0F2942]">{totalActiveQueues} veh</span>
           </div>
         </div>
       </div>

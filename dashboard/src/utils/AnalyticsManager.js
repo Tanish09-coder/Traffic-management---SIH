@@ -183,7 +183,7 @@ export class AnalyticsManager {
         this.laneProcessed[dir] = (this.laneProcessed[dir] || 0) + 1;
 
         const delay = typeof dep.delay === 'number' ? dep.delay : 0;
-        this.completedWaitTimes.push(delay);
+        this.completedWaitTimes = [...this.completedWaitTimes.slice(-499), delay];
         this.totalWaitTimeSum += delay;
       }
     });
@@ -222,13 +222,16 @@ export class AnalyticsManager {
     if (isEmergencyActive && !this.lastEmergencyActive) {
       this.emergencyPreemptions++;
       this.eventCount++;
-      this.emergencyEvents.push({
-        id: `EMG-${Date.now().toString().slice(-4)}`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        direction: data.emergencyDirection || currentSignal,
-        vehicleType: 'Emergency Vehicle',
-        resolved: false
-      });
+      this.emergencyEvents = [
+        ...this.emergencyEvents.slice(-29),
+        {
+          id: `EMG-${Date.now().toString().slice(-4)}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          direction: data.emergencyDirection || currentSignal,
+          vehicleType: 'Emergency Vehicle',
+          resolved: false
+        }
+      ];
     } else if (!isEmergencyActive && this.lastEmergencyActive && this.emergencyEvents.length > 0) {
       const lastEmg = this.emergencyEvents[this.emergencyEvents.length - 1];
       if (lastEmg && !lastEmg.resolved) {
@@ -254,26 +257,25 @@ export class AnalyticsManager {
         ? Number((this.totalWaitTimeSum / this.completedWaitTimes.length).toFixed(1))
         : null;
 
-      this.timeSeries.push({
-        time: timeLabel,
-        tick: this.tickCounter,
-        activeVehicles: currentActiveCount,
-        processedVehicles: this.totalProcessed,
-        throughput: currentThroughput,
-        avgWaitTime: avgWaitSoFar,
-        totalQueue: currentTotalQueue,
-        queueN: queues.N || 0,
-        queueS: queues.S || 0,
-        queueE: queues.E || 0,
-        queueW: queues.W || 0,
-        signal: currentSignal,
-        phase: phase,
-        isEmergency: isEmergencyActive
-      });
-
-      if (this.timeSeries.length > 40) {
-        this.timeSeries.shift();
-      }
+      this.timeSeries = [
+        ...this.timeSeries.slice(-39),
+        {
+          time: timeLabel,
+          tick: this.tickCounter,
+          activeVehicles: currentActiveCount,
+          processedVehicles: this.totalProcessed,
+          throughput: currentThroughput,
+          avgWaitTime: avgWaitSoFar,
+          totalQueue: currentTotalQueue,
+          queueN: queues.N || 0,
+          queueS: queues.S || 0,
+          queueE: queues.E || 0,
+          queueW: queues.W || 0,
+          signal: currentSignal,
+          phase: phase,
+          isEmergency: isEmergencyActive
+        }
+      ];
     }
   }
 
@@ -399,11 +401,11 @@ export class AnalyticsManager {
       signalSwitchCount: this.signalSwitchCount,
 
       // Time Series
-      timeSeries: this.timeSeries,
+      timeSeries: [...this.timeSeries],
       hasTimeSeriesData: this.timeSeries.length > 0,
 
       // Emergency logs
-      emergencyEvents: this.emergencyEvents,
+      emergencyEvents: [...this.emergencyEvents],
 
       // Environmental & economic ROI
       sustainability

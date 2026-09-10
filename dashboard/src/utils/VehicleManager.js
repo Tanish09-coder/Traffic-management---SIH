@@ -511,31 +511,34 @@ export class VehicleManager {
       this.emergencyCooldown -= deltaSec;
     }
 
-    const ql = this.getQueueLengths();
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    const snapshot = {
-      time: timeStr,
-      ...ql,
-      queues: { ...ql }
-    };
-    this._queueHistory = [...this._queueHistory.slice(-29), snapshot];
-
-    const currentAvgWait = this.calculateAverageWaitTime();
-    this._waitTimeHistory = [
-      ...this._waitTimeHistory.slice(-29),
-      {
+    if (!this._lastHistoryTime || this.sessionDurationSeconds - this._lastHistoryTime >= 1.0) {
+      this._lastHistoryTime = this.sessionDurationSeconds;
+      const ql = this.getQueueLengths();
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const snapshot = {
         time: timeStr,
-        wait_time: currentAvgWait
-      }
-    ];
+        ...ql,
+        queues: { ...ql }
+      };
+      this._queueHistory = [...this._queueHistory.slice(-29), snapshot];
 
-    this._throughputHistory = [
-      ...this._throughputHistory.slice(-119),
-      {
-        timestamp: Date.now(),
-        throughput: this.calculateThroughput()
-      }
-    ];
+      const currentAvgWait = this.calculateAverageWaitTime();
+      this._waitTimeHistory = [
+        ...this._waitTimeHistory.slice(-29),
+        {
+          time: timeStr,
+          wait_time: currentAvgWait
+        }
+      ];
+
+      this._throughputHistory = [
+        ...this._throughputHistory.slice(-119),
+        {
+          timestamp: Date.now(),
+          throughput: this.calculateThroughput()
+        }
+      ];
+    }
 
     return { departedCars: stepDepartedCars };
   }
@@ -641,6 +644,7 @@ export class VehicleManager {
     this._completedDepartures = [];
     this._waitTimeHistory = [];
     this._throughputHistory = [];
+    this._lastHistoryTime = 0;
     this._initScheduleAndSimulation();
   }
 
