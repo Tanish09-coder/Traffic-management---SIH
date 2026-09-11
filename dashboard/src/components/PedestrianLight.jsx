@@ -42,8 +42,8 @@ const PedestrianLight = ({ status = 'STOP', isFullscreen = false, className = ''
           animate={isWalk ? { opacity: [1, 0.7, 1] } : { opacity: 1 }}
           transition={{ duration: 1.2, repeat: Infinity }}
         >
-          <span className={isFullscreen ? 'text-[9px] leading-none' : 'text-[6px] leading-none font-bold'}>
-            <PersonStanding size={16} />
+          <span className={isFullscreen ? 'text-[11px] leading-none' : 'text-[7px] leading-none'}>
+            🚶‍♀️
           </span>
         </motion.div>
       </div>

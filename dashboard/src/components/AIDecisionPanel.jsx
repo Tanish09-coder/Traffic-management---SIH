@@ -205,89 +205,105 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         </div>
       )}
 
-      {/* 3. 4 Signal Status Cards matching screenshot */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      {/* 3. 4 Signal Status Cards matching screenshot sizing */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {/* Active Signal */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div className="flex items-center space-x-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              {lang === 'HI' ? 'सक्रिय सिग्नल' : 'Active Signal'}
-            </span>
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between text-[#475569]">
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'सक्रिय सिग्नल' : 'Active Signal'}</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
-          <div className="flex items-center space-x-2 mt-1">
-            <span className="text-xl font-black text-[#0A1F44]">
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-black font-mono text-[#0F2942]">
               {signal || 'E'}
             </span>
             <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+              className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border"
               style={{
                 backgroundColor: phase === 'GREEN' ? '#DCFCE7' : phase === 'YELLOW' ? '#FEF3C7' : '#FEE2E2',
-                color: phase === 'GREEN' ? '#15803D' : phase === 'YELLOW' ? '#B45309' : '#DC2626'
+                color: phase === 'GREEN' ? '#15803D' : phase === 'YELLOW' ? '#B45309' : '#DC2626',
+                borderColor: phase === 'GREEN' ? '#86EFAC' : phase === 'YELLOW' ? '#FDE68A' : '#FECACA'
               }}
             >
               {phase === 'GREEN' ? (lang === 'HI' ? 'हरा' : 'GREEN') : phase === 'YELLOW' ? (lang === 'HI' ? 'पीला' : 'YELLOW') : (lang === 'HI' ? 'लाल' : 'RED')}
             </span>
           </div>
-        </div>
-
-        {/* Green Remaining */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div className="flex items-center space-x-1.5 mb-1">
-            <Clock className="w-3 h-3 text-[#475569]" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              {phase_label ? (lang === 'HI' ? 'शेष ग्रीन समय' : phase_label) : (lang === 'HI' ? 'शेष ग्रीन समय' : 'Green Remaining')}
+          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
+            <span 
+              className="w-2 h-2 rounded-full" 
+              style={{ backgroundColor: phase === 'GREEN' ? '#22C55E' : phase === 'YELLOW' ? '#F59E0B' : '#EF4444' }} 
+            />
+            <span>
+              {phase === 'GREEN' ? (lang === 'HI' ? 'राइट-ऑफ-वे सक्रिय' : 'Right-of-way active') : phase === 'YELLOW' ? (lang === 'HI' ? 'क्लियरेंस अंतराल' : 'Clearance interval') : (lang === 'HI' ? 'स्टॉप अंतराल' : 'Stop interval')}
             </span>
           </div>
-          <div className="flex items-baseline space-x-1 mt-1">
-            <span className="text-xl font-black text-[#0A1F44]">
+        </div>
+
+        {/* Clearance / Green Remaining */}
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between text-[#475569]">
+            <span className="text-xs font-bold uppercase tracking-wider">
+              {phase_label ? (lang === 'HI' ? 'शेष समय' : phase_label) : (lang === 'HI' ? 'शेष समय' : 'Yellow Clearance')}
+            </span>
+            <Clock size={16} className="text-[#003366]" />
+          </div>
+          <div className="mt-2 flex items-baseline gap-1.5">
+            <span className="text-3xl font-black font-mono text-[#0F2942]">
               {clearance_status ? (lang === 'HI' ? 'साफ़' : 'Clear') : `${phase_remaining_sec ?? 2}s`}
             </span>
-            <span className="text-xs text-[#94A3B8]">
+            <span className="text-xs font-bold text-slate-500">
               / {active_green_duration || 26}{lang === 'HI' ? 's चक्र' : 's cycle'}
             </span>
+          </div>
+          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
+            <span>{lang === 'HI' ? 'गतिशील समय आवंटन' : 'Dynamic split duration active'}</span>
           </div>
         </div>
 
         {/* Next Pending */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div className="flex items-center space-x-1.5 mb-1">
-            <ArrowRight className="w-3 h-3 text-[#0F2C59]" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              {lang === 'HI' ? 'अगला लंबित' : 'Next Pending'}
-            </span>
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between text-[#475569]">
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'अगला लंबित' : 'Next Pending'}</span>
+            <ArrowRight size={16} className="text-purple-600" />
           </div>
-          <div className="flex items-baseline space-x-1 mt-1">
-            <span className="text-xl font-black text-[#0A1F44]">
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-black font-mono text-[#0F2942]">
               {pending_signal || signal || 'E'}
             </span>
-            <span className="text-xs text-[#94A3B8]">
+            <span className="text-xs font-bold text-purple-700">
               ({pending_green_duration || 36}s)
             </span>
+          </div>
+          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
+            <span>{lang === 'HI' ? 'कतार मांग द्वारा अनुसूचित' : 'Scheduled by queue demand'}</span>
           </div>
         </div>
 
         {/* Strategy Mode */}
-        <div className="p-3.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
-          <div className="flex items-center space-x-1.5 mb-1">
-            <Activity className="w-3 h-3 text-[#475569]" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              {lang === 'HI' ? 'रणनीति मोड' : 'Strategy Mode'}
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between text-[#475569]">
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'रणनीति मोड' : 'Strategy Mode'}</span>
+            <Activity size={16} className="text-emerald-600" />
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-black font-mono text-[#0F2942] capitalize">
+              {strategy === 'adaptive' ? (lang === 'HI' ? 'अनुकूली' : 'Adaptive') : strategy === 'fixed' ? (lang === 'HI' ? 'स्थिर' : 'Fixed') : strategy === 'predictive' ? (lang === 'HI' ? 'पूर्वानुमानित' : 'Predictive') : (strategy || 'Adaptive')}
             </span>
           </div>
-          <div className="text-base font-black text-[#0A1F44] capitalize mt-1.5">
-            {strategy === 'adaptive' ? (lang === 'HI' ? 'अनुकूली' : 'Adaptive') : strategy === 'fixed' ? (lang === 'HI' ? 'स्थिर' : 'Fixed') : strategy === 'predictive' ? (lang === 'HI' ? 'पूर्वानुमानित' : 'Predictive') : (strategy || 'Adaptive')}
+          <div className="mt-2 text-[11px] text-emerald-800 font-bold flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>{lang === 'HI' ? 'सक्रिय अनुकूलन इंजन' : 'Active Optimization Engine'}</span>
           </div>
         </div>
       </div>
 
       {/* 4. Approach Demand (PCU) Cards matching screenshot */}
       <div className="mb-4">
-        <span className="text-[10px] font-bold uppercase tracking-wider block mb-2 text-[#475569]">
+        <span className="text-xs font-bold uppercase tracking-wider block mb-2 text-[#475569]">
           {lang === 'HI' ? 'पहुंच मांग (PCU) / वाहन मैपिंग • अपस्ट्रीम बैकलॉग' : 'Approach Demand (PCU) / Vehicle Mapping • Upstream Backlog'}
         </span>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {['N', 'S', 'E', 'W'].map(dir => {
             const backlog = state?.backlog_queues?.[dir] || 0;
             const visibleStopped = state?.visible_stopped_queues?.[dir] !== undefined
@@ -296,29 +312,43 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             const pcuVal = Number(queued_pcus?.[dir] ?? 0);
             const isActive = signal === dir;
             const progressPercent = pcuVal > 0 ? Math.min(100, Math.max(8, (pcuVal / maxPcu) * 100)) : 0;
+            const dirLabel = dir === 'N' ? (lang === 'HI' ? 'उत्तर' : 'North')
+              : dir === 'S' ? (lang === 'HI' ? 'दक्षिण' : 'South')
+              : dir === 'E' ? (lang === 'HI' ? 'पूर्व' : 'East')
+              : (lang === 'HI' ? 'पश्चिम' : 'West');
 
             return (
               <div
                 key={dir}
-                className={`p-3 rounded-lg transition-all duration-200 ${
+                className={`rounded-xl p-4 shadow-xs transition-all duration-200 ${
                   isActive
-                    ? 'bg-[#0F2C59]/5 border-2 border-[#0F2C59] shadow-xs'
-                    : 'bg-[#F8FAFC] border border-[#E2E8F0]'
+                    ? 'bg-[#003366]/5 border-2 border-[#003366] shadow-sm ring-1 ring-[#003366]/20'
+                    : 'bg-[#F8FAFC] border border-[#CBD5E1]'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-[#0A1F44]">{dir}</span>
-                  <span className="text-xs font-bold text-[#0F2C59] font-mono">
-                    {pcuVal.toFixed(1)} PCU
+                <div className="flex items-center justify-between text-[#475569]">
+                  <span className="text-xs font-bold uppercase tracking-wider">{dirLabel} ({dir})</span>
+                  <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${
+                    isActive 
+                      ? 'bg-[#003366] text-white border-[#003366]' 
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                  }`}>
+                    {isActive ? (lang === 'HI' ? 'सक्रिय' : 'ACTIVE') : (lang === 'HI' ? 'कतार' : 'QUEUE')}
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-500 mb-2 truncate">
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="text-3xl font-black font-mono text-[#0F2942]">
+                    {pcuVal.toFixed(1)}
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">PCU</span>
+                </div>
+                <div className="mt-1 text-[11px] text-slate-500 truncate">
                   ({visibleStopped} {lang === 'HI' ? 'वाहन मैप' : 'vehicles mapped'}{backlog > 0 ? ` + ${backlog} b/l` : ''})
                 </div>
                 {/* Horizontal Progress Bar */}
-                <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
+                <div className="mt-2 w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="h-full bg-[#0F2C59] rounded-full transition-all duration-300"
+                    className={`h-1.5 rounded-full transition-all duration-300 ${isActive ? 'bg-[#003366]' : 'bg-slate-500'}`}
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
