@@ -176,8 +176,35 @@ const LiveVisionTelemetryPanel = ({
     const list = approaches.map(app => {
       const videoCount = liveApproachCounts[app.dir];
       const isVisible = videoCount !== null;
-      // Convert physical vehicle queue to PCU demand
-      const pcu = isVisible ? Math.max(0, videoCount) : 0;
+      const tracks = (assignedTracksByApproach && assignedTracksByApproach[app.dir]) || [];
+
+      // Calculate true weighted PCU demand from detected vehicle classes (IRC:106)
+      let computedPCU = 0;
+      let busTruckCount = 0;
+      let bikeCount = 0;
+      let carCount = 0;
+
+      tracks.forEach(t => {
+        const type = (t.type || 'car').toLowerCase();
+        if (type === 'bike' || type === 'motorcycle' || type === 'bicycle') {
+          computedPCU += 0.5;
+          bikeCount++;
+        } else if (type === 'bus' || type === 'truck') {
+          computedPCU += 2.5;
+          busTruckCount++;
+        } else if (type === 'human' || type === 'pedestrian') {
+          // Pedestrians do not add to motor vehicle PCU queue
+        } else {
+          computedPCU += 1.0;
+          carCount++;
+        }
+      });
+
+      // If classified tracks are available, use accurate weighted PCU; otherwise fallback to videoCount
+      const pcu = isVisible
+        ? (tracks.length > 0 ? parseFloat(computedPCU.toFixed(1)) : Math.max(0, videoCount))
+        : 0;
+
       const details = SignalOptimizer.calculateGreenDurationDetails(app.dir, pcu, 'adaptive');
 
       const fixedDur = 45;
@@ -191,6 +218,9 @@ const LiveVisionTelemetryPanel = ({
         isVisible,
         videoCount,
         pcu,
+        carCount,
+        bikeCount,
+        busTruckCount,
         duration: details.duration,
         base: details.base,
         coeff: details.coefficient,
@@ -205,7 +235,7 @@ const LiveVisionTelemetryPanel = ({
     const cycleEfficiency = Math.round((totalSavedSec / totalFixedSec) * 100);
 
     return { list, totalAllocatedSec, totalSavedSec, cycleEfficiency };
-  }, [liveApproachCounts, currentSignal, lang]);
+  }, [liveApproachCounts, currentSignal, lang, assignedTracksByApproach]);
 
   const vehicleClassMeta = [
     { key: 'cars', label: lang === 'HI' ? 'कार / सेडान' : 'Cars / Sedans', icon: Car, color: 'bg-blue-600', text: 'text-blue-700', bg: 'bg-blue-50' },
@@ -347,7 +377,15 @@ const LiveVisionTelemetryPanel = ({
             <span className="text-slate-500 font-semibold">{lang === 'HI' ? 'सक्रिय सिग्नल:' : 'Active Signal:'}</span>
             <span className="px-2 py-0.5 rounded font-black text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              {lang === 'HI' ? `पहुंच मार्ग ${currentSignal} (${phaseRemainingSec}s शेष)` : `Approach ${currentSignal} (${phaseRemainingSec}s remaining)`}
+              {(() => {
+                const activeSig = signalAllocations.list.find(s => s.dir === currentSignal);
+                const activeDur = activeSig?.duration || 15;
+                const elapsed = (simState.signal_timer !== undefined && simState.signal_timer >= 0)
+                  ? simState.signal_timer
+                  : ((simState.timer !== undefined && simState.timer >= 0) ? simState.timer : 0);
+                const remSec = Math.max(0, Math.ceil(activeDur - (elapsed % (activeDur || 1))));
+                return lang === 'HI' ? `पहुंच मार्ग ${currentSignal} (${remSec}s शेष)` : `Approach ${currentSignal} (${remSec}s remaining)`;
+              })()}
             </span>
           </div>
         </div>
@@ -357,7 +395,10 @@ const LiveVisionTelemetryPanel = ({
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-bold text-[#0F2942]">{lang === 'HI' ? 'गतिशील ग्रीन सूत्र:' : 'Dynamic Green Formula:'}</span>
             <span className="font-mono font-bold text-[#003366] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
-              {lang === 'HI' ? 'अवधि = 10s बेस + (कतार × 1.0s) [सीमा 10s–60s]' : 'Duration = 10s Base + (Queue × 1.0s) [Clamped 10s–60s]'}
+              {lang === 'HI' ? 'अवधि = 10s बेस + (PCU × 1.0s) [सीमा 10s–60s]' : 'Duration = 10s Base + (PCU × 1.0s) [Clamped 10s–60s]'}
+            </span>
+            <span className="text-[11px] font-semibold text-slate-500 bg-white/70 px-2 py-0.5 rounded border border-slate-200">
+              {lang === 'HI' ? 'IRC:106 भार: कार 1.0 • बाइक 0.5 • बस/ट्रक 2.5' : 'IRC:106 Weights: Car 1.0 • Bike 0.5 • Bus/Truck 2.5'}
             </span>
           </div>
           <div className="flex items-center gap-2 text-slate-600">
@@ -370,30 +411,38 @@ const LiveVisionTelemetryPanel = ({
 
         {/* 4 Directional Signal Allocation Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {signalAllocations.list.map(sig => (
-            <div
-              key={sig.dir}
-              className={`p-4 rounded-xl border transition-all ${
-                sig.isActive
-                  ? 'bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-500/20 shadow-xs'
-                  : 'bg-[#F8FAFC] border-[#CBD5E1] shadow-xs'
-              }`}
-            >
-              {/* Card Header */}
-              <div className="flex items-center justify-between">
-                <span className="font-black text-xs text-[#0F2942] flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sig.color }} />
-                  <span>{sig.name}</span>
-                  <span className="text-slate-400 font-bold">{sig.arrow}</span>
-                </span>
-                <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${
+          {signalAllocations.list.map(sig => {
+            const elapsed = (simState.signal_timer !== undefined && simState.signal_timer >= 0)
+              ? simState.signal_timer
+              : ((simState.timer !== undefined && simState.timer >= 0) ? simState.timer : 0);
+            const cardRemainingSec = sig.isActive
+              ? Math.max(0, Math.ceil(sig.duration - (elapsed % (sig.duration || 1))))
+              : sig.duration;
+
+            return (
+              <div
+                key={sig.dir}
+                className={`p-4 rounded-xl border transition-all ${
                   sig.isActive
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'bg-white text-slate-600 border-[#CBD5E1]'
-                }`}>
-                  {sig.isActive ? (lang === 'HI' ? `हरा (${phaseRemainingSec}s)` : `GREEN (${phaseRemainingSec}s)`) : (lang === 'HI' ? 'स्टैंडबाय' : 'STANDBY')}
-                </span>
-              </div>
+                    ? 'bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-500/20 shadow-xs'
+                    : 'bg-[#F8FAFC] border-[#CBD5E1] shadow-xs'
+                }`}
+              >
+                {/* Card Header */}
+                <div className="flex items-center justify-between">
+                  <span className="font-black text-xs text-[#0F2942] flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sig.color }} />
+                    <span>{sig.name}</span>
+                    <span className="text-slate-400 font-bold">{sig.arrow}</span>
+                  </span>
+                  <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${
+                    sig.isActive
+                      ? 'bg-emerald-600 text-white border-emerald-600'
+                      : 'bg-white text-slate-600 border-[#CBD5E1]'
+                  }`}>
+                    {sig.isActive ? (lang === 'HI' ? `हरा (${cardRemainingSec}s)` : `GREEN (${cardRemainingSec}s)`) : (lang === 'HI' ? 'स्टैंडबाय' : 'STANDBY')}
+                  </span>
+                </div>
 
               {/* Big Allocated Seconds */}
               <div className="mt-3 flex items-baseline justify-between">
@@ -408,10 +457,10 @@ const LiveVisionTelemetryPanel = ({
 
                 <div className="text-right">
                   <div className="text-xs font-black font-mono text-[#003366]">
-                    {sig.isVisible ? `${sig.videoCount} veh` : 'N/A'}
+                    {sig.isVisible ? `${sig.videoCount} veh (${sig.pcu} PCU)` : 'N/A'}
                   </div>
                   <div className="text-[10px] text-slate-400">
-                    {lang === 'HI' ? 'कैमरा कतार' : 'Camera Queue'}
+                    {lang === 'HI' ? 'कैमरा कतार • PCU' : 'Camera Queue • PCU'}
                   </div>
                 </div>
               </div>
@@ -429,7 +478,7 @@ const LiveVisionTelemetryPanel = ({
                 <div className="flex justify-between text-slate-500 font-mono">
                   <span>{lang === 'HI' ? 'मॉडल:' : 'Model:'}</span>
                   <span className="font-bold text-[#0F2942]">
-                    10s + {sig.videoCount || 0}×1s = {sig.duration}s
+                    10s + {sig.pcu} PCU × 1s = {sig.duration}s
                   </span>
                 </div>
                 <div className="flex justify-between text-emerald-700 font-semibold">
@@ -438,9 +487,10 @@ const LiveVisionTelemetryPanel = ({
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
+    </div>
 
       {/* Main Analysis Grid (2 Columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">

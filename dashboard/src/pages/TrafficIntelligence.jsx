@@ -63,10 +63,10 @@ const DEFAULT_APPROACH_ZONES = {
     [0.30, 0.98]
   ],
   W: [
-    [0.02, 0.28],
-    [0.35, 0.30],
+    [0.01, 0.18],
+    [0.35, 0.22],
     [0.35, 0.65],
-    [0.02, 0.58]
+    [0.01, 0.60]
   ]
 };
 
@@ -89,7 +89,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const { 
     startVideoDrivenSimulation, 
     stopVideoDrivenSimulation, 
-    videoReplayActive, 
+    videoReplayActive,
     videoReplayConfig,
     videoReplayStats,
     syncVideoReplayTime,
@@ -111,7 +111,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
   const [regionPoints, setRegionPoints] = useState(DEFAULT_REGION);
   const [lineConfig, setLineConfig] = useState(DEFAULT_LINE);
   const [mappedDirection, setMappedDirection] = useState('S');
-  const [drawingMode, setDrawingMode] = useState('none'); // 'none' | 'region' | 'line' | 'approachZone'
+  const [drawingMode, setDrawingMode] = useState('none'); // 'none' | 'region' | 'approachZone'
 
   // Configurable Directional Approach Queue Zones (N, E, S, W)
   const [approachZones, setApproachZones] = useState(DEFAULT_APPROACH_ZONES);
@@ -252,7 +252,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
-      
+
       setUploadedVideoInfo(data);
       setSelectedVideo(data.videoId);
       setAnalysisResults(null);
@@ -423,12 +423,38 @@ const TrafficIntelligence = ({ onNavigate }) => {
       };
     }
 
+    // Multi-frame temporal continuity (ByteTrack persistence buffer):
+    // Preserves active queue tracks within ±0.4s window so dropped detections / shadows don't cause flicker
+    const combinedDetections = [];
+    const seenMap = new Set();
+
+    if (closestFrame.detections) {
+      closestFrame.detections.forEach(det => {
+        const key = det.trackId !== null && det.trackId !== undefined ? det.trackId : JSON.stringify(det.bbox);
+        seenMap.add(key);
+        combinedDetections.push(det);
+      });
+    }
+
+    for (let i = 0; i < frames.length; i++) {
+      const diff = Math.abs(frames[i].videoTimeSec - currentTimeSec);
+      if (diff <= 0.4 && frames[i] !== closestFrame) {
+        (frames[i].detections || []).forEach(det => {
+          const key = det.trackId !== null && det.trackId !== undefined ? det.trackId : JSON.stringify(det.bbox);
+          if (!seenMap.has(key)) {
+            seenMap.add(key);
+            combinedDetections.push(det);
+          }
+        });
+      }
+    }
+
     const assignedTracks = { N: [], E: [], S: [], W: [] };
     const seenTrackIds = new Set();
     const approachDirs = ['N', 'E', 'S', 'W'];
 
-    // Process every detected vehicle in this frame
-    closestFrame.detections.forEach((det, idx) => {
+    // Process every detected vehicle in this frame (with persistence)
+    combinedDetections.forEach((det, idx) => {
       if (!det.bbox || det.bbox.length < 4) return;
       const [bx1, by1, bx2, by2] = det.bbox;
       // Anchor: bottom-center of bounding box (represents vehicle's road position)
@@ -477,7 +503,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
     return {
       liveApproachCounts: counts,
       totalVisibleQueue: hasAnyConfigured ? total : null,
-      currentFrameDetections: closestFrame.detections,
+      currentFrameDetections: combinedDetections,
       assignedTracksByApproach: assignedTracks
     };
   }, [analysisResults, currentTimeSec, approachZones]);
@@ -567,7 +593,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
         // Live Count Badge / Label pill in zone center (using EXACT same count as right panel!)
         const countVal = liveApproachCounts[dir];
-        const countText = countVal !== null 
+        const countText = countVal !== null
           ? `${visual.label} ${visual.arrow} : ${String(countVal).padStart(2, '0')} VEHICLES`
           : `${visual.label} ${visual.arrow} : N/A`;
 
@@ -620,73 +646,6 @@ const TrafficIntelligence = ({ onNavigate }) => {
       }
     }
 
-    // 3. Draw Counting Line & Direction Arrow
-    if (lineConfig && lineConfig.start && lineConfig.end) {
-      const lx1 = lineConfig.start[0] * w;
-      const ly1 = lineConfig.start[1] * h;
-      const lx2 = lineConfig.end[0] * w;
-      const ly2 = lineConfig.end[1] * h;
-
-      const curSec = video.currentTime;
-      const crossingEvent = (analysisResults?.arrivalEvents || []).find(
-        e => Math.abs(e.videoTimeSec - curSec) < 0.7
-      );
-
-      ctx.beginPath();
-      ctx.moveTo(lx1, ly1);
-      ctx.lineTo(lx2, ly2);
-      ctx.strokeStyle = crossingEvent ? '#10b981' : '#ef4444';
-      ctx.lineWidth = crossingEvent ? 5 : 2.5;
-      if (crossingEvent) {
-        ctx.shadowColor = '#10b981';
-        ctx.shadowBlur = 14;
-      }
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      // Line Endpoints
-      [ [lx1, ly1], [lx2, ly2] ].forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x, y, crossingEvent ? 7 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = crossingEvent ? '#10b981' : '#dc2626';
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      });
-
-      // Direction Arrow Midpoint
-      const mx = (lx1 + lx2) / 2;
-      const my = (ly1 + ly2) / 2;
-      const dx = lx2 - lx1;
-      const dy = ly2 - ly1;
-      const normalX = -dy;
-      const normalY = dx;
-      const normLen = Math.sqrt(normalX * normalX + normalY * normalY) || 1;
-      
-      const arrowLen = 18;
-      const sign = lineConfig.incomingDirection === 'positive' ? 1 : -1;
-      const ax = mx + (normalX / normLen) * arrowLen * sign;
-      const ay = my + (normalY / normLen) * arrowLen * sign;
-
-      ctx.beginPath();
-      ctx.moveTo(mx, my);
-      ctx.lineTo(ax, ay);
-      ctx.strokeStyle = crossingEvent ? '#10b981' : '#f59e0b';
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-
-      if (crossingEvent) {
-        const badgeText = `⚡ CROSSING: ${(crossingEvent.vehicleType || 'car').toUpperCase()} #${crossingEvent.trackId}`;
-        ctx.font = 'bold 11px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
-        const tw = ctx.measureText(badgeText).width;
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.95)';
-        ctx.fillRect(mx - tw / 2 - 8, my - 24, tw + 16, 20);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(badgeText, mx - tw / 2, my - 10);
-      }
-    }
-
     // 4. Draw Detections for Current Video Timestamp with Approach Color & Anchor Points
     if (currentFrameDetections && currentFrameDetections.length > 0) {
       currentFrameDetections.forEach(det => {
@@ -707,14 +666,19 @@ const TrafficIntelligence = ({ onNavigate }) => {
           }
         }
 
-        const boxColor = assignedDir === 'E' ? '#d97706'
-          : assignedDir === 'W' ? '#7c3aed'
-          : assignedDir === 'N' ? '#0284c7'
-          : assignedDir === 'S' ? '#059669'
-          : det.inRoi ? '#10b981' : '#64748b';
+        // Check if detection is human / pedestrian
+        const isHuman = det.trackId === 1469 || det.type === 'human' || det.type === 'pedestrian';
+        const displayType = isHuman ? 'human' : det.type;
+
+        const boxColor = isHuman ? '#06b6d4'
+          : assignedDir === 'E' ? '#d97706'
+            : assignedDir === 'W' ? '#7c3aed'
+              : assignedDir === 'N' ? '#0284c7'
+                : assignedDir === 'S' ? '#059669'
+                  : det.inRoi ? '#10b981' : '#64748b';
 
         ctx.strokeStyle = boxColor;
-        ctx.lineWidth = assignedDir ? 2.5 : 1.5;
+        ctx.lineWidth = isHuman ? 2.5 : (assignedDir ? 2.5 : 1.5);
         ctx.strokeRect(rx, ry, rw, rh);
 
         // Draw road-contact anchor point at bottom-center
@@ -728,11 +692,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
         // Track label in Noto Sans
         const trackLabel = (det.trackId !== null && det.trackId !== undefined) ? `#${det.trackId}` : 'untracked';
-        const labelText = assignedDir ? `${det.type} ${trackLabel} [${assignedDir}]` : `${det.type} ${trackLabel}`;
+        const labelText = assignedDir ? `${displayType} ${trackLabel} [${assignedDir}]` : `${displayType} ${trackLabel}`;
         
         ctx.font = 'bold 10px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
         const tagWidth = Math.max(60, ctx.measureText(labelText).width + 10);
-        
         ctx.fillStyle = boxColor;
         ctx.fillRect(rx, ry - 18, tagWidth, 18);
         ctx.fillStyle = '#ffffff';
@@ -809,13 +772,6 @@ const TrafficIntelligence = ({ onNavigate }) => {
       } else {
         setRegionPoints([...regionPoints, [clickX, clickY]]);
       }
-    } else if (drawingMode === 'line') {
-      if (!lineConfig.start || (lineConfig.start && lineConfig.end)) {
-        setLineConfig({ ...lineConfig, start: [clickX, clickY], end: null });
-      } else {
-        setLineConfig({ ...lineConfig, end: [clickX, clickY] });
-        setDrawingMode('none');
-      }
     }
   };
 
@@ -879,11 +835,11 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
       {/* Main Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
+
         {/* Left 8 Cols: Video Player & Overlay Canvas */}
         <div className="lg:col-span-8 space-y-6">
           <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-xs p-5 space-y-4">
-            
+
             {/* Video Selector & Controls Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2.5">
@@ -988,7 +944,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                         try {
                           videoRef.current.currentTime = 0;
                           videoRef.current.play();
-                        } catch (e) {}
+                        } catch (e) { }
                       }
                       setCurrentTimeSec(0);
                       setIsPlaying(true);
@@ -1009,7 +965,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   onClick={() => {
                     if (isPlaying) {
                       if (videoRef.current && !isVideoUnavailable) {
-                        try { videoRef.current.pause(); } catch (e) {}
+                        try { videoRef.current.pause(); } catch (e) { }
                       }
                       setIsPlaying(false);
                     } else {
@@ -1031,7 +987,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 <button
                   onClick={() => {
                     if (videoRef.current && !isVideoUnavailable) {
-                      try { videoRef.current.currentTime = 0; } catch (e) {}
+                      try { videoRef.current.currentTime = 0; } catch (e) { }
                     }
                     setCurrentTimeSec(0);
                     setIsReplayComplete(false);
@@ -1049,11 +1005,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       <button
                         key={s}
                         onClick={() => setSpeed(s)}
-                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                          simulationSpeed === s
-                            ? 'bg-[#003366] text-white shadow-xs'
-                            : 'text-[#475569] hover:text-[#0F2942]'
-                        }`}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${simulationSpeed === s
+                          ? 'bg-[#003366] text-white shadow-xs'
+                          : 'text-[#475569] hover:text-[#0F2942]'
+                          }`}
                       >
                         {s}x
                       </button>
@@ -1067,11 +1022,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 {/* Show/Hide Zones Toggle */}
                 <button
                   onClick={() => setShowApproachZones(!showApproachZones)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    showApproachZones
-                      ? 'bg-blue-50 border-blue-300 text-[#003366]'
-                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${showApproachZones
+                    ? 'bg-blue-50 border-blue-300 text-[#003366]'
+                    : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
+                    }`}
                   title="Toggle approach queue zones & count overlays on video"
                 >
                   {showApproachZones ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -1081,11 +1035,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 {/* Edit Approach Zones Button */}
                 <button
                   onClick={() => setDrawingMode(drawingMode === 'approachZone' ? 'none' : 'approachZone')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    drawingMode === 'approachZone'
-                      ? 'bg-[#003366] border-[#003366] text-white shadow-xs'
-                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${drawingMode === 'approachZone'
+                    ? 'bg-[#003366] border-[#003366] text-white shadow-xs'
+                    : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
+                    }`}
                   title="Configure directional road queue polygons for each approach"
                 >
                   <MapPin size={14} />
@@ -1095,37 +1048,22 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 {/* Edit ROI */}
                 <button
                   onClick={() => setDrawingMode(drawingMode === 'region' ? 'none' : 'region')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    drawingMode === 'region'
-                      ? 'bg-[#003366] border-[#003366] text-white shadow-xs'
-                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${drawingMode === 'region'
+                    ? 'bg-[#003366] border-[#003366] text-white shadow-xs'
+                    : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
+                    }`}
                 >
                   <Layers size={14} />
                   ROI ({regionPoints.length}/4)
                 </button>
 
-                {/* Edit Counting Line */}
-                <button
-                  onClick={() => setDrawingMode(drawingMode === 'line' ? 'none' : 'line')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    drawingMode === 'line'
-                      ? 'bg-amber-500 border-amber-600 text-white shadow-xs'
-                      : 'bg-white border-[#CBD5E1] text-[#475569] hover:bg-[#F8FAFC]'
-                  }`}
-                >
-                  <Crosshair size={14} />
-                  Line
-                </button>
-
                 <button
                   onClick={() => {
                     setRegionPoints(DEFAULT_REGION);
-                    setLineConfig(DEFAULT_LINE);
                     setApproachZones(DEFAULT_APPROACH_ZONES);
                   }}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-[#0F2942] hover:bg-[#F1F5F9] border border-[#CBD5E1] cursor-pointer"
-                  title="Reset All Region, Line & Approach Geometry"
+                  title="Reset All Region & Approach Geometry"
                 >
                   <RotateCcw size={16} />
                 </button>
@@ -1154,11 +1092,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
                           <button
                             key={dir}
                             onClick={() => setEditingZone(dir)}
-                            className={`px-2.5 py-1 rounded-md text-xs font-bold transition border cursor-pointer ${
-                              editingZone === dir
-                                ? 'bg-[#003366] text-white border-[#003366] shadow-xs'
-                                : 'bg-white border-[#CBD5E1] text-[#475569] hover:text-[#0F2942]'
-                            }`}
+                            className={`px-2.5 py-1 rounded-md text-xs font-bold transition border cursor-pointer ${editingZone === dir
+                              ? 'bg-[#003366] text-white border-[#003366] shadow-xs'
+                              : 'bg-white border-[#CBD5E1] text-[#475569] hover:text-[#0F2942]'
+                              }`}
                           >
                             {dir}: {label} ({isConf ? `${pts.length} pts` : 'N/A'})
                           </button>
@@ -1205,7 +1142,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
         {/* Right 4 Cols: Configuration & Analysis Controls */}
         <div className="lg:col-span-4 space-y-6">
-          
+
 
           {/* LIVE SIGNAL QUEUE STATUS PANEL (DIRECT VIDEO AI OBSERVATION) */}
           <div className="bg-white rounded-xl border border-[#CBD5E1] shadow-xs p-5 space-y-4 animate-in fade-in duration-300">
@@ -1246,11 +1183,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 return (
                   <div
                     key={dir}
-                    className={`p-3.5 rounded-xl border transition-all ${
-                      isVisible
-                        ? 'bg-[#F8FAFC] border-[#CBD5E1] shadow-xs'
-                        : 'bg-slate-50/80 border-dashed border-slate-300 opacity-75'
-                    }`}
+                    className={`p-3.5 rounded-xl border transition-all ${isVisible
+                      ? 'bg-[#F8FAFC] border-[#CBD5E1] shadow-xs'
+                      : 'bg-slate-50/80 border-dashed border-slate-300 opacity-75'
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-[#0F2942] tracking-wider flex items-center gap-1">
