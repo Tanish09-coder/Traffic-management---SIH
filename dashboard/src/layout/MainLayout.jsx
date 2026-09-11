@@ -158,10 +158,6 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                   <h1 className="font-black text-lg sm:text-xl tracking-tight text-[#0A1F44] leading-snug">
                     {lang === 'HI' ? 'मार्ग-दृष्टि (MARG-DRISHTI)' : 'MARG-DRISHTI'}
                   </h1>
-                  <span className="text-xs font-bold text-slate-300 hidden sm:inline">•</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-[#003366] hidden sm:inline">
-                    {lang === 'HI' ? 'एकीकृत यातायात प्रबंधन प्रणाली (ITMS)' : 'Integrated Traffic Management System (ITMS)'}
-                  </span>
                 </div>
                 <p className="text-xs text-[#475569] font-medium mt-0.5 flex flex-wrap items-center gap-2">
                   <span>{lang === 'HI' ? 'राष्ट्रीय शहरी परिवहन नियंत्रण • सड़क परिवहन एवं राजमार्ग मंत्रालय' : 'National Urban Transport Control • Ministry of Road Transport & Highways'}</span>
