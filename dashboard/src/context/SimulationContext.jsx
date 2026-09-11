@@ -479,6 +479,8 @@ export const SimulationProvider = ({ children }) => {
           signalManager.phase,
           subDt
         );
+
+        signalManager.checkEmergencyCleared(vehicleManager.getActiveEmergencyVehicle(), totalQueues);
       });
 
       // Extract fresh states
