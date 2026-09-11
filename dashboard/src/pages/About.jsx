@@ -29,13 +29,13 @@ const About = () => {
         {/* Main Header Banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div className="flex items-start space-x-3.5">
-            <div className="w-13 h-13 rounded-xl bg-[#0A1F44] text-[#F5A623] flex items-center justify-center text-2xl font-bold border border-[#1E4D8C] shrink-0 shadow-xs">
-              <Landmark size={26} />
+            <div className="h-14 w-auto rounded-xl bg-white p-1 flex items-center justify-center border border-slate-200 shadow-xs shrink-0">
+              <img src="/marg_drishti_logo.jpg" alt="MARG-DRISHTI Logo" className="h-full w-auto object-contain" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl sm:text-3xl font-black text-[#0A1F44] tracking-tight">
-                  {lang === 'HI' ? 'राष्ट्रीय शहरी यातायात नियंत्रण प्रणाली (N-UTCS)' : 'National Urban Traffic Control System (N-UTCS)'}
+                  {lang === 'HI' ? 'मार्ग-दृष्टि (MARG-DRISHTI)' : 'MARG-DRISHTI'}
                 </h1>
               </div>
               <p className="text-xs font-medium text-slate-500 mt-1">
