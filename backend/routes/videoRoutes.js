@@ -238,7 +238,7 @@ router.post('/analyze', (req, res) => {
         try {
           if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
           if (!fs.existsSync(cachePath)) fs.copyFileSync(bundledAnalysisPath, cachePath);
-        } catch (e) {}
+        } catch (e) { }
 
         const jobId = `cached-bundled-sim`;
         activeJobs.set(jobId, {
@@ -434,7 +434,7 @@ router.get('/results/:jobId', (req, res) => {
           const result = JSON.parse(fs.readFileSync(possibleCache, 'utf8'));
           job = { status: 'COMPLETED', result };
           activeJobs.set(jobId, job);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     if (!job && fs.existsSync(bundledAnalysisPath)) {
@@ -442,7 +442,7 @@ router.get('/results/:jobId', (req, res) => {
         const result = JSON.parse(fs.readFileSync(bundledAnalysisPath, 'utf8'));
         job = { status: 'COMPLETED', result };
         activeJobs.set(jobId, job);
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
