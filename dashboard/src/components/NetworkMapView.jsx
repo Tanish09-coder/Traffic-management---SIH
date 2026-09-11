@@ -98,7 +98,7 @@ export const NetworkMapView = ({ onSelectJunction }) => {
                   fill="#475569"
                   fontSize="9"
                   fontWeight="600"
-                  fontFamily="sans-serif"
+                  fontFamily="'Noto Sans', sans-serif"
                   textAnchor="middle"
                 >
                   {route.name}

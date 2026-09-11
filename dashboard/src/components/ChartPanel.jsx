@@ -94,13 +94,13 @@ const ChartPanel = ({ metrics, state }) => {
               <XAxis
                 dataKey="time"
                 stroke="#94A3B8"
-                tick={{ fill: '#475569', fontSize: 9 }}
+                tick={{ fill: '#475569', fontSize: 9, fontFamily: "'Noto Sans', sans-serif" }}
                 minTickGap={20}
                 interval="preserveStartEnd"
               />
               <YAxis
                 stroke="#94A3B8"
-                tick={{ fill: '#475569', fontSize: 9 }}
+                tick={{ fill: '#475569', fontSize: 9, fontFamily: "'Noto Sans', sans-serif" }}
                 domain={[minWaitVal, maxWaitVal]}
                 width={28}
                 tickFormatter={(val) => `${Math.round(val)}`}
@@ -112,6 +112,7 @@ const ChartPanel = ({ metrics, state }) => {
                   borderRadius: '6px',
                   boxShadow: '0 4px 12px rgba(15,41,66,0.08)',
                   fontSize: '11px',
+                  fontFamily: "'Noto Sans', sans-serif",
                   padding: '4px 8px',
                   color: '#0F2942'
                 }}
@@ -147,11 +148,11 @@ const ChartPanel = ({ metrics, state }) => {
               <XAxis
                 dataKey="lane"
                 stroke="#94A3B8"
-                tick={{ fill: '#0F2942', fontSize: 10, fontWeight: 700 }}
+                tick={{ fill: '#0F2942', fontSize: 10, fontWeight: 700, fontFamily: "'Noto Sans', sans-serif" }}
               />
               <YAxis
                 stroke="#94A3B8"
-                tick={{ fill: '#475569', fontSize: 9 }}
+                tick={{ fill: '#475569', fontSize: 9, fontFamily: "'Noto Sans', sans-serif" }}
                 domain={[0, queueYMax]}
                 allowDecimals={false}
                 width={26}

@@ -125,8 +125,8 @@ export const AnalyticsPanel = () => {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={analyticsHistory}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-                <XAxis dataKey="time" stroke="#94A3B8" tick={{ fill: '#475569', fontSize: 10 }} />
-                <YAxis stroke="#94A3B8" tick={{ fill: '#475569', fontSize: 10 }} unit="s" />
+                <XAxis dataKey="time" stroke="#94A3B8" tick={{ fill: '#475569', fontSize: 10, fontFamily: "'Noto Sans', sans-serif" }} />
+                <YAxis stroke="#94A3B8" tick={{ fill: '#475569', fontSize: 10, fontFamily: "'Noto Sans', sans-serif" }} unit="s" />
                 <Tooltip content={<CustomTooltip />} />
                 <Area 
                   type="monotone" 
