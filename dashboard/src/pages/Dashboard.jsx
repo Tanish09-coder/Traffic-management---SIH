@@ -281,10 +281,10 @@ const Dashboard = () => {
                   <div
                     key={dir}
                     className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all ${isGreen
-                        ? 'bg-[#16A34A] text-white shadow-xs'
-                        : isYellow
-                          ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
-                          : 'bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]'
+                      ? 'bg-[#16A34A] text-white shadow-xs'
+                      : isYellow
+                        ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
+                        : 'bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]'
                       }`}
                   >
                     {dirFullNames[dir]}: {label}
@@ -371,8 +371,8 @@ const Dashboard = () => {
                   <>
                     <div
                       className={`absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none ${isFullscreen
-                          ? 'top-[calc(50%-145px)] w-32 h-12'
-                          : 'top-[calc(50%-78px)] w-16 h-6.5'
+                        ? 'top-[calc(50%-145px)] w-32 h-12'
+                        : 'top-[calc(50%-78px)] w-16 h-6.5'
                         }`}
                     >
                       <div className="w-full h-full flex justify-between px-0.5">
@@ -386,19 +386,19 @@ const Dashboard = () => {
                       </div>
                       {isWalk && (
                         <motion.div
-                          className={`absolute select-none pointer-events-none filter drop-shadow-md ${isFullscreen ? 'text-sm -top-4' : 'text-xs -top-3'
+                          className={`absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] ${isFullscreen ? 'text-2xl -top-5' : 'text-lg -top-3.5'
                             }`}
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
                     <div
                       className={`absolute z-20 ${isFullscreen
-                          ? 'left-[calc(50%+84px)] top-[calc(50%-148px)]'
-                          : 'left-[calc(50%+42px)] top-[calc(50%-80px)]'
+                        ? 'left-[calc(50%+84px)] top-[calc(50%-148px)]'
+                        : 'left-[calc(50%+42px)] top-[calc(50%-80px)]'
                         }`}
                     >
                       <PedestrianLight status={pN} isFullscreen={isFullscreen} />
@@ -415,8 +415,8 @@ const Dashboard = () => {
                   <>
                     <div
                       className={`absolute left-1/2 transform -translate-x-1/2 z-10 pointer-events-none ${isFullscreen
-                          ? 'top-[calc(50%+102px)] w-32 h-12'
-                          : 'top-[calc(50%+55px)] w-16 h-6.5'
+                        ? 'top-[calc(50%+102px)] w-32 h-12'
+                        : 'top-[calc(50%+55px)] w-16 h-6.5'
                         }`}
                     >
                       <div className="w-full h-full flex justify-between px-0.5">
@@ -430,19 +430,19 @@ const Dashboard = () => {
                       </div>
                       {isWalk && (
                         <motion.div
-                          className={`absolute select-none pointer-events-none filter drop-shadow-md ${isFullscreen ? 'text-sm -top-4' : 'text-xs -top-3'
+                          className={`absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] ${isFullscreen ? 'text-2xl -top-5' : 'text-lg -top-3.5'
                             }`}
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block transform -scale-x-100">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
                     <div
                       className={`absolute z-20 ${isFullscreen
-                          ? 'left-[calc(50%-98px)] top-[calc(50%+102px)]'
-                          : 'left-[calc(50%-52px)] top-[calc(50%+55px)]'
+                        ? 'left-[calc(50%-98px)] top-[calc(50%+102px)]'
+                        : 'left-[calc(50%-52px)] top-[calc(50%+55px)]'
                         }`}
                     >
                       <PedestrianLight status={pS} isFullscreen={isFullscreen} />
@@ -459,8 +459,8 @@ const Dashboard = () => {
                   <>
                     <div
                       className={`absolute top-1/2 transform -translate-y-1/2 z-10 flex flex-col justify-between pointer-events-none ${isFullscreen
-                          ? 'left-[calc(50%-145px)] w-12 h-32 py-0.5'
-                          : 'left-[calc(50%-78px)] w-6.5 h-16 py-0.5'
+                        ? 'left-[calc(50%-145px)] w-12 h-32 py-0.5'
+                        : 'left-[calc(50%-78px)] w-6.5 h-16 py-0.5'
                         }`}
                     >
                       {[...Array(8)].map((_, i) => (
@@ -472,19 +472,19 @@ const Dashboard = () => {
                       ))}
                       {isWalk && (
                         <motion.div
-                          className={`absolute select-none pointer-events-none filter drop-shadow-md ${isFullscreen ? 'text-sm -left-4' : 'text-xs -left-3'
+                          className={`absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] ${isFullscreen ? 'text-2xl -left-5' : 'text-lg -left-3'
                             }`}
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
                     <div
                       className={`absolute z-20 ${isFullscreen
-                          ? 'left-[calc(50%-148px)] top-[calc(50%-98px)]'
-                          : 'left-[calc(50%-80px)] top-[calc(50%-52px)]'
+                        ? 'left-[calc(50%-148px)] top-[calc(50%-98px)]'
+                        : 'left-[calc(50%-80px)] top-[calc(50%-52px)]'
                         }`}
                     >
                       <PedestrianLight status={pW} isFullscreen={isFullscreen} />
@@ -501,8 +501,8 @@ const Dashboard = () => {
                   <>
                     <div
                       className={`absolute top-1/2 transform -translate-y-1/2 z-10 flex flex-col justify-between pointer-events-none ${isFullscreen
-                          ? 'left-[calc(50%+102px)] w-12 h-32 py-0.5'
-                          : 'left-[calc(50%+55px)] w-6.5 h-16 py-0.5'
+                        ? 'left-[calc(50%+102px)] w-12 h-32 py-0.5'
+                        : 'left-[calc(50%+55px)] w-6.5 h-16 py-0.5'
                         }`}
                     >
                       {[...Array(8)].map((_, i) => (
@@ -514,19 +514,19 @@ const Dashboard = () => {
                       ))}
                       {isWalk && (
                         <motion.div
-                          className={`absolute select-none pointer-events-none filter drop-shadow-md ${isFullscreen ? 'text-sm -right-4' : 'text-xs -right-3'
+                          className={`absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] ${isFullscreen ? 'text-2xl -right-5' : 'text-lg -right-3'
                             }`}
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block transform -scale-x-100">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
                     <div
                       className={`absolute z-20 ${isFullscreen
-                          ? 'left-[calc(50%+102px)] top-[calc(50%+84px)]'
-                          : 'left-[calc(50%+55px)] top-[calc(50%+42px)]'
+                        ? 'left-[calc(50%+102px)] top-[calc(50%+84px)]'
+                        : 'left-[calc(50%+55px)] top-[calc(50%+42px)]'
                         }`}
                     >
                       <PedestrianLight status={pE} isFullscreen={isFullscreen} />
@@ -593,12 +593,12 @@ const Dashboard = () => {
                 <div
                   key={lane}
                   className={`absolute text-[11px] font-bold text-white bg-[#1E293B]/90 px-2 py-0.5 rounded-md shadow-xs z-30 ${lane === 'N'
-                      ? 'top-2 left-1/2 transform -translate-x-1/2'
-                      : lane === 'S'
-                        ? 'bottom-2 left-1/2 transform -translate-x-1/2'
-                        : lane === 'E'
-                          ? 'right-2 top-1/2 transform -translate-y-1/2'
-                          : 'left-2 top-1/2 transform -translate-y-1/2'
+                    ? 'top-2 left-1/2 transform -translate-x-1/2'
+                    : lane === 'S'
+                      ? 'bottom-2 left-1/2 transform -translate-x-1/2'
+                      : lane === 'E'
+                        ? 'right-2 top-1/2 transform -translate-y-1/2'
+                        : 'left-2 top-1/2 transform -translate-y-1/2'
                     }`}
                 >
                   {lane}: {count}
@@ -629,8 +629,8 @@ const Dashboard = () => {
                         key={mode}
                         onClick={() => setWeather && setWeather(mode)}
                         className={`px-3 py-1 text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer ${isActive
-                            ? 'bg-[#0F2C59] text-white shadow-xs border border-[#1E4D8C]'
-                            : 'text-slate-300 hover:text-white hover:bg-white/10'
+                          ? 'bg-[#0F2C59] text-white shadow-xs border border-[#1E4D8C]'
+                          : 'text-slate-300 hover:text-white hover:bg-white/10'
                           }`}
                       >
                         <Icon size={12} />
@@ -653,11 +653,10 @@ const Dashboard = () => {
                   <button
                     onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
                     disabled={state?.emergencyActive}
-                    className={`px-5 py-2.5 rounded-full font-black text-xs text-white transition-all shadow-xl flex items-center space-x-2 cursor-pointer border border-white/20 select-none ${
-                      state?.emergencyActive
+                    className={`px-5 py-2.5 rounded-full font-black text-xs text-white transition-all shadow-xl flex items-center space-x-2 cursor-pointer border border-white/20 select-none ${state?.emergencyActive
                         ? 'bg-red-800 animate-pulse cursor-default'
                         : 'bg-[#DC2626] hover:bg-red-700 active:scale-95 hover:shadow-red-500/25'
-                    }`}
+                      }`}
                     title="Dispatch emergency vehicle priority clearance"
                   >
                     <AlertTriangle size={16} className="text-[#F5A623] fill-[#F5A623]/20" />
@@ -695,8 +694,8 @@ const Dashboard = () => {
                       key={mode}
                       onClick={() => setWeather && setWeather(mode)}
                       className={`px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center space-x-1 cursor-pointer ${isActive
-                          ? 'bg-[#0F2C59] text-white shadow-xs'
-                          : 'text-[#475569] hover:text-[#0A1F44]'
+                        ? 'bg-[#0F2C59] text-white shadow-xs'
+                        : 'text-[#475569] hover:text-[#0A1F44]'
                         }`}
                     >
                       <Icon size={12} />
@@ -725,8 +724,8 @@ const Dashboard = () => {
                 onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
                 disabled={state?.emergencyActive}
                 className={`px-5 py-1.5 rounded-lg font-bold text-xs text-white transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer ${state?.emergencyActive
-                    ? 'bg-red-700 animate-pulse cursor-default'
-                    : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
+                  ? 'bg-red-700 animate-pulse cursor-default'
+                  : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
                   }`}
                 title={lang === 'HI' ? 'आपातकालीन वाहन प्राथमिकता निकासी भेजें' : 'Dispatch emergency vehicle priority clearance'}
               >
@@ -850,8 +849,8 @@ const Dashboard = () => {
                       <button
                         onClick={() => setGeneratedDemandMultiplier && setGeneratedDemandMultiplier(0.5)}
                         className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${stagedDemand === 0.5
-                            ? 'bg-[#0F2C59] text-white shadow-xs'
-                            : 'text-[#475569] hover:text-[#0A1F44]'
+                          ? 'bg-[#0F2C59] text-white shadow-xs'
+                          : 'text-[#475569] hover:text-[#0A1F44]'
                           }`}
                         title={lang === 'HI' ? 'मध्यम मांग: 0.5x' : 'Moderate demand: 0.5x'}
                       >
@@ -860,8 +859,8 @@ const Dashboard = () => {
                       <button
                         onClick={() => setGeneratedDemandMultiplier && setGeneratedDemandMultiplier(1.0)}
                         className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${stagedDemand === 1.0
-                            ? 'bg-[#0F2C59] text-white shadow-xs'
-                            : 'text-[#475569] hover:text-[#0A1F44]'
+                          ? 'bg-[#0F2C59] text-white shadow-xs'
+                          : 'text-[#475569] hover:text-[#0A1F44]'
                           }`}
                         title={lang === 'HI' ? 'व्यस्त समय मांग: 1.0x' : 'Peak time demand: 1.0x'}
                       >
@@ -887,8 +886,8 @@ const Dashboard = () => {
                           key={spd}
                           onClick={() => setSpeed(spd)}
                           className={`flex-1 py-1.5 text-xs font-bold rounded-md transition cursor-pointer ${simulationSpeed === spd
-                              ? 'bg-white text-[#0A1F44] font-black shadow-xs border border-[#E2E8F0]'
-                              : 'text-[#475569] hover:text-[#0A1F44]'
+                            ? 'bg-white text-[#0A1F44] font-black shadow-xs border border-[#E2E8F0]'
+                            : 'text-[#475569] hover:text-[#0A1F44]'
                             }`}
                         >
                           {spd}x {spd === 1 ? '(1:1)' : ''}

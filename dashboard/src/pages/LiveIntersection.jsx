@@ -12,16 +12,16 @@ import StatCard from '../components/StatCard';
 
 const LiveIntersection = () => {
   const { lang } = useLanguage();
-  const { 
-    state, 
-    metrics, 
-    loading, 
-    error, 
-    useMock, 
+  const {
+    state,
+    metrics,
+    loading,
+    error,
+    useMock,
     simulationSpeed,
-    switchToMock, 
-    switchToBackend, 
-    setSpeed, 
+    switchToMock,
+    switchToBackend,
+    setSpeed,
     resetSimulation,
     manualOverride,
     triggerEmergencyVehicle
@@ -121,19 +121,19 @@ const LiveIntersection = () => {
         operator: 'Mumbai Traffic Control Officer',
         previousSignal: state?.signal
       };
-      
+
       console.log('Mumbai Manual Override Activated:', overrideEvent);
-      
+
       if (manualOverride) {
         manualOverride(selectedOverrideDirection, overrideReason);
       }
-      
+
       setOverrideActive(true);
       setOverrideStartTime(Date.now());
       setShowOverrideWarning(false);
       setSelectedOverrideDirection(null);
       setOverrideReason('');
-      
+
       // Auto-disable override after 60 seconds
       setTimeout(() => {
         setOverrideActive(false);
@@ -181,7 +181,7 @@ const LiveIntersection = () => {
   };
 
   const highestQueueLane = getHighestQueueLane();
-  
+
   // Check if target is achieved (30-35 seconds)
   const targetAchieved = state?.avg_wait_time >= 30 && state?.avg_wait_time <= 35;
 
@@ -200,7 +200,7 @@ const LiveIntersection = () => {
               >
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertTriangle size={20} className="text-amber-500" />
+                    <AlertTriangle size={20} className="text-amber-500" />
                   </div>
                   <h2 className="text-xl font-bold text-red-600 mb-2">
                     {lang === 'HI' ? 'मैनुअल ओवरराइड चेतावनी' : 'MANUAL OVERRIDE WARNING'}
@@ -213,7 +213,7 @@ const LiveIntersection = () => {
                     )}
                   </p>
                 </div>
-                
+
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                   <div className="flex items-start space-x-2">
                     <Siren size={16} className="text-yellow-600" />
@@ -289,14 +289,13 @@ const LiveIntersection = () => {
                 <MapPin size={14} className="text-[#0F2C59]" />
                 <span>{lang === 'HI' ? 'BKC वित्तीय क्षेत्र, मुंबई महानगर क्षेत्र' : 'BKC Financial District, Mumbai Metropolitan Region'}</span>
               </p>
-              
+
               {/* Target Achievement Indicator */}
               <div className="mt-2.5 flex items-center space-x-3">
-                <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border flex items-center gap-1.5 ${
-                  targetAchieved 
-                    ? 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]' 
+                <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border flex items-center gap-1.5 ${targetAchieved
+                    ? 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]'
                     : 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
-                }`}>
+                  }`}>
                   <Target size={14} />
                   <span>{targetAchieved ? (lang === 'HI' ? 'लक्ष्य प्राप्त' : 'Target Achieved') : (lang === 'HI' ? 'लक्ष्य: 20-30s औसत विलंब' : 'Target: 20-30s Avg Delay')}</span>
                 </div>
@@ -455,7 +454,7 @@ const LiveIntersection = () => {
               {lang === 'HI' ? 'ट्रैफिक पुलिस ICCC द्वारा मॉनिटर' : 'Monitored by Traffic Police ICCC'}
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               {
@@ -507,11 +506,10 @@ const LiveIntersection = () => {
                   onClick={() => handleOverrideRequest(direction)}
                   disabled={overrideActive || state?.emergencyActive}
                   style={{ backgroundColor: bg }}
-                  className={`p-4 rounded-xl transition-all duration-200 text-left flex flex-col justify-between border disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
-                    isSelected
+                  className={`p-4 rounded-xl transition-all duration-200 text-left flex flex-col justify-between border disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${isSelected
                       ? 'ring-2 ring-[#F5A623] border-[#F5A623] shadow-md'
                       : 'border-[#E2E8F0] hover:shadow-xs'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-black text-2xl" style={{ color: titleColor }}>
@@ -537,7 +535,7 @@ const LiveIntersection = () => {
               );
             })}
           </div>
-          
+
           <div className="mt-4 text-xs text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] p-3 rounded-lg">
             <p>
               {lang === 'HI' ? (
@@ -563,21 +561,20 @@ const LiveIntersection = () => {
               const queueCount = state?.queues?.[direction] || 0;
               const isActive = state?.signal === direction;
               const isHighest = direction === highestQueueLane;
-              
+
               return (
-                <div key={direction} className={`p-4 rounded-xl border transition-all ${
-                  isActive 
-                    ? 'border-[#BBF7D0] bg-[#F0FDF4]' 
-                    : isHighest 
+                <div key={direction} className={`p-4 rounded-xl border transition-all ${isActive
+                    ? 'border-[#BBF7D0] bg-[#F0FDF4]'
+                    : isHighest
                       ? 'border-[#FDE68A] bg-[#FFFBEB]'
                       : 'border-[#E2E8F0] bg-[#F8FAFC]'
-                }`}>
+                  }`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-bold text-sm text-[#0A1F44]">
-                        {direction === 'N' ? (lang === 'HI' ? 'उत्तर (कुर्ला)' : 'North (Kurla)') : 
-                         direction === 'S' ? (lang === 'HI' ? 'दक्षिण (फोर्ट)' : 'South (Fort)') : 
-                         direction === 'E' ? (lang === 'HI' ? 'पूर्व (चेंबूर)' : 'East (Chembur)') : (lang === 'HI' ? 'पश्चिम (बांद्रा)' : 'West (Bandra)')}
+                        {direction === 'N' ? (lang === 'HI' ? 'उत्तर (कुर्ला)' : 'North (Kurla)') :
+                          direction === 'S' ? (lang === 'HI' ? 'दक्षिण (फोर्ट)' : 'South (Fort)') :
+                            direction === 'E' ? (lang === 'HI' ? 'पूर्व (चेंबूर)' : 'East (Chembur)') : (lang === 'HI' ? 'पश्चिम (बांद्रा)' : 'West (Bandra)')}
                       </div>
                       <div className="text-xs text-[#475569] mt-0.5">
                         {lang === 'HI' ? `कतार: ${queueCount} वाहन` : `Queue: ${queueCount} vehicles`}
@@ -606,11 +603,10 @@ const LiveIntersection = () => {
             <h2 className="text-xl font-bold text-[#0A1F44]">
               {lang === 'HI' ? 'लाइव यातायात प्रवाह' : 'Live Traffic Flow'}
             </h2>
-            <div className={`text-xs px-3.5 py-1.5 rounded-lg font-bold border shadow-xs ${
-              overrideActive 
-                ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' 
+            <div className={`text-xs px-3.5 py-1.5 rounded-lg font-bold border shadow-xs ${overrideActive
+                ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
                 : 'bg-[#0A1F44] text-[#F5A623] border-[#1E4D8C]'
-            }`}>
+              }`}>
               {overrideActive ? (lang === 'HI' ? 'मैनुअल नियंत्रण' : 'Manual Control') : (lang === 'HI' ? 'स्मार्ट सिग्नल' : 'Smart Signal')}: {state?.signal} ({state?.phase || 'GREEN'}) | {state?.clearance_status ? state.clearance_status : `${lang === 'HI' ? 'शेष' : (state?.phase_label || 'Remaining')}: ${state?.phase_remaining_sec ?? 0}s`}
             </div>
           </div>
@@ -623,18 +619,18 @@ const LiveIntersection = () => {
               <div className="absolute top-1/2 left-0 w-full bg-[#364152] transform -translate-y-1/2 shadow-2xl h-20">
                 <div className="absolute top-1/2 left-0 w-full h-1 bg-yellow-400 opacity-90 transform -translate-y-1/2"></div>
               </div>
-              
+
               {/* Vertical road */}
               <div className="absolute left-1/2 top-0 h-full bg-[#364152] transform -translate-x-1/2 shadow-2xl w-20">
                 <div className="absolute left-1/2 top-0 w-1 h-full bg-yellow-400 opacity-90 transform -translate-x-1/2"></div>
               </div>
-              
+
               {/* Intersection center box */}
               <div className="absolute top-1/2 left-1/2 bg-[#4B5461] rounded-lg transform -translate-x-1/2 -translate-y-1/2 shadow-2xl w-20 h-20">
               </div>
 
               {/* 🚶‍♂️ Minimalist Compact Zebra Crossings & High-Visibility Pedestrian Walkers */}
-              
+
               {/* North Crosswalk */}
               {(() => {
                 const pN = state?.pedestrian_signals?.N || 'STOP';
@@ -649,11 +645,11 @@ const LiveIntersection = () => {
                       </div>
                       {isWalk && (
                         <motion.div
-                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -top-3"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] text-lg -top-3.5"
                           animate={{ left: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
@@ -679,11 +675,11 @@ const LiveIntersection = () => {
                       </div>
                       {isWalk && (
                         <motion.div
-                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -top-3"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] text-lg -top-3.5"
                           animate={{ left: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block transform -scale-x-100">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
@@ -707,11 +703,11 @@ const LiveIntersection = () => {
                       ))}
                       {isWalk && (
                         <motion.div
-                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -left-3"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] text-lg -left-3"
                           animate={{ top: ['-5%', '100%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
@@ -735,11 +731,11 @@ const LiveIntersection = () => {
                       ))}
                       {isWalk && (
                         <motion.div
-                          className="absolute select-none pointer-events-none filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] text-xs -right-3"
+                          className="absolute select-none pointer-events-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] text-lg -right-3"
                           animate={{ top: ['105%', '-5%'], opacity: [0, 1, 1, 1, 0] }}
                           transition={{ duration: 3.8, repeat: Infinity, ease: 'linear' }}
                         >
-                          <PersonStanding size={16} className="text-slate-600" />
+                          <span className="inline-block transform -scale-x-100">🚶‍♀️</span>
                         </motion.div>
                       )}
                     </div>
@@ -753,26 +749,26 @@ const LiveIntersection = () => {
             </div>
 
             {/* Enhanced Traffic Lights */}
-            <TrafficLight 
-              direction="N" 
+            <TrafficLight
+              direction="N"
               signal={state?.signal}
               phase={state?.phase}
               emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'N'}
             />
-            <TrafficLight 
-              direction="S" 
+            <TrafficLight
+              direction="S"
               signal={state?.signal}
               phase={state?.phase}
               emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'S'}
             />
-            <TrafficLight 
-              direction="E" 
+            <TrafficLight
+              direction="E"
               signal={state?.signal}
               phase={state?.phase}
               emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'E'}
             />
-            <TrafficLight 
-              direction="W" 
+            <TrafficLight
+              direction="W"
               signal={state?.signal}
               phase={state?.phase}
               emergencyActive={state?.emergencyActive && state?.emergencyDirection === 'W'}
@@ -798,12 +794,11 @@ const LiveIntersection = () => {
             {state?.queues && Object.entries(state.queues).map(([lane, count]) => (
               <div
                 key={lane}
-                className={`absolute text-xs font-bold text-white bg-[#0A1F44] px-2.5 py-1 rounded-md shadow-xs z-30 border border-[#1E4D8C] ${
-                  lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
-                  lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
-                  lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
-                  'left-2 top-1/2 transform -translate-y-1/2'
-                }`}
+                className={`absolute text-xs font-bold text-white bg-[#0A1F44] px-2.5 py-1 rounded-md shadow-xs z-30 border border-[#1E4D8C] ${lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
+                    lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
+                      lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
+                        'left-2 top-1/2 transform -translate-y-1/2'
+                  }`}
               >
                 {lane}: {count}
               </div>
@@ -812,12 +807,11 @@ const LiveIntersection = () => {
 
           {/* Enhanced Signal Status */}
           <div className="mt-6 flex justify-center space-x-6">
-            <div className={`text-white px-6 py-3 rounded-xl shadow-xs border ${
-              overrideActive ? 'bg-[#DC2626] border-[#B91C1C]' : 'bg-[#0A1F44] border-[#1E4D8C] text-[#F5A623]'
-            }`}>
+            <div className={`text-white px-6 py-3 rounded-xl shadow-xs border ${overrideActive ? 'bg-[#DC2626] border-[#B91C1C]' : 'bg-[#0A1F44] border-[#1E4D8C] text-[#F5A623]'
+              }`}>
               <span className="text-sm font-bold">
-                {overrideActive ? (lang === 'HI' ? 'मैनुअल नियंत्रण' : 'Manual Control') : (lang === 'HI' ? 'स्मार्ट सिग्नल' : 'Smart Signal')}: {state?.signal} ({state?.phase || 'GREEN'}) | 
-                {' '}{lang === 'HI' ? 'अवधि' : 'Duration'}: {state?.active_green_duration || state?.signal_duration || 30}s | 
+                {overrideActive ? (lang === 'HI' ? 'मैनुअल नियंत्रण' : 'Manual Control') : (lang === 'HI' ? 'स्मार्ट सिग्नल' : 'Smart Signal')}: {state?.signal} ({state?.phase || 'GREEN'}) |
+                {' '}{lang === 'HI' ? 'अवधि' : 'Duration'}: {state?.active_green_duration || state?.signal_duration || 30}s |
                 {' '}{state?.clearance_status ? state.clearance_status : `${lang === 'HI' ? 'शेष' : (state?.phase_label || 'Remaining')}: ${state?.phase_remaining_sec ?? 0}s`}
               </span>
             </div>
@@ -883,23 +877,21 @@ const LiveIntersection = () => {
               return (
                 <div
                   key={dir}
-                  className={`p-4 rounded-xl border transition-all duration-300 ${
-                    state?.emergencyActive
+                  className={`p-4 rounded-xl border transition-all duration-300 ${state?.emergencyActive
                       ? 'border-[#FECACA] bg-[#FEF2F2]'
                       : isWalk
                         ? 'border-[#BBF7D0] bg-[#F0FDF4] shadow-xs'
                         : 'border-[#E2E8F0] bg-[#F8FAFC]'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-xs text-[#0A1F44]">{name}</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                      state?.emergencyActive
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${state?.emergencyActive
                         ? 'bg-[#DC2626] text-white animate-pulse'
                         : isWalk
                           ? 'bg-[#16A34A] text-white shadow-xs'
                           : 'bg-[#E2E8F0] text-[#475569]'
-                    }`}>
+                      }`}>
                       {state?.emergencyActive ? <><Hand size={14} className="inline" /> {lang === 'HI' ? 'खाली करें' : 'CLEAR'}</> : isWalk ? <><PersonStanding size={14} className="inline" /> {lang === 'HI' ? 'चलें (WALK)' : 'WALK'}</> : <><Hand size={14} className="inline" /> {lang === 'HI' ? 'रुकें (WAIT)' : 'WAIT'}</>}
                     </span>
                   </div>
@@ -938,7 +930,7 @@ const LiveIntersection = () => {
             </div>
             <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
               <div className="text-3xl font-black text-[#0F2C59]">
-                {Math.max(...Object.values(state?.queues || {0: 0}))}
+                {Math.max(...Object.values(state?.queues || { 0: 0 }))}
               </div>
               <div className="text-xs font-bold text-[#475569] mt-1">{lang === 'HI' ? 'अधिकतम कतार' : 'Highest Queue'}</div>
             </div>
@@ -952,9 +944,8 @@ const LiveIntersection = () => {
             <div className="flex space-x-2">
               <button
                 onClick={switchToMock}
-                className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition shadow-xs cursor-pointer ${
-                  useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
-                }`}
+                className={`px-4 py-2 text-xs font-bold rounded-lg flex items-center gap-1.5 transition shadow-xs cursor-pointer ${useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
+                  }`}
               >
                 <Brain size={16} className={useMock ? 'text-[#F5A623]' : 'text-slate-500'} />
                 <span>{lang === 'HI' ? 'AI सिमुलेशन' : 'AI Simulation'}</span>
@@ -962,15 +953,14 @@ const LiveIntersection = () => {
               {switchToBackend && (
                 <button
                   onClick={switchToBackend}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg transition shadow-xs cursor-pointer ${
-                    !useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
-                  }`}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition shadow-xs cursor-pointer ${!useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
+                    }`}
                 >
                   <Radio size={14} className="inline mr-1" /> {lang === 'HI' ? 'लाइव डेटा' : 'Live Data'}
                 </button>
               )}
             </div>
-            
+
             {useMock && (
               <div className="flex items-center space-x-2">
                 <label className="text-xs font-bold text-[#475569]">{lang === 'HI' ? `गति: ${simulationSpeed}x` : `Speed: ${simulationSpeed}x`}</label>
@@ -985,22 +975,21 @@ const LiveIntersection = () => {
                 />
               </div>
             )}
-            
+
             {useMock && (
               <button
                 onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
                 disabled={state?.emergencyActive}
-                className={`px-4 py-2 text-xs font-bold text-white rounded-lg transition shadow-xs cursor-pointer ${
-                  state?.emergencyActive
+                className={`px-4 py-2 text-xs font-bold text-white rounded-lg transition shadow-xs cursor-pointer ${state?.emergencyActive
                     ? 'bg-red-700 animate-pulse cursor-default'
                     : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
-                }`}
+                  }`}
                 title={lang === 'HI' ? 'आपातकालीन वाहन डिस्पैच करें (यादृच्छिक पहुंच)' : 'Dispatch emergency vehicle (Random approach)'}
               >
                 {state?.emergencyActive ? <><Siren size={14} className="inline mr-1" /> {lang === 'HI' ? `आपातकाल सक्रिय (${state?.emergencyDirection || ''})` : `Emergency Active (${state?.emergencyDirection || ''})`}</> : <><Siren size={14} className="inline mr-1" /> {lang === 'HI' ? 'आपातकालीन मोड' : 'Emergency Mode'}</>}
               </button>
             )}
-            
+
             {useMock && (
               <button
                 onClick={resetSimulation}
