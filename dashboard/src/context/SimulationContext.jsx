@@ -84,6 +84,10 @@ export const SimulationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Active Zone / Corridor State
+  const [selectedZone, setSelectedZone] = useState('Mumbai BKC Corridor — Jn 04');
+  const [zoneNotification, setZoneNotification] = useState(null);
+
   // Predictive Demand State & Cache (Phase 2B)
   const availableTimesRef = useRef([
     '08:55:00', '09:00:00', '09:05:00', '09:10:00', '09:15:00', '09:20:00',
@@ -786,6 +790,17 @@ export const SimulationProvider = ({ children }) => {
     }
   }, [useMock, vehicleManager, signalManager, clock, weatherMode, stagedDemand, fetchForecastForTime]);
 
+  const switchZone = useCallback((newZone) => {
+    if (!newZone) return;
+    setSelectedZone(newZone);
+    // Automatically reset the full simulation session on corridor switch
+    resetSimulation();
+    setZoneNotification(`Corridor switched to ${newZone} • Simulation Reset`);
+    setTimeout(() => {
+      setZoneNotification(null);
+    }, 4000);
+  }, [resetSimulation]);
+
   const startVideoDrivenSimulation = useCallback(({ videoId, arrivalEvents, mappedDirection, durationSec }) => {
     if (!useMock) {
       setError('Video-driven simulation is only available in Browser Simulation mode.');
@@ -931,6 +946,10 @@ export const SimulationProvider = ({ children }) => {
     switchToBackend,
     setSpeed,
     resetSimulation,
+    selectedZone,
+    setSelectedZone,
+    switchZone,
+    zoneNotification,
     startVideoDrivenSimulation,
     stopVideoDrivenSimulation,
     manualOverride: handleManualOverride,

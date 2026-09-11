@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck, LayoutDashboard, TrafficCone, Video, LineChart, Landmark } from 'lucide-react';
+import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck, LayoutDashboard, TrafficCone, Video, LineChart, Landmark, MapPin, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useSimulation } from '../context/SimulationContext';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const [timeString, setTimeString] = useState('');
   const [dateString, setDateString] = useState('');
   const { lang, setLang } = useLanguage();
+  const simContext = useSimulation();
+  const selectedZone = simContext?.selectedZone || 'Mumbai BKC Corridor — Jn 04';
+  const switchZone = simContext?.switchZone;
+  const zoneNotification = simContext?.zoneNotification;
+
   const [fontSizeClass, setFontSizeClass] = useState(() => {
     try {
       return localStorage.getItem('stms_font_size') || 'font-size-normal';
@@ -14,7 +20,6 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
     }
   });
   const [isZoneMenuOpen, setIsZoneMenuOpen] = useState(false);
-  const [selectedZone, setSelectedZone] = useState('Mumbai BKC Corridor — Jn 04');
 
   const zoneMenuRef = useRef(null);
 
@@ -178,14 +183,19 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                       <button
                         key={zone}
                         onClick={() => {
-                          setSelectedZone(zone);
+                          if (switchZone) {
+                            switchZone(zone);
+                          }
                           setIsZoneMenuOpen(false);
                         }}
                         className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors flex items-center justify-between cursor-pointer ${
                           selectedZone === zone ? 'bg-[#0F2C59]/10 text-[#0F2C59] font-bold' : 'text-slate-700 hover:bg-slate-50'
                         }`}
                       >
-                        <span>{zone}</span>
+                        <div className="flex items-center gap-2">
+                          <MapPin size={12} className={selectedZone === zone ? 'text-[#FF671F]' : 'text-slate-400'} />
+                          <span>{zone}</span>
+                        </div>
                         {selectedZone === zone && <CheckCircle2 size={14} className="text-[#0F2C59]" />}
                       </button>
                     ))}
@@ -233,6 +243,19 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
 
       {/* 5. Main Content Area */}
       <main className="flex-1 w-full py-6">
+        {zoneNotification && (
+          <div className="max-w-[1520px] mx-auto px-4 sm:px-8 mb-4">
+            <div className="bg-[#0A1F44] border-l-4 border-[#FF671F] text-white px-4 py-2.5 rounded-lg shadow-md flex items-center justify-between text-xs font-bold animate-fadeIn">
+              <div className="flex items-center space-x-2">
+                <RefreshCw size={14} className="text-[#F5A623] animate-spin" />
+                <span>{zoneNotification}</span>
+              </div>
+              <span className="text-[10px] font-mono text-slate-300 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded">
+                Telemetry Reset
+              </span>
+            </div>
+          </div>
+        )}
         {children}
       </main>
 

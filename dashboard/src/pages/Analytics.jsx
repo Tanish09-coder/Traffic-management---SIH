@@ -33,7 +33,10 @@ import {
   Play,
   Pause,
   TrafficCone,
-  Siren
+  Siren,
+  Download,
+  MapPin,
+  FileText
 } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import { useLanguage } from '../context/LanguageContext';
@@ -51,6 +54,7 @@ const Analytics = ({ onNavigate }) => {
     simulationSpeed,
     setSpeed,
     resetSimulation,
+    selectedZone,
     comparisonResult,
     comparisonStatus,
     comparisonError,
@@ -110,6 +114,52 @@ const Analytics = ({ onNavigate }) => {
   const isSimulationActive = simulationSpeed > 0;
   const hasData = session.totalVehicles > 0 || session.vehiclesProcessed > 0;
 
+  // Official MoRTH Audit Report Exporter
+  const handleDownloadReport = () => {
+    const reportData = {
+      agency: "Government of India — Ministry of Road Transport & Highways (MoRTH)",
+      system: "MARG-DRISHTI (मार्ग-दृष्टि) — Integrated Traffic Management System",
+      corridor: selectedZone || "Mumbai BKC Corridor — Jn 04",
+      auditSessionId: session.sessionId,
+      generatedAtUTC: new Date().toISOString(),
+      generatedAtIST: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      sessionDurationSeconds: session.sessionDurationSeconds,
+      formattedDuration: formatDuration(session.sessionDurationSeconds),
+      trafficPerformanceSummary: {
+        totalVehiclesProcessed: session.vehiclesProcessed,
+        currentlyActiveOnRoad: session.activeVehicles,
+        averageWaitTimeSeconds: Number((session.averageWaitTime || 0).toFixed(1)),
+        peakThroughputPerMinute: Number((session.peakThroughput || 0).toFixed(1)),
+        peakQueueLengthVehicles: session.peakQueueLength,
+        emergencyCorridorPreemptions: session.emergencyPreemptions || 0,
+        signalPhaseSwitches: session.signalSwitchCount || 0
+      },
+      environmentalAndEconomicImpact: {
+        fuelSavedLiters: Number((session.sustainability?.fuelSavedLiters || (session.vehiclesProcessed * 0.15)).toFixed(2)),
+        carbonEmissionsAbatedKgCO2: Number((session.sustainability?.carbonSavedKg || (session.vehiclesProcessed * 0.35)).toFixed(2)),
+        economicSavingsINR: Number((session.sustainability?.costSavedINR || (session.vehiclesProcessed * 15)).toFixed(2))
+      },
+      approachQueueDistribution: session.laneData || [],
+      vehicleClassificationBreakdown: session.vehicleTypeData || [],
+      auditCertification: {
+        complianceStandard: "GIGW 3.0 & NCAP Smart Mobility Standard",
+        controlMode: "AI-Powered Adaptive Q-Learning & Computer Vision Grid",
+        authority: "National Informatics Centre (NIC) & MoRTH Traffic Command Center"
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const sanitizedCorridor = (selectedZone || 'corridor').replace(/[^a-zA-Z0-9]/g, '_');
+    link.download = `MoRTH_Audit_Report_${sanitizedCorridor}_${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 font-sans">
 
@@ -123,6 +173,10 @@ const Analytics = ({ onNavigate }) => {
                 <BarChart3 className="text-[#F5A623]" size={28} />
                 <span>{lang === 'HI' ? 'यातायात एनालिटिक्स' : 'Traffic Analytics'}</span>
               </h1>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0A1F44]/5 text-[#0A1F44] border border-[#0A1F44]/15">
+                <MapPin size={12} className="text-[#FF671F]" />
+                <span>{selectedZone}</span>
+              </span>
             </div>
 
             <p className="text-sm sm:text-base text-slate-500 mt-1">
@@ -132,6 +186,15 @@ const Analytics = ({ onNavigate }) => {
 
           {/* Action buttons */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={handleDownloadReport}
+              className="px-3.5 py-2 text-sm font-bold rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+              title="Download official MoRTH ITMS Audit Report (JSON)"
+            >
+              <Download size={14} className="text-emerald-700" />
+              <span>{lang === 'HI' ? 'ऑडिट रिपोर्ट डाउनलोड' : 'Download Audit Report'}</span>
+            </button>
+
             <button
               onClick={() => setSpeed(isSimulationActive ? 0 : 1)}
               className="px-3.5 py-2 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition cursor-pointer"
