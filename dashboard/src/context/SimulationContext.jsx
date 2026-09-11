@@ -746,7 +746,7 @@ export const SimulationProvider = ({ children }) => {
 
   const activatePredictivePuneDemo = useCallback(() => {
     setTrafficSource('pune_historical');
-    setStrategy('predictive');
+    setStrategy('adaptive');
   }, [setTrafficSource, setStrategy]);
 
   const setGeneratedDemandMultiplier = useCallback((multiplier) => {

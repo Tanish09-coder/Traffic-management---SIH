@@ -83,8 +83,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="flex items-center space-x-1 p-1 rounded-md bg-[#E2E8F0]">
             {[
               { id: 'fixed', label: lang === 'HI' ? 'स्थिर' : 'Fixed' },
-              { id: 'adaptive', label: lang === 'HI' ? 'अनुकूली' : 'Adaptive' },
-              { id: 'predictive', label: lang === 'HI' ? 'पूर्वानुमानित' : 'Predictive' }
+              { id: 'adaptive', label: lang === 'HI' ? 'अनुकूली' : 'Adaptive' }
             ].map(({ id, label }) => {
               const isActive = strategy === id;
               return (
@@ -287,7 +286,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black font-mono text-[#0F2942] capitalize">
-              {strategy === 'adaptive' ? (lang === 'HI' ? 'अनुकूली' : 'Adaptive') : strategy === 'fixed' ? (lang === 'HI' ? 'स्थिर' : 'Fixed') : strategy === 'predictive' ? (lang === 'HI' ? 'पूर्वानुमानित' : 'Predictive') : (strategy || 'Adaptive')}
+              {strategy === 'fixed' ? (lang === 'HI' ? 'स्थिर' : 'Fixed') : (lang === 'HI' ? 'अनुकूली' : 'Adaptive')}
             </span>
           </div>
           <div className="mt-2 text-[11px] text-emerald-800 font-bold flex items-center gap-1">

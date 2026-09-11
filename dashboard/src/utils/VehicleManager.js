@@ -599,9 +599,15 @@ export class VehicleManager {
 
   triggerEmergencyVehicle(direction, type = 'ambulance', activeSignal = null) {
     const validDirs = ['N', 'S', 'E', 'W'];
-    let app = validDirs.includes(direction)
-      ? direction
-      : (activeSignal && validDirs.includes(activeSignal) ? activeSignal : 'S');
+    let app;
+    if (validDirs.includes(direction)) {
+      app = direction;
+    } else {
+      // Pick a random approach, avoiding the currently green signal so preemption is clearly visible
+      const nonGreenDirs = activeSignal ? validDirs.filter(d => d !== activeSignal) : validDirs;
+      const candidates = nonGreenDirs.length > 0 ? nonGreenDirs : validDirs;
+      app = candidates[Math.floor(Math.random() * candidates.length)];
+    }
 
     if (this.emergencyVehicle && this.emergencyVehicle.position < 100) {
       return this.emergencyVehicle;
