@@ -205,8 +205,7 @@ const Dashboard = () => {
           title="VEHICLES PASSED"
           value={state?.cars_passed ?? metrics?.total_cars ?? 0}
           icon={CarIcon}
-          trend="+12%"
-          trendSubtext="vs. last 5 minutes"
+          showTrend={false}
           color="blue"
         />
         <StatCard
@@ -214,8 +213,7 @@ const Dashboard = () => {
           value={Math.round(state?.avg_wait_time ?? metrics?.current_avg_wait_time ?? metrics?.avg_wait_time ?? 0)}
           unit="sec"
           icon={Clock}
-          trend="-18%"
-          trendSubtext="vs. last 5 minutes"
+          showTrend={false}
           color="orange"
         />
         <StatCard
@@ -223,8 +221,7 @@ const Dashboard = () => {
           value={Math.round(state?.throughput ?? metrics?.throughput ?? 0)}
           unit="cars/min"
           icon={BarChart3}
-          trend="+6%"
-          trendSubtext="vs. last 5 minutes"
+          showTrend={false}
           color="green"
         />
         <StatCard
@@ -232,8 +229,7 @@ const Dashboard = () => {
           value={state?.emergencyActive ? 1 : (metrics?.emergency_count ?? 0)}
           unit="active"
           icon={<AlertTriangle size={16} className="text-amber-500" />}
-          trend="— 0%"
-          trendSubtext="vs. last 5 minutes"
+          showTrend={false}
           color="purple"
         />
       </div>

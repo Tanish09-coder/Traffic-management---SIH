@@ -10,48 +10,52 @@ const StatCard = ({
   icon: Icon = Car,
   trend = '',
   trendSubtext = 'vs. last 5 minutes',
-  color = 'blue'
+  color = 'blue',
+  showTrend = true
 }) => {
   // Determine trend text & color if not explicitly provided
   const titleLower = title.toLowerCase().trim();
+  const shouldShowTrend = Boolean(showTrend && trend !== null && trend !== false);
 
   let defaultTrend = trend;
   let trendColor = '#16A34A'; // green by default
   let TrendIcon = null;
   let trendText = '';
 
-  if (!defaultTrend) {
-    if (titleLower.includes('passed')) {
-      defaultTrend = '+12%';
-      trendColor = '#16A34A';
-      TrendIcon = TrendingUp;
-    } else if (titleLower.includes('wait')) {
-      defaultTrend = '-18%';
-      trendColor = '#16A34A';
-      TrendIcon = TrendingDown;
-    } else if (titleLower.includes('throughput')) {
-      defaultTrend = '+6%';
-      trendColor = '#16A34A';
-      TrendIcon = TrendingUp;
-    } else if (titleLower.includes('emergency')) {
-      defaultTrend = '0%';
-      trendColor = '#64748B';
-      TrendIcon = Minus;
-    }
-  } else {
-    // Parse passed-in trend string for icon and text
-    if (defaultTrend.startsWith('↑') || defaultTrend.startsWith('+')) {
-      TrendIcon = TrendingUp;
-      trendText = defaultTrend.replace(/^[↑\s]+/, '');
-      defaultTrend = trendText;
-    } else if (defaultTrend.startsWith('↓') || defaultTrend.startsWith('-')) {
-      TrendIcon = TrendingDown;
-      trendText = defaultTrend.replace(/^[↓\s]+/, '');
-      defaultTrend = trendText;
-    } else if (defaultTrend.startsWith('—') || defaultTrend.startsWith('0')) {
-      TrendIcon = Minus;
-      trendText = defaultTrend.replace(/^[—\s]+/, '');
-      defaultTrend = trendText;
+  if (shouldShowTrend) {
+    if (!defaultTrend) {
+      if (titleLower.includes('passed')) {
+        defaultTrend = '+12%';
+        trendColor = '#16A34A';
+        TrendIcon = TrendingUp;
+      } else if (titleLower.includes('wait')) {
+        defaultTrend = '-18%';
+        trendColor = '#16A34A';
+        TrendIcon = TrendingDown;
+      } else if (titleLower.includes('throughput')) {
+        defaultTrend = '+6%';
+        trendColor = '#16A34A';
+        TrendIcon = TrendingUp;
+      } else if (titleLower.includes('emergency')) {
+        defaultTrend = '0%';
+        trendColor = '#64748B';
+        TrendIcon = Minus;
+      }
+    } else if (typeof defaultTrend === 'string') {
+      // Parse passed-in trend string for icon and text
+      if (defaultTrend.startsWith('↑') || defaultTrend.startsWith('+')) {
+        TrendIcon = TrendingUp;
+        trendText = defaultTrend.replace(/^[↑\s]+/, '');
+        defaultTrend = trendText;
+      } else if (defaultTrend.startsWith('↓') || defaultTrend.startsWith('-')) {
+        TrendIcon = TrendingDown;
+        trendText = defaultTrend.replace(/^[↓\s]+/, '');
+        defaultTrend = trendText;
+      } else if (defaultTrend.startsWith('—') || defaultTrend.startsWith('0')) {
+        TrendIcon = Minus;
+        trendText = defaultTrend.replace(/^[—\s]+/, '');
+        defaultTrend = trendText;
+      }
     }
   }
 
@@ -104,7 +108,7 @@ const StatCard = ({
         </span>
       </div>
 
-      <div className="flex items-baseline space-x-1.5 mb-1.5">
+      <div className={`flex items-baseline space-x-1.5 ${shouldShowTrend ? 'mb-1.5' : 'mb-0'}`}>
         <span
           className="text-3xl font-black tracking-tight"
           style={{
@@ -120,7 +124,7 @@ const StatCard = ({
         )}
       </div>
 
-      {(defaultTrend || trendSubtext !== 'vs. last 5 minutes') && (
+      {shouldShowTrend && (defaultTrend || trendSubtext !== 'vs. last 5 minutes') && (
         <div className="flex items-center space-x-1.5 text-xs">
           {TrendIcon && <TrendIcon size={12} style={{ color: trendColor }} />}
           {defaultTrend && (
