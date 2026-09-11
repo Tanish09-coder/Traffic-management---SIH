@@ -2,7 +2,8 @@ const http = require('http');
 
 function request(path) {
   return new Promise((resolve, reject) => {
-    http.get(`http://localhost:5000${path}`, (res) => {
+    const port = process.env.PORT || 8080;
+    http.get(`http://localhost:${port}${path}`, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {

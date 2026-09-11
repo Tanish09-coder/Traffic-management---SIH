@@ -16,6 +16,7 @@ import { runComparisonPair } from '../utils/comparisonEngine';
 import { SignalOptimizer } from '../utils/SignalOptimizer';
 import { calculateEffectivePredictivePCU } from '../utils/PredictiveDemandFusion';
 import { generateBucketArrivals, calculateBucketPCU } from '../utils/HistoricalDemandScheduler';
+import { BACKEND_ORIGIN } from '../utils/backendUrl';
 
 // Historical Pune direction mapping is used only to demonstrate predictive-control integration. It does not imply the live simulation represents the same physical intersection or timestamp.
 const PUNE_TO_SIM_DIRECTION_MAP = {
@@ -26,7 +27,7 @@ const PUNE_TO_SIM_DIRECTION_MAP = {
 };
 
 const PREDICTION_DEMO_DATE = '2023-01-17';
-const PREDICTION_API_BASE = 'http://localhost:5000/api/prediction';
+const PREDICTION_API_BASE = `${BACKEND_ORIGIN}/api/prediction`;
 
 const DEFAULT_BELLEVUE_EVENTS = [
   { eventId: 'bellevue-1', videoTimeSec: 9.6, vehicleType: 'car', mappedDirection: 'S' },

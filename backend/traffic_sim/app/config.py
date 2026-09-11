@@ -16,4 +16,4 @@ class Config:
     
     # API configurations
     API_HOST = 'localhost'
-    API_PORT = 5000
+    API_PORT = 8080

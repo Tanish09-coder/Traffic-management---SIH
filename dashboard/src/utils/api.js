@@ -1,13 +1,12 @@
 import axios from 'axios';
+import { BACKEND_ORIGIN } from './backendUrl';
 
-// Base URL for the backend API
-// Change this to your backend URL when ready to connect to real backend
-const BASE_URL = 'http://localhost:5000/api/simulation';
+const BASE_URL = `${BACKEND_ORIGIN}/api/simulation`;
 
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 5000,
+  timeout: 6000,
   headers: {
     'Content-Type': 'application/json',
   }
