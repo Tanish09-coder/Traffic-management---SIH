@@ -1,12 +1,10 @@
 import React from 'react';
 import { 
   Cpu, 
-  Sparkles, 
-  RotateCcw, 
-  SlidersHorizontal,
-  Clock
+  RotateCcw
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const IntersectionVisualizer = () => {
   const { 
@@ -16,6 +14,7 @@ export const IntersectionVisualizer = () => {
     setJunctionOverride, 
     systemMode
   } = useTraffic();
+  const { lang } = useLanguage();
 
   const isNSGreen = selectedJunction.activePhase === 'NS';
   const isEWGreen = selectedJunction.activePhase === 'EW';
@@ -58,7 +57,7 @@ export const IntersectionVisualizer = () => {
         <div className="flex items-center space-x-2.5">
           <Cpu className="w-4 h-4 text-[#F5A623]" />
           <span className="text-xs font-semibold text-white">
-            SCADA Signal Phase Controller & Geometry
+            {lang === 'HI' ? 'SCADA सिग्नल चरण नियंत्रक एवं ज्यामिति' : 'SCADA Signal Phase Controller & Geometry'}
           </span>
         </div>
 
@@ -86,23 +85,23 @@ export const IntersectionVisualizer = () => {
           
           {/* North Approach Pole */}
           <div className="absolute top-3 flex flex-col items-center space-y-1 z-10">
-            <TrafficLightPole approach="N" label="NORTH APPROACH" />
+            <TrafficLightPole approach="N" label={lang === 'HI' ? 'उत्तर पहुंच' : 'NORTH APPROACH'} />
             <span className="text-[10px] font-mono text-slate-400">
-              {selectedJunction.approachData.N.count} veh ({selectedJunction.approachData.N.pcu} PCU)
+              {selectedJunction.approachData.N.count} {lang === 'HI' ? 'वाहन' : 'veh'} ({selectedJunction.approachData.N.pcu} PCU)
             </span>
           </div>
 
           {/* South Approach Pole */}
           <div className="absolute bottom-3 flex flex-col items-center space-y-1 z-10">
             <span className="text-[10px] font-mono text-slate-400">
-              {selectedJunction.approachData.S.count} veh ({selectedJunction.approachData.S.pcu} PCU)
+              {selectedJunction.approachData.S.count} {lang === 'HI' ? 'वाहन' : 'veh'} ({selectedJunction.approachData.S.pcu} PCU)
             </span>
-            <TrafficLightPole approach="S" label="SOUTH APPROACH" />
+            <TrafficLightPole approach="S" label={lang === 'HI' ? 'दक्षिण पहुंच' : 'SOUTH APPROACH'} />
           </div>
 
           {/* West Approach Pole */}
           <div className="absolute left-3 flex items-center space-x-2 z-10">
-            <TrafficLightPole approach="W" label="WEST" />
+            <TrafficLightPole approach="W" label={lang === 'HI' ? 'पश्चिम' : 'WEST'} />
             <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
               {selectedJunction.approachData.W.count}v
             </span>
@@ -113,7 +112,7 @@ export const IntersectionVisualizer = () => {
             <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
               {selectedJunction.approachData.E.count}v
             </span>
-            <TrafficLightPole approach="E" label="EAST" />
+            <TrafficLightPole approach="E" label={lang === 'HI' ? 'पूर्व' : 'EAST'} />
           </div>
 
           {/* Crossroad Physical Geometry */}
@@ -145,21 +144,21 @@ export const IntersectionVisualizer = () => {
 
             {/* Center Phase Hub */}
             <div className="relative z-20 w-24 h-24 rounded-full bg-[#080B10] border border-[#2B3950] flex flex-col items-center justify-center text-center p-1">
-              <span className="text-[8px] font-mono text-slate-400">PHASE</span>
+              <span className="text-[8px] font-mono text-slate-400">{lang === 'HI' ? 'चरण' : 'PHASE'}</span>
               <span className="text-xl font-bold font-mono text-emerald-400 tabular-nums">
                 {selectedJunction.phaseTimer}s
               </span>
               <span className="text-[9px] font-mono text-slate-300">
-                {selectedJunction.activePhase} GREEN
+                {selectedJunction.activePhase} {lang === 'HI' ? 'हरा' : 'GREEN'}
               </span>
             </div>
 
           </div>
 
           <div className="mt-3 flex items-center space-x-3 text-xs text-slate-400 font-mono">
-            <span>PCU Load: <strong className="text-white">{selectedJunction.totalPcu}</strong></span>
+            <span>{lang === 'HI' ? 'PCU लोड:' : 'PCU Load:'} <strong className="text-white">{selectedJunction.totalPcu}</strong></span>
             <span>•</span>
-            <span>Mode: <strong className="text-emerald-400">{systemMode === 'adaptive' ? 'Adaptive' : 'Fixed'}</strong></span>
+            <span>{lang === 'HI' ? 'मोड:' : 'Mode:'} <strong className="text-emerald-400">{systemMode === 'adaptive' ? (lang === 'HI' ? 'एडेप्टिव' : 'Adaptive') : (lang === 'HI' ? 'फिक्स्ड' : 'Fixed')}</strong></span>
           </div>
 
         </div>
@@ -170,27 +169,27 @@ export const IntersectionVisualizer = () => {
           {/* Timing Comparison Matrix */}
           <div className="p-4 rounded-xl bg-[#0E121B] border border-[#1D2638] space-y-3">
             <span className="text-xs font-semibold text-white block">
-              Timing Model Comparison
+              {lang === 'HI' ? 'समय मॉडल तुलना' : 'Timing Model Comparison'}
             </span>
 
             <div className="grid grid-cols-2 gap-2 text-center font-mono">
               <div className="p-3 rounded-lg bg-[#101824] border border-[#1E2D44]">
-                <span className="text-[10px] text-slate-400 block">Adaptive Dynamic</span>
+                <span className="text-[10px] text-slate-400 block">{lang === 'HI' ? 'एडेप्टिव गतिशील' : 'Adaptive Dynamic'}</span>
                 <span className="text-xl font-bold text-emerald-400">{selectedJunction.dynamicGreenTime}s</span>
-                <span className="text-[10px] text-slate-400 block mt-1">Wait: {selectedJunction.averageWaitTimeSec}s</span>
+                <span className="text-[10px] text-slate-400 block mt-1">{lang === 'HI' ? 'प्रतीक्षा:' : 'Wait:'} {selectedJunction.averageWaitTimeSec}s</span>
               </div>
 
               <div className="p-3 rounded-lg bg-[#101520] border border-[#1D2638]">
-                <span className="text-[10px] text-slate-400 block">Baseline Fixed</span>
+                <span className="text-[10px] text-slate-400 block">{lang === 'HI' ? 'बेसलाइन फिक्स्ड' : 'Baseline Fixed'}</span>
                 <span className="text-xl font-bold text-slate-400">{selectedJunction.fixedGreenTime}s</span>
-                <span className="text-[10px] text-slate-500 block mt-1">Wait: {selectedJunction.baselineWaitTimeSec}s</span>
+                <span className="text-[10px] text-slate-500 block mt-1">{lang === 'HI' ? 'प्रतीक्षा:' : 'Wait:'} {selectedJunction.baselineWaitTimeSec}s</span>
               </div>
             </div>
 
             <div className="p-2.5 rounded bg-[#0A0D14] border border-[#1D2638] text-xs flex items-center justify-between text-slate-300">
-              <span>Delay Saved per Cycle:</span>
+              <span>{lang === 'HI' ? 'प्रति चक्र विलंब बचत:' : 'Delay Saved per Cycle:'}</span>
               <span className="font-mono font-bold text-emerald-400">
-                {Math.max(0, (selectedJunction.baselineWaitTimeSec - selectedJunction.averageWaitTimeSec).toFixed(1))}s / veh
+                {Math.max(0, (selectedJunction.baselineWaitTimeSec - selectedJunction.averageWaitTimeSec).toFixed(1))}s {lang === 'HI' ? '/ वाहन' : '/ veh'}
               </span>
             </div>
           </div>
@@ -198,7 +197,7 @@ export const IntersectionVisualizer = () => {
           {/* Override Switchboard */}
           <div className="p-4 rounded-xl bg-[#0E121B] border border-[#1D2638] space-y-2.5">
             <span className="text-xs font-semibold text-white block">
-              SCADA Manual Override
+              {lang === 'HI' ? 'SCADA मैनुअल ओवरराइड' : 'SCADA Manual Override'}
             </span>
 
             <div className="grid grid-cols-2 gap-2">
@@ -210,7 +209,7 @@ export const IntersectionVisualizer = () => {
                     : 'bg-[#101520] hover:bg-[#161E2E] text-slate-300 border-[#1D2638]'
                 }`}
               >
-                Lock N-S Green
+                {lang === 'HI' ? 'उत्तर-दक्षिण ग्रीन लॉक' : 'Lock N-S Green'}
               </button>
               <button
                 onClick={() => setJunctionOverride(selectedJunction.id, 'force_green_ew')}
@@ -220,7 +219,7 @@ export const IntersectionVisualizer = () => {
                     : 'bg-[#101520] hover:bg-[#161E2E] text-slate-300 border-[#1D2638]'
                 }`}
               >
-                Lock E-W Green
+                {lang === 'HI' ? 'पूर्व-पश्चिम ग्रीन लॉक' : 'Lock E-W Green'}
               </button>
               <button
                 onClick={() => setJunctionOverride(selectedJunction.id, 'flash_amber')}
@@ -230,14 +229,14 @@ export const IntersectionVisualizer = () => {
                     : 'bg-[#101520] hover:bg-[#161E2E] text-amber-400 border-[#1D2638]'
                 }`}
               >
-                Flash Amber
+                {lang === 'HI' ? 'फ्लैश एम्बर' : 'Flash Amber'}
               </button>
               <button
                 onClick={() => setJunctionOverride(selectedJunction.id, 'auto')}
                 className="p-2 rounded text-xs font-medium bg-[#141A26] hover:bg-[#1D2638] text-[#F5A623] border border-[#2B3950] transition-colors cursor-pointer flex items-center justify-center space-x-1"
               >
                 <RotateCcw className="w-3 h-3" />
-                <span>Auto AI</span>
+                <span>{lang === 'HI' ? 'ऑटो AI' : 'Auto AI'}</span>
               </button>
             </div>
           </div>

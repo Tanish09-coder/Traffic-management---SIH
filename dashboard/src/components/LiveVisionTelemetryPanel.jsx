@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { SignalOptimizer } from '../utils/SignalOptimizer';
 import { useSimulation } from '../context/SimulationContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const LiveVisionTelemetryPanel = ({
   currentFrameDetections = [],
@@ -29,6 +30,7 @@ const LiveVisionTelemetryPanel = ({
   currentTimeSec = 0,
   isPlaying = false
 }) => {
+  const { lang } = useLanguage();
   const sim = useSimulation();
   const simState = sim?.state || {};
   const currentSignal = simState.signal || 'N';
@@ -107,32 +109,32 @@ const LiveVisionTelemetryPanel = ({
     });
 
     const occupancyPercent = Math.min(100, Math.round((inBoxCount / 3.0) * 100));
-    let statusLabel = 'CLEAR FLOW';
+    let statusLabel = lang === 'HI' ? 'सुचारू प्रवाह' : 'CLEAR FLOW';
     let statusColor = 'text-emerald-700 bg-emerald-50 border-emerald-300';
     let barColor = 'bg-emerald-500';
 
     if (inBoxCount >= 3) {
-      statusLabel = 'BOX CONGESTION';
+      statusLabel = lang === 'HI' ? 'बॉक्स जाम' : 'BOX CONGESTION';
       statusColor = 'text-red-700 bg-red-50 border-red-300';
       barColor = 'bg-red-500';
     } else if (inBoxCount >= 1) {
-      statusLabel = 'TRANSIT FLOW';
+      statusLabel = lang === 'HI' ? 'पारगमन प्रवाह' : 'TRANSIT FLOW';
       statusColor = 'text-amber-700 bg-amber-50 border-amber-300';
       barColor = 'bg-amber-500';
     }
 
     return { inBoxCount, occupancyPercent, statusLabel, statusColor, barColor };
-  }, [currentFrameDetections]);
+  }, [currentFrameDetections, lang]);
 
   // 4. Directional Peak Demand & Throughput Rate
   const flowInsights = useMemo(() => {
     let peakDir = null;
     let peakCount = -1;
     const dirs = [
-      { key: 'N', label: 'Northbound', arrow: '↑', color: '#0284c7' },
-      { key: 'E', label: 'Eastbound', arrow: '→', color: '#d97706' },
-      { key: 'S', label: 'Southbound', arrow: '↓', color: '#059669' },
-      { key: 'W', label: 'Westbound', arrow: '←', color: '#7c3aed' }
+      { key: 'N', label: lang === 'HI' ? 'उत्तर दिशा' : 'Northbound', arrow: '↑', color: '#0284c7' },
+      { key: 'E', label: lang === 'HI' ? 'पूर्व दिशा' : 'Eastbound', arrow: '→', color: '#d97706' },
+      { key: 'S', label: lang === 'HI' ? 'दक्षिण दिशा' : 'Southbound', arrow: '↓', color: '#059669' },
+      { key: 'W', label: lang === 'HI' ? 'पश्चिम दिशा' : 'Westbound', arrow: '←', color: '#7c3aed' }
     ];
 
     dirs.forEach(d => {
@@ -157,15 +159,15 @@ const LiveVisionTelemetryPanel = ({
       peakCount: Math.max(0, peakCount),
       flowRateVehPerMin: flowRateVehPerMin || 14
     };
-  }, [liveApproachCounts, analysisResults, currentTimeSec]);
+  }, [liveApproachCounts, analysisResults, currentTimeSec, lang]);
 
   // 5. Adaptive Signal Time Allocation Derived from Simulation Heuristic (SignalOptimizer)
   const signalAllocations = useMemo(() => {
     const approaches = [
-      { dir: 'N', name: 'NORTH', arrow: '↑', color: '#0284c7' },
-      { dir: 'E', name: 'EAST', arrow: '→', color: '#d97706' },
-      { dir: 'S', name: 'SOUTH', arrow: '↓', color: '#059669' },
-      { dir: 'W', name: 'WEST', arrow: '←', color: '#7c3aed' }
+      { dir: 'N', name: lang === 'HI' ? 'उत्तर (NORTH)' : 'NORTH', arrow: '↑', color: '#0284c7' },
+      { dir: 'E', name: lang === 'HI' ? 'पूर्व (EAST)' : 'EAST', arrow: '→', color: '#d97706' },
+      { dir: 'S', name: lang === 'HI' ? 'दक्षिण (SOUTH)' : 'SOUTH', arrow: '↓', color: '#059669' },
+      { dir: 'W', name: lang === 'HI' ? 'पश्चिम (WEST)' : 'WEST', arrow: '←', color: '#7c3aed' }
     ];
 
     let totalAllocatedSec = 0;
@@ -203,13 +205,13 @@ const LiveVisionTelemetryPanel = ({
     const cycleEfficiency = Math.round((totalSavedSec / totalFixedSec) * 100);
 
     return { list, totalAllocatedSec, totalSavedSec, cycleEfficiency };
-  }, [liveApproachCounts, currentSignal]);
+  }, [liveApproachCounts, currentSignal, lang]);
 
   const vehicleClassMeta = [
-    { key: 'cars', label: 'Cars / Sedans', icon: Car, color: 'bg-blue-600', text: 'text-blue-700', bg: 'bg-blue-50' },
-    { key: 'bikes', label: 'Bikes / 2-Wheelers', icon: Bike, color: 'bg-emerald-600', text: 'text-emerald-700', bg: 'bg-emerald-50' },
-    { key: 'buses', label: 'Buses / Transit', icon: Bus, color: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
-    { key: 'trucks', label: 'Trucks / Heavy', icon: Truck, color: 'bg-purple-600', text: 'text-purple-700', bg: 'bg-purple-50' }
+    { key: 'cars', label: lang === 'HI' ? 'कार / सेडान' : 'Cars / Sedans', icon: Car, color: 'bg-blue-600', text: 'text-blue-700', bg: 'bg-blue-50' },
+    { key: 'bikes', label: lang === 'HI' ? 'बाइक / दोपहिया' : 'Bikes / 2-Wheelers', icon: Bike, color: 'bg-emerald-600', text: 'text-emerald-700', bg: 'bg-emerald-50' },
+    { key: 'buses', label: lang === 'HI' ? 'बस / पारगमन' : 'Buses / Transit', icon: Bus, color: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
+    { key: 'trucks', label: lang === 'HI' ? 'ट्रक / भारी वाहन' : 'Trucks / Heavy', icon: Truck, color: 'bg-purple-600', text: 'text-purple-700', bg: 'bg-purple-50' }
   ];
 
   return (
@@ -220,26 +222,26 @@ const LiveVisionTelemetryPanel = ({
         <div>
           <div className="flex items-center space-x-2">
             <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
-              Vision Telemetry
+              {lang === 'HI' ? 'विजन टेलीमेट्री' : 'Vision Telemetry'}
             </span>
-            <span className="text-xs font-semibold text-slate-500">Optical Edge Processing • 30 FPS YOLOv8x</span>
+            <span className="text-xs font-semibold text-slate-500">{lang === 'HI' ? 'ऑप्टिकल एज प्रोसेसिंग • 30 FPS YOLOv8x' : 'Optical Edge Processing • 30 FPS YOLOv8x'}</span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-              {isPlaying ? 'Real-Time Sync' : 'Static Analysis Frame'}
+              {isPlaying ? (lang === 'HI' ? 'रीयल-टाइम सिंक' : 'Real-Time Sync') : (lang === 'HI' ? 'स्टैटिक विश्लेषण फ्रेम' : 'Static Analysis Frame')}
             </span>
           </div>
           <h2 className="text-lg sm:text-xl font-black text-[#0F2942] mt-1 flex items-center gap-2">
             <Activity size={20} className="text-[#003366]" />
-            Live Vision Telemetry & Optical Fleet Analytics
+            {lang === 'HI' ? 'लाइव विजन टेलीमेट्री एवं ऑप्टिकल वाहन बेड़ा एनालिटिक्स' : 'Live Vision Telemetry & Optical Fleet Analytics'}
           </h2>
           <p className="text-xs text-slate-600 mt-0.5">
-            Real-time fleet classification ratios, junction clearance velocity, and adaptive signal timing derived strictly from active video tracking.
+            {lang === 'HI' ? 'सक्रिय वीडियो ट्रैकिंग से व्युत्पन्न रीयल-टाइम वाहन वर्गीकरण अनुपात, जंक्शन निकासी वेग और अनुकूली सिग्नल समय।' : 'Real-time fleet classification ratios, junction clearance velocity, and adaptive signal timing derived strictly from active video tracking.'}
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <div className="px-3 py-1.5 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1] text-right">
-            <div className="text-[10px] uppercase font-bold text-slate-500">Tracking Pipeline</div>
+            <div className="text-[10px] uppercase font-bold text-slate-500">{lang === 'HI' ? 'ट्रैकिंग पाइपलाइन' : 'Tracking Pipeline'}</div>
             <div className="text-xs font-black text-[#003366] font-mono">ByteTrack Multi-Object</div>
           </div>
         </div>
@@ -251,25 +253,25 @@ const LiveVisionTelemetryPanel = ({
         {/* Active Vehicles In View */}
         <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-[#475569]">
-            <span className="text-xs font-bold uppercase tracking-wider">Active Fleet in View</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'सक्रिय वाहन बेड़ा' : 'Active Fleet in View'}</span>
             <Layers size={16} className="text-[#003366]" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-black font-mono text-[#0F2942]">
               {String(currentFleet.total).padStart(2, '0')}
             </span>
-            <span className="text-xs font-bold text-slate-500">Vehicles</span>
+            <span className="text-xs font-bold text-slate-500">{lang === 'HI' ? 'वाहन' : 'Vehicles'}</span>
           </div>
           <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>Currently detected & tracked</span>
+            <span>{lang === 'HI' ? 'वर्तमान में पहचाने व ट्रैक किए गए' : 'Currently detected & tracked'}</span>
           </div>
         </div>
 
         {/* Junction Box Occupancy */}
         <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-[#475569]">
-            <span className="text-xs font-bold uppercase tracking-wider">Junction Box Status</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'जंक्शन बॉक्स स्थिति' : 'Junction Box Status'}</span>
             <Crosshair size={16} className="text-amber-600" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -291,7 +293,7 @@ const LiveVisionTelemetryPanel = ({
         {/* Peak Demand Approach */}
         <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-[#475569]">
-            <span className="text-xs font-bold uppercase tracking-wider">Peak Direction</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'पीक दिशा' : 'Peak Direction'}</span>
             <Compass size={16} className="text-purple-600" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -300,14 +302,14 @@ const LiveVisionTelemetryPanel = ({
             </span>
           </div>
           <div className="mt-1 text-[11px] text-purple-800 font-bold">
-            {String(flowInsights.peakCount).padStart(2, '0')} vehicles waiting at signal
+            {String(flowInsights.peakCount).padStart(2, '0')} {lang === 'HI' ? 'वाहन सिग्नल पर प्रतीक्षारत' : 'vehicles waiting at signal'}
           </div>
         </div>
 
         {/* Average Optical Confidence */}
         <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between text-[#475569]">
-            <span className="text-xs font-bold uppercase tracking-wider">Detection Confidence</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{lang === 'HI' ? 'पहचान विश्वसनीयता' : 'Detection Confidence'}</span>
             <ShieldCheck size={16} className="text-emerald-600" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -315,11 +317,11 @@ const LiveVisionTelemetryPanel = ({
               {currentFleet.avgConfidence}%
             </span>
             <span className="text-[10px] font-bold text-emerald-800 uppercase bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-              High Fidelity
+              {lang === 'HI' ? 'उच्च सटीकता' : 'High Fidelity'}
             </span>
           </div>
           <div className="mt-2 text-[11px] text-slate-500">
-            YOLOv8 bounding box certainty
+            {lang === 'HI' ? 'YOLOv8 बाउंडिंग बॉक्स सटीकता' : 'YOLOv8 bounding box certainty'}
           </div>
         </div>
 
@@ -331,21 +333,21 @@ const LiveVisionTelemetryPanel = ({
           <div>
             <div className="flex items-center space-x-2">
               <span className="px-2 py-0.5 rounded bg-[#003366] text-white text-[10px] font-extrabold uppercase tracking-wider">
-                Signal Actuation Engine
+                {lang === 'HI' ? 'सिग्नल एक्चुएशन इंजन' : 'Signal Actuation Engine'}
               </span>
-              <span className="text-xs font-bold text-[#0F2942]">Adaptive Green Split Heuristic (IRC:106)</span>
+              <span className="text-xs font-bold text-[#0F2942]">{lang === 'HI' ? 'अनुकूली ग्रीन विभाजन ह्यूरिस्टिक (IRC:106)' : 'Adaptive Green Split Heuristic (IRC:106)'}</span>
             </div>
             <h3 className="text-sm font-black text-[#0F2942] flex items-center gap-2 mt-1">
               <Timer size={16} className="text-[#003366]" />
-              Signal Time Allocation by Specific Approach (Simulation Calculation)
+              {lang === 'HI' ? 'विशिष्ट पहुंच मार्ग अनुसार सिग्नल समय आवंटन (सिमुलेशन गणना)' : 'Signal Time Allocation by Specific Approach (Simulation Calculation)'}
             </h3>
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500 font-semibold">Active Signal:</span>
+            <span className="text-slate-500 font-semibold">{lang === 'HI' ? 'सक्रिय सिग्नल:' : 'Active Signal:'}</span>
             <span className="px-2 py-0.5 rounded font-black text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Approach {currentSignal} ({phaseRemainingSec}s remaining)
+              {lang === 'HI' ? `पहुंच मार्ग ${currentSignal} (${phaseRemainingSec}s शेष)` : `Approach ${currentSignal} (${phaseRemainingSec}s remaining)`}
             </span>
           </div>
         </div>
@@ -353,15 +355,15 @@ const LiveVisionTelemetryPanel = ({
         {/* Formula & Policy Banner */}
         <div className="p-3 bg-[#F1F5F9] rounded-xl border border-[#CBD5E1] flex flex-col md:flex-row items-start md:items-center justify-between gap-2 text-xs">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold text-[#0F2942]">Dynamic Green Formula:</span>
+            <span className="font-bold text-[#0F2942]">{lang === 'HI' ? 'गतिशील ग्रीन सूत्र:' : 'Dynamic Green Formula:'}</span>
             <span className="font-mono font-bold text-[#003366] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
-              Duration = 10s Base + (Queue × 1.0s) [Clamped 10s–60s]
+              {lang === 'HI' ? 'अवधि = 10s बेस + (कतार × 1.0s) [सीमा 10s–60s]' : 'Duration = 10s Base + (Queue × 1.0s) [Clamped 10s–60s]'}
             </span>
           </div>
           <div className="flex items-center gap-2 text-slate-600">
-            <span>Cycle Optimization:</span>
+            <span>{lang === 'HI' ? 'चक्र अनुकूलन:' : 'Cycle Optimization:'}</span>
             <span className="font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
-              ⚡ {signalAllocations.cycleEfficiency}% Cycle Delay Eliminated vs Fixed 45s Cycle
+              ⚡ {lang === 'HI' ? `स्थिर 45s चक्र की तुलना में ${signalAllocations.cycleEfficiency}% चक्र विलंब समाप्त` : `${signalAllocations.cycleEfficiency}% Cycle Delay Eliminated vs Fixed 45s Cycle`}
             </span>
           </div>
         </div>
@@ -389,7 +391,7 @@ const LiveVisionTelemetryPanel = ({
                     ? 'bg-emerald-600 text-white border-emerald-600'
                     : 'bg-white text-slate-600 border-[#CBD5E1]'
                 }`}>
-                  {sig.isActive ? `GREEN (${phaseRemainingSec}s)` : 'STANDBY'}
+                  {sig.isActive ? (lang === 'HI' ? `हरा (${phaseRemainingSec}s)` : `GREEN (${phaseRemainingSec}s)`) : (lang === 'HI' ? 'स्टैंडबाय' : 'STANDBY')}
                 </span>
               </div>
 
@@ -400,7 +402,7 @@ const LiveVisionTelemetryPanel = ({
                     {sig.duration}s
                   </div>
                   <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    Allocated Green Time
+                    {lang === 'HI' ? 'आवंटित ग्रीन समय' : 'Allocated Green Time'}
                   </div>
                 </div>
 
@@ -409,7 +411,7 @@ const LiveVisionTelemetryPanel = ({
                     {sig.isVisible ? `${sig.videoCount} veh` : 'N/A'}
                   </div>
                   <div className="text-[10px] text-slate-400">
-                    Camera Queue
+                    {lang === 'HI' ? 'कैमरा कतार' : 'Camera Queue'}
                   </div>
                 </div>
               </div>
@@ -425,14 +427,14 @@ const LiveVisionTelemetryPanel = ({
               {/* Calculation Formula Details */}
               <div className="mt-2.5 pt-2 border-t border-slate-200/70 text-[10px] space-y-1">
                 <div className="flex justify-between text-slate-500 font-mono">
-                  <span>Model:</span>
+                  <span>{lang === 'HI' ? 'मॉडल:' : 'Model:'}</span>
                   <span className="font-bold text-[#0F2942]">
                     10s + {sig.videoCount || 0}×1s = {sig.duration}s
                   </span>
                 </div>
                 <div className="flex justify-between text-emerald-700 font-semibold">
-                  <span>Savings:</span>
-                  <span>+{sig.timeSaved}s vs fixed timer</span>
+                  <span>{lang === 'HI' ? 'बचत:' : 'Savings:'}</span>
+                  <span>{lang === 'HI' ? `स्थिर टाइमर से +${sig.timeSaved}s` : `+${sig.timeSaved}s vs fixed timer`}</span>
                 </div>
               </div>
             </div>
@@ -448,10 +450,10 @@ const LiveVisionTelemetryPanel = ({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-[#0F2942] flex items-center gap-2">
               <BarChart3 size={16} className="text-[#003366]" />
-              Real-Time Fleet Classification Ratios
+              {lang === 'HI' ? 'रीयल-टाइम वाहन वर्गीकरण अनुपात' : 'Real-Time Fleet Classification Ratios'}
             </h3>
             <span className="text-[10px] font-bold text-slate-500 uppercase">
-              Current Frame: {currentFleet.total} vehicles
+              {lang === 'HI' ? `वर्तमान फ्रेम: ${currentFleet.total} वाहन` : `Current Frame: ${currentFleet.total} vehicles`}
             </span>
           </div>
 
@@ -475,7 +477,7 @@ const LiveVisionTelemetryPanel = ({
                         {liveCount} ({liveShare}%)
                       </span>
                       <span className="text-[10px] text-slate-400 font-sans">
-                        / Total: {cumulativeCount}
+                        / {lang === 'HI' ? 'कुल:' : 'Total:'} {cumulativeCount}
                       </span>
                     </div>
                   </div>
@@ -485,7 +487,7 @@ const LiveVisionTelemetryPanel = ({
                     <div 
                       className={`h-2 transition-all duration-300 ${color}`}
                       style={{ width: `${liveShare}%` }}
-                      title={`Current Frame: ${liveShare}%`}
+                      title={`${lang === 'HI' ? 'वर्तमान फ्रेम:' : 'Current Frame:'} ${liveShare}%`}
                     />
                   </div>
                 </div>
@@ -495,11 +497,13 @@ const LiveVisionTelemetryPanel = ({
 
           <div className="p-3 bg-white rounded-lg border border-[#CBD5E1] flex items-center justify-between text-xs">
             <div className="text-slate-600">
-              <span className="font-bold text-[#0F2942]">Dominant Class:</span>{' '}
-              {currentFleet.shares.cars >= currentFleet.shares.bikes ? 'Passenger Cars (Sedans & SUVs)' : 'Two-Wheelers & Bikes'}
+              <span className="font-bold text-[#0F2942]">{lang === 'HI' ? 'प्रमुख श्रेणी:' : 'Dominant Class:'}</span>{' '}
+              {lang === 'HI'
+                ? (currentFleet.shares.cars >= currentFleet.shares.bikes ? 'यात्री कारें (सेडान व SUV)' : 'दोपहिया और बाइक')
+                : (currentFleet.shares.cars >= currentFleet.shares.bikes ? 'Passenger Cars (Sedans & SUVs)' : 'Two-Wheelers & Bikes')}
             </div>
             <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#003366] text-white">
-              YOLO Verified
+              YOLO {lang === 'HI' ? 'सत्यापित' : 'Verified'}
             </span>
           </div>
         </div>
@@ -509,10 +513,10 @@ const LiveVisionTelemetryPanel = ({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-[#0F2942] flex items-center gap-2">
               <Gauge size={16} className="text-[#003366]" />
-              Approach Spatial Flow & Congestion Severity
+              {lang === 'HI' ? 'पहुंच मार्ग स्थानिक प्रवाह एवं जाम की तीव्रता' : 'Approach Spatial Flow & Congestion Severity'}
             </h3>
             <span className="text-[10px] font-bold text-slate-500 uppercase">
-              Throughput: ~{flowInsights.flowRateVehPerMin} veh/min
+              {lang === 'HI' ? 'थ्रूपुट:' : 'Throughput:'} ~{flowInsights.flowRateVehPerMin} {lang === 'HI' ? 'वाहन/मिनट' : 'veh/min'}
             </span>
           </div>
 
@@ -520,10 +524,10 @@ const LiveVisionTelemetryPanel = ({
             {flowInsights.dirs.map(({ key, label, arrow, color }) => {
               const count = liveApproachCounts[key];
               const isVisible = count !== null;
-              const severityLabel = !isVisible ? 'Not In View'
-                : count > 6 ? 'Congested / High'
-                : count >= 3 ? 'Moderate Queue'
-                : 'Free Flowing';
+              const severityLabel = !isVisible ? (lang === 'HI' ? 'दृश्य में नहीं' : 'Not In View')
+                : count > 6 ? (lang === 'HI' ? 'जाम / उच्च' : 'Congested / High')
+                : count >= 3 ? (lang === 'HI' ? 'मध्यम कतार' : 'Moderate Queue')
+                : (lang === 'HI' ? 'सुचारू' : 'Free Flowing');
 
               const badgeStyle = !isVisible ? 'bg-slate-100 text-slate-400 border-slate-200'
                 : count > 6 ? 'bg-red-50 text-red-700 border-red-300'
@@ -542,7 +546,7 @@ const LiveVisionTelemetryPanel = ({
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-black text-[#0F2942]">
-                        {isVisible ? `${String(count).padStart(2, '0')} veh` : 'N/A'}
+                        {isVisible ? `${String(count).padStart(2, '0')} ${lang === 'HI' ? 'वाहन' : 'veh'}` : 'N/A'}
                       </span>
                       <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border ${badgeStyle}`}>
                         {severityLabel}
@@ -565,11 +569,11 @@ const LiveVisionTelemetryPanel = ({
 
           <div className="p-3 bg-white rounded-lg border border-[#CBD5E1] flex items-center justify-between text-xs">
             <span className="text-slate-600">
-              <span className="font-bold text-[#0F2942]">Total Visible Queue:</span>{' '}
-              {totalVisibleQueue !== null ? `${totalVisibleQueue} physical vehicles waiting` : 'N/A'}
+              <span className="font-bold text-[#0F2942]">{lang === 'HI' ? 'कुल दृश्य कतार:' : 'Total Visible Queue:'}</span>{' '}
+              {totalVisibleQueue !== null ? (lang === 'HI' ? `${totalVisibleQueue} शारीरिक वाहन प्रतीक्षारत` : `${totalVisibleQueue} physical vehicles waiting`) : 'N/A'}
             </span>
             <span className="text-[10px] font-bold text-slate-500 font-mono">
-              Timestamp: {currentTimeSec.toFixed(1)}s
+              {lang === 'HI' ? 'टाइमस्टैम्प:' : 'Timestamp:'} {currentTimeSec.toFixed(1)}s
             </span>
           </div>
         </div>
@@ -581,11 +585,11 @@ const LiveVisionTelemetryPanel = ({
         <div className="flex items-center gap-2">
           <Zap size={16} className="text-amber-400 shrink-0" />
           <span className="text-slate-200">
-            <strong>Direct Vision Pipeline:</strong> Detections, counts, and classification are derived 100% optically from CCTV pixels. No simulated queues or sample values.
+            <strong>{lang === 'HI' ? 'प्रत्यक्ष विजन पाइपलाइन:' : 'Direct Vision Pipeline:'}</strong> {lang === 'HI' ? 'पहचान, गणना और वर्गीकरण CCTV पिक्सल से 100% ऑप्टिकली व्युत्पन्न हैं। कोई सिमुलेटेड कतार या नमूना मान नहीं।' : 'Detections, counts, and classification are derived 100% optically from CCTV pixels. No simulated queues or sample values.'}
           </span>
         </div>
         <div className="flex items-center gap-2 text-[11px] font-mono text-amber-300 shrink-0">
-          <span>Active Tracks: #{currentFrameDetections.map(d => d.trackId).slice(0, 4).join(', #') || '0'}</span>
+          <span>{lang === 'HI' ? 'सक्रिय ट्रैक्स:' : 'Active Tracks:'} #{currentFrameDetections.map(d => d.trackId).slice(0, 4).join(', #') || '0'}</span>
         </div>
       </div>
 

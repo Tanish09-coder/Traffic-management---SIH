@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useSimulation } from '../context/SimulationContext';
+import { useLanguage } from '../context/LanguageContext';
 
 /**
  * SoundToggle Component
@@ -8,6 +9,7 @@ import { useSimulation } from '../context/SimulationContext';
  * whenever an emergency vehicle arrives or Emergency Mode is active.
  */
 export const SoundToggle = () => {
+  const { lang } = useLanguage();
   const [isMuted, setIsMuted] = useState(() => {
     return localStorage.getItem('stms-sound-muted') === 'true';
   });
@@ -122,12 +124,16 @@ export const SoundToggle = () => {
         }`}
         title={
           isMuted
-            ? 'Emergency Siren is Muted (Click to Unmute)'
+            ? (lang === 'HI' ? 'आपातकालीन सायरन म्यूट है (अनम्यूट करने के लिए क्लिक करें)' : 'Emergency Siren is Muted (Click to Unmute)')
             : isPlaying
-            ? 'Siren is Playing (Click to Mute)'
-            : 'Emergency Siren is Armed (Click to Mute)'
+            ? (lang === 'HI' ? 'सायरन बज रहा है (म्यूट करने के लिए क्लिक करें)' : 'Siren is Playing (Click to Mute)')
+            : (lang === 'HI' ? 'आपातकालीन सायरन तैयार है (म्यूट करने के लिए क्लिक करें)' : 'Emergency Siren is Armed (Click to Mute)')
         }
-        aria-label={isMuted ? 'Unmute Emergency Siren' : 'Mute Emergency Siren'}
+        aria-label={
+          isMuted
+            ? (lang === 'HI' ? 'आपातकालीन सायरन अनम्यूट करें' : 'Unmute Emergency Siren')
+            : (lang === 'HI' ? 'आपातकालीन सायरन म्यूट करें' : 'Mute Emergency Siren')
+        }
       >
         {isMuted ? (
           <VolumeX size={20} className="text-slate-400" />

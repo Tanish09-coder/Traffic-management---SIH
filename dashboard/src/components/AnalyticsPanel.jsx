@@ -12,26 +12,38 @@ import {
   Cell 
 } from 'recharts';
 import { 
-  Activity,
-  Layers,
-  Fuel,
-  Leaf,
-  IndianRupee,
-  Server,
-  Download,
-  Filter,
-  CheckCircle2
+  Activity
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const AnalyticsPanel = () => {
-  const { systemMetrics, analyticsHistory, junctions, systemMode, cycleTime } = useTraffic();
+  const { systemMetrics, analyticsHistory, junctions, systemMode } = useTraffic();
+  const { lang } = useLanguage();
   const [activeMetric, setActiveMetric] = useState('wait'); // 'wait' | 'flow'
 
   const vehicleClassData = [
-    { name: 'Two-Wheelers (0.5 PCU)', value: 48, pcuFactor: '0.5', color: '#F5A623', countPerHour: 2310 },
-    { name: 'Passenger Cars (1.0 PCU)', value: 40, pcuFactor: '1.0', color: '#0F2C59', countPerHour: 1928 },
-    { name: 'Buses & Heavies (2.5 PCU)', value: 12, pcuFactor: '2.5', color: '#1E4D8C', countPerHour: 578 }
+    { 
+      name: lang === 'HI' ? 'दोपहिया वाहन (0.5 PCU)' : 'Two-Wheelers (0.5 PCU)', 
+      value: 48, 
+      pcuFactor: '0.5', 
+      color: '#F5A623', 
+      countPerHour: 2310 
+    },
+    { 
+      name: lang === 'HI' ? 'यात्री कारें (1.0 PCU)' : 'Passenger Cars (1.0 PCU)', 
+      value: 40, 
+      pcuFactor: '1.0', 
+      color: '#0F2C59', 
+      countPerHour: 1928 
+    },
+    { 
+      name: lang === 'HI' ? 'बसें एवं भारी वाहन (2.5 PCU)' : 'Buses & Heavies (2.5 PCU)', 
+      value: 12, 
+      pcuFactor: '2.5', 
+      color: '#1E4D8C', 
+      countPerHour: 578 
+    }
   ];
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -62,10 +74,12 @@ export const AnalyticsPanel = () => {
           </div>
           <div>
             <h2 className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-              Telemetry Analytics & Environmental Audit Matrix
+              {lang === 'HI' ? 'टेलीमेट्री एनालिटिक्स एवं पर्यावरण ऑडिट मैट्रिक्स' : 'Telemetry Analytics & Environmental Audit Matrix'}
             </h2>
             <p className="text-[11px] text-[#475569]">
-              MoRTH / SIH // Real-time high-throughput queue aggregation and Webster delay curves
+              {lang === 'HI'
+                ? 'MoRTH / SIH // रीयल-टाइम उच्च-थ्रूपुट कतार एकत्रीकरण एवं वेबस्टर विलंब वक्र'
+                : 'MoRTH / SIH // Real-time high-throughput queue aggregation and Webster delay curves'}
             </p>
           </div>
         </div>
@@ -78,7 +92,7 @@ export const AnalyticsPanel = () => {
                 activeMetric === 'wait' ? 'bg-[#0F2C59] text-white shadow-xs' : 'text-[#475569] hover:text-[#0A1F44]'
               }`}
             >
-              Delay Curve
+              {lang === 'HI' ? 'विलंब वक्र' : 'Delay Curve'}
             </button>
             <button
               onClick={() => setActiveMetric('flow')}
@@ -86,7 +100,7 @@ export const AnalyticsPanel = () => {
                 activeMetric === 'flow' ? 'bg-[#0F2C59] text-white shadow-xs' : 'text-[#475569] hover:text-[#0A1F44]'
               }`}
             >
-              PCU Flow
+              {lang === 'HI' ? 'PCU प्रवाह' : 'PCU Flow'}
             </button>
           </div>
 
@@ -95,7 +109,9 @@ export const AnalyticsPanel = () => {
               ? 'bg-[#DCFCE7] border-[#BBF7D0] text-[#15803D]'
               : 'bg-[#FEF3C7] border-[#FDE68A] text-[#B45309]'
           }`}>
-            {systemMode === 'adaptive' ? 'ADAPTIVE AI' : 'FIXED PLAN'}
+            {systemMode === 'adaptive' 
+              ? (lang === 'HI' ? 'एडेप्टिव AI' : 'ADAPTIVE AI') 
+              : (lang === 'HI' ? 'फिक्स्ड योजना' : 'FIXED PLAN')}
           </span>
         </div>
       </div>
@@ -107,16 +123,18 @@ export const AnalyticsPanel = () => {
         <div className="lg:col-span-8 p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-2 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-              {activeMetric === 'wait' ? 'Comparative Delay Curve: Adaptive AI vs Fixed Plan (Seconds)' : 'Real-Time PCU Throughput Trend'}
+              {activeMetric === 'wait' 
+                ? (lang === 'HI' ? 'तुलनात्मक विलंब वक्र: एडेप्टिव AI बनाम फिक्स्ड बेसलाइन (सेकंड)' : 'Comparative Delay Curve: Adaptive AI vs Fixed Plan (Seconds)')
+                : (lang === 'HI' ? 'रीयल-टाइम PCU थ्रूपुट ट्रेंड' : 'Real-Time PCU Throughput Trend')}
             </span>
             <div className="flex items-center space-x-3 text-[10px]">
               <div className="flex items-center space-x-1">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]" />
-                <span className="font-bold text-[#0A1F44]">Adaptive AI</span>
+                <span className="font-bold text-[#0A1F44]">{lang === 'HI' ? 'एडेप्टिव AI' : 'Adaptive AI'}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
-                <span className="font-semibold text-[#475569]">Fixed Baseline</span>
+                <span className="font-semibold text-[#475569]">{lang === 'HI' ? 'फिक्स्ड बेसलाइन' : 'Fixed Baseline'}</span>
               </div>
             </div>
           </div>
@@ -131,7 +149,7 @@ export const AnalyticsPanel = () => {
                 <Area 
                   type="monotone" 
                   dataKey="dynamicWait" 
-                  name="Adaptive AI Wait" 
+                  name={lang === 'HI' ? 'एडेप्टिव AI विलंब' : 'Adaptive AI Wait'} 
                   stroke="#16A34A" 
                   strokeWidth={2} 
                   fill="#16A34A"
@@ -140,7 +158,7 @@ export const AnalyticsPanel = () => {
                 <Area 
                   type="monotone" 
                   dataKey="fixedWait" 
-                  name="Fixed Baseline Wait" 
+                  name={lang === 'HI' ? 'फिक्स्ड बेसलाइन विलंब' : 'Fixed Baseline Wait'} 
                   stroke="#DC2626" 
                   strokeWidth={2} 
                   fill="#DC2626"
@@ -151,9 +169,9 @@ export const AnalyticsPanel = () => {
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-[#E2E8F0] text-[10px] text-[#475569]">
-            <span>Cycle Sampling: 1000ms Interval</span>
-            <span className="text-[#16A34A] font-bold">Average Wait Reduction: -38.6%</span>
-            <span>Webster Delay Formula (IRC:106 Refinement)</span>
+            <span>{lang === 'HI' ? 'चक्र नमूनाकरण: 1000ms अंतराल' : 'Cycle Sampling: 1000ms Interval'}</span>
+            <span className="text-[#16A34A] font-bold">{lang === 'HI' ? 'औसत प्रतीक्षा में कमी: -38.6%' : 'Average Wait Reduction: -38.6%'}</span>
+            <span>{lang === 'HI' ? 'वेबस्टर विलंब सूत्र (IRC:106 परिशोधन)' : 'Webster Delay Formula (IRC:106 Refinement)'}</span>
           </div>
         </div>
 
@@ -161,7 +179,7 @@ export const AnalyticsPanel = () => {
         <div className="lg:col-span-4 p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-2 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-              Fleet Classification & PCU Mix
+              {lang === 'HI' ? 'वाहन बेड़ा वर्गीकरण एवं PCU मिश्रण' : 'Fleet Classification & PCU Mix'}
             </span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569]">IRC-106</span>
           </div>
@@ -209,10 +227,10 @@ export const AnalyticsPanel = () => {
       <div className="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-            Intersection Telemetry Audit Matrix (Live SCADA)
+            {lang === 'HI' ? 'इंटरसेक्शन टेलीमेट्री ऑडिट मैट्रिक्स (लाइव SCADA)' : 'Intersection Telemetry Audit Matrix (Live SCADA)'}
           </span>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F2C59]">
-            {junctions.length} NODES CONNECTED
+            {junctions.length} {lang === 'HI' ? 'नोड्स कनेक्टेड' : 'NODES CONNECTED'}
           </span>
         </div>
 
@@ -220,15 +238,15 @@ export const AnalyticsPanel = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-[#E2E8F0] text-[10px] text-[#475569] uppercase bg-[#F8FAFC]">
-                <th className="py-2 px-2.5 font-bold">NODE ID</th>
-                <th className="py-2 px-2.5 font-bold">LOCATION NAME</th>
-                <th className="py-2 px-2.5 font-bold">ACTIVE PHASE</th>
-                <th className="py-2 px-2.5 font-bold">PCU LOAD</th>
-                <th className="py-2 px-2.5 font-bold">ADAPTIVE GREEN</th>
-                <th className="py-2 px-2.5 font-bold">AVG DELAY</th>
-                <th className="py-2 px-2.5 font-bold">SAVED / VEH</th>
-                <th className="py-2 px-2.5 font-bold">SENSOR FPS</th>
-                <th className="py-2 px-2.5 font-bold">STATUS</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'नोड ID' : 'NODE ID'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'स्थान का नाम' : 'LOCATION NAME'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'सक्रिय चरण' : 'ACTIVE PHASE'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'PCU लोड' : 'PCU LOAD'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'एडेप्टिव ग्रीन' : 'ADAPTIVE GREEN'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'औसत विलंब' : 'AVG DELAY'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'बचत / वाहन' : 'SAVED / VEH'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'सेंसर FPS' : 'SENSOR FPS'}</th>
+                <th className="py-2 px-2.5 font-bold">{lang === 'HI' ? 'स्थिति' : 'STATUS'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0] text-[11px]">
@@ -268,35 +286,51 @@ export const AnalyticsPanel = () => {
       {/* Environmental ROI Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">IDLE FUEL CONSERVED</span>
+          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">
+            {lang === 'HI' ? 'बचाया गया निष्क्रिय ईंधन' : 'IDLE FUEL CONSERVED'}
+          </span>
           <div className="text-2xl font-black text-[#16A34A] tabular-nums">
-            {systemMetrics.fuelSavedLiters.toFixed(1)} Liters
+            {systemMetrics.fuelSavedLiters.toFixed(1)} {lang === 'HI' ? 'लीटर' : 'Liters'}
           </div>
-          <span className="text-[10px] text-[#94A3B8]">Rate: 0.00028 L/sec delay reduction</span>
+          <span className="text-[10px] text-[#94A3B8]">
+            {lang === 'HI' ? 'दर: 0.00028 L/sec विलंब कमी' : 'Rate: 0.00028 L/sec delay reduction'}
+          </span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">CO₂ EMISSIONS AVOIDED</span>
+          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">
+            {lang === 'HI' ? 'रोका गया CO₂ उत्सर्जन' : 'CO₂ EMISSIONS AVOIDED'}
+          </span>
           <div className="text-2xl font-black text-[#0F2C59] tabular-nums">
             {systemMetrics.co2ReducedKg.toFixed(1)} kg CO₂
           </div>
-          <span className="text-[10px] text-[#94A3B8]">Factor: 2.31 kg CO₂ / L gasoline</span>
+          <span className="text-[10px] text-[#94A3B8]">
+            {lang === 'HI' ? 'गुणांक: 2.31 kg CO₂ / L पेट्रोल' : 'Factor: 2.31 kg CO₂ / L gasoline'}
+          </span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">COMMUTER ECONOMIC VALUE</span>
+          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">
+            {lang === 'HI' ? 'यात्री आर्थिक मूल्य बचत' : 'COMMUTER ECONOMIC VALUE'}
+          </span>
           <div className="text-2xl font-black text-[#F5A623] tabular-nums">
             ₹{systemMetrics.totalCostSavedRupees.toLocaleString('en-IN')}
           </div>
-          <span className="text-[10px] text-[#94A3B8]">Retail fuel + Indian time value</span>
+          <span className="text-[10px] text-[#94A3B8]">
+            {lang === 'HI' ? 'ईंधन + भारतीय समय मूल्य' : 'Retail fuel + Indian time value'}
+          </span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">TOTAL VEHICLES PROCESSED</span>
+          <span className="text-[10px] text-[#475569] uppercase font-bold tracking-wider block">
+            {lang === 'HI' ? 'कुल संसाधित वाहन' : 'TOTAL VEHICLES PROCESSED'}
+          </span>
           <div className="text-2xl font-black text-[#0A1F44] tabular-nums">
             {systemMetrics.totalVehiclesPassed.toLocaleString()}
           </div>
-          <span className="text-[10px] text-[#16A34A] font-bold">0 Incident Gridlock Rate</span>
+          <span className="text-[10px] text-[#16A34A] font-bold">
+            {lang === 'HI' ? '0 घटना ग्रिडलॉक दर' : '0 Incident Gridlock Rate'}
+          </span>
         </div>
       </div>
 

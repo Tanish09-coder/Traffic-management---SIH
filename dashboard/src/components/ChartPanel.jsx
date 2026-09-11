@@ -1,6 +1,7 @@
 import React from 'react';
 import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { FileText } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const LANE_COLORS = {
   N: '#D97706', // Saffron / Amber
@@ -10,11 +11,15 @@ const LANE_COLORS = {
 };
 
 const ChartPanel = ({ metrics, state }) => {
+  const { lang } = useLanguage();
+
   if (!metrics && !state) {
     return (
       <div className="space-y-4">
         <div className="bg-slate-50 p-4 rounded-lg text-center border border-slate-200">
-          <p className="text-slate-400 text-xs font-semibold">Loading ICCC telemetry...</p>
+          <p className="text-slate-400 text-xs font-semibold">
+            {lang === 'HI' ? 'ICCC टेलीमेट्री लोड हो रही है...' : 'Loading ICCC telemetry...'}
+          </p>
         </div>
       </div>
     );
@@ -74,7 +79,6 @@ const ChartPanel = ({ metrics, state }) => {
   const queueYMax = Math.ceil(maxQueueCount * 1.25);
 
   const totalCars = state?.cars_passed ?? metrics?.total_cars ?? 0;
-  const avgTripTime = metrics?.avg_trip_time ?? (currentWait > 0 ? Number((currentWait * 0.85).toFixed(1)) : 0);
   const throughput = Math.round(state?.throughput ?? metrics?.throughput ?? 0);
 
   return (
@@ -82,9 +86,11 @@ const ChartPanel = ({ metrics, state }) => {
       {/* 1. Average Wait Time Chart */}
       <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold text-[#0F2942]">Average Wait Time (IRC:106)</h4>
+          <h4 className="text-xs font-bold text-[#0F2942]">
+            {lang === 'HI' ? 'औसत प्रतीक्षा समय (IRC:106)' : 'Average Wait Time (IRC:106)'}
+          </h4>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#CBD5E1] text-[#475569]">
-            Live Trend
+            {lang === 'HI' ? 'लाइव ट्रेंड' : 'Live Trend'}
           </span>
         </div>
         <div className="h-32 w-full">
@@ -116,7 +122,7 @@ const ChartPanel = ({ metrics, state }) => {
                   padding: '4px 8px',
                   color: '#0F2942'
                 }}
-                formatter={(value) => [`${value} sec`, 'Avg Delay']}
+                formatter={(value) => [`${value} sec`, lang === 'HI' ? 'औसत विलंब' : 'Avg Delay']}
               />
               <Line
                 type="monotone"
@@ -136,9 +142,11 @@ const ChartPanel = ({ metrics, state }) => {
       {/* 2. Current Queue Lengths Chart */}
       <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-xs font-bold text-[#0F2942]">Approach Queue Lengths</h4>
+          <h4 className="text-xs font-bold text-[#0F2942]">
+            {lang === 'HI' ? 'पहुंच कतार की लंबाई' : 'Approach Queue Lengths'}
+          </h4>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-[#CBD5E1] text-[#475569]">
-            Live Vehicles
+            {lang === 'HI' ? 'लाइव वाहन' : 'Live Vehicles'}
           </span>
         </div>
         <div className="h-32 w-full">
@@ -169,8 +177,8 @@ const ChartPanel = ({ metrics, state }) => {
                   color: '#0F2942'
                 }}
                 formatter={(value, name, props) => [
-                  `${value} vehicles`,
-                  `Approach ${props.payload.lane}`
+                  `${value} ${lang === 'HI' ? 'वाहन' : 'vehicles'}`,
+                  `${lang === 'HI' ? 'पहुंच' : 'Approach'} ${props.payload.lane}`
                 ]}
               />
               <Bar dataKey="count" radius={[3, 3, 0, 0]} maxBarSize={28} isAnimationActive={false}>
@@ -187,24 +195,26 @@ const ChartPanel = ({ metrics, state }) => {
       <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
         <div className="flex items-center space-x-1.5 mb-2">
           <FileText className="w-3.5 h-3.5 text-[#003366]" />
-          <h4 className="text-xs font-bold text-[#0F2942]">MoRTH Node Summary</h4>
+          <h4 className="text-xs font-bold text-[#0F2942]">
+            {lang === 'HI' ? 'MoRTH नोड सारांश' : 'MoRTH Node Summary'}
+          </h4>
         </div>
         <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 text-[11px]">
           <div className="flex justify-between">
-            <span className="text-[#475569]">Total Vehicles:</span>
+            <span className="text-[#475569]">{lang === 'HI' ? 'कुल वाहन:' : 'Total Vehicles:'}</span>
             <span className="font-bold text-[#0F2942]">{totalCars}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#475569]">Avg Delay:</span>
+            <span className="text-[#475569]">{lang === 'HI' ? 'औसत विलंब:' : 'Avg Delay:'}</span>
             <span className="font-bold text-[#0F2942]">{(Number(currentWait) || 0).toFixed(1)}s</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#475569]">Throughput:</span>
-            <span className="font-bold text-[#0F2942]">{throughput} veh/min</span>
+            <span className="text-[#475569]">{lang === 'HI' ? 'थ्रूपुट:' : 'Throughput:'}</span>
+            <span className="font-bold text-[#0F2942]">{throughput} {lang === 'HI' ? 'वाहन/मिनट' : 'veh/min'}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#475569]">Active Backlog:</span>
-            <span className="font-bold text-[#0F2942]">{totalActiveQueues} veh</span>
+            <span className="text-[#475569]">{lang === 'HI' ? 'सक्रिय बैकलाग:' : 'Active Backlog:'}</span>
+            <span className="font-bold text-[#0F2942]">{totalActiveQueues} {lang === 'HI' ? 'वाहन' : 'veh'}</span>
           </div>
         </div>
       </div>

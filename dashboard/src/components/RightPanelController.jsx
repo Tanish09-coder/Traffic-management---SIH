@@ -2,24 +2,20 @@ import React from 'react';
 import { 
   Cpu, 
   ShieldAlert, 
-  RotateCcw, 
-  SlidersHorizontal,
-  CheckCircle2,
-  Navigation
+  RotateCcw
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const RightPanelController = () => {
   const { 
     selectedJunction, 
-    junctions, 
-    setSelectedJunctionId, 
     setJunctionOverride, 
     emergencyCorridor,
     triggerScenario,
-    cancelEmergencyCorridor,
-    systemMode
+    cancelEmergencyCorridor
   } = useTraffic();
+  const { lang } = useLanguage();
 
   const isNSGreen = selectedJunction.activePhase === 'NS';
   const isEWGreen = selectedJunction.activePhase === 'EW';
@@ -40,13 +36,15 @@ export const RightPanelController = () => {
           <div className="flex items-center space-x-1.5">
             <Cpu className="w-3.5 h-3.5 text-[#0F2C59]" />
             <span className="text-[11px] font-mono font-bold text-zinc-200 uppercase tracking-wider">
-              SIGNAL CONTROLLER // {selectedJunction.code}
+              {lang === 'HI' ? 'सिग्नल नियंत्रक' : 'SIGNAL CONTROLLER'} // {selectedJunction.code}
             </span>
           </div>
           <span className={`px-1.5 py-0.2 text-[9px] font-mono font-bold rounded ${
             selectedJunction.isOverride ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300'
           }`}>
-            {selectedJunction.isOverride ? 'MANUAL' : 'AUTO-AI'}
+            {selectedJunction.isOverride 
+              ? (lang === 'HI' ? 'मैनुअल' : 'MANUAL') 
+              : (lang === 'HI' ? 'ऑटो-AI' : 'AUTO-AI')}
           </span>
         </div>
 
@@ -54,6 +52,7 @@ export const RightPanelController = () => {
         <div className="grid grid-cols-4 gap-1.5 font-mono text-center">
           {['N', 'S', 'E', 'W'].map(dir => {
             const state = getSignalState(dir);
+            const stateText = state === 'green' ? (lang === 'HI' ? 'हरा' : 'GREEN') : state === 'yellow' ? (lang === 'HI' ? 'पीला' : 'YELLOW') : (lang === 'HI' ? 'लाल' : 'RED');
             return (
               <div key={dir} className="p-1.5 rounded bg-zinc-950 border border-zinc-800 flex flex-col items-center">
                 <span className="text-[9px] text-zinc-500">{dir}</span>
@@ -65,7 +64,7 @@ export const RightPanelController = () => {
                   state === 'green' ? 'text-emerald-400' :
                   state === 'yellow' ? 'text-amber-400' : 'text-rose-400'
                 }`}>
-                  {state.toUpperCase()}
+                  {stateText}
                 </span>
               </div>
             );
@@ -75,7 +74,9 @@ export const RightPanelController = () => {
         {/* Phase Countdown & Split Comparison Bar */}
         <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 space-y-2">
           <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-zinc-400">ACTIVE PHASE COUNTDOWN:</span>
+            <span className="text-zinc-400">
+              {lang === 'HI' ? 'सक्रिय चरण उलटी गिनती:' : 'ACTIVE PHASE COUNTDOWN:'}
+            </span>
             <span className="text-sm font-bold text-emerald-400 tabular-nums">
               {selectedJunction.phaseTimer}s [{selectedJunction.activePhase}]
             </span>
@@ -90,8 +91,8 @@ export const RightPanelController = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-zinc-400 pt-1">
-            <div>Adaptive Split: <strong className="text-zinc-200">{selectedJunction.dynamicGreenTime}s</strong></div>
-            <div>Fixed Baseline: <strong className="text-zinc-400">{selectedJunction.fixedGreenTime}s</strong></div>
+            <div>{lang === 'HI' ? 'एडेप्टिव विभाजन:' : 'Adaptive Split:'} <strong className="text-zinc-200">{selectedJunction.dynamicGreenTime}s</strong></div>
+            <div>{lang === 'HI' ? 'फिक्स्ड बेसलाइन:' : 'Fixed Baseline:'} <strong className="text-zinc-400">{selectedJunction.fixedGreenTime}s</strong></div>
           </div>
         </div>
 
@@ -105,7 +106,7 @@ export const RightPanelController = () => {
                 : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:bg-zinc-800'
             }`}
           >
-            <span>Lock N-S Green</span>
+            <span>{lang === 'HI' ? 'उत्तर-दक्षिण ग्रीन लॉक' : 'Lock N-S Green'}</span>
             <kbd>[O]</kbd>
           </button>
 
@@ -117,7 +118,7 @@ export const RightPanelController = () => {
                 : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:bg-zinc-800'
             }`}
           >
-            <span>Lock E-W Green</span>
+            <span>{lang === 'HI' ? 'पूर्व-पश्चिम ग्रीन लॉक' : 'Lock E-W Green'}</span>
             <kbd>[O]</kbd>
           </button>
 
@@ -129,7 +130,7 @@ export const RightPanelController = () => {
                 : 'bg-zinc-950 text-amber-400 border-zinc-800 hover:bg-zinc-800'
             }`}
           >
-            Flash Amber
+            {lang === 'HI' ? 'फ्लैश एम्बर' : 'Flash Amber'}
           </button>
 
           <button
@@ -137,7 +138,7 @@ export const RightPanelController = () => {
             className="p-1.5 rounded text-[10px] font-mono font-medium bg-zinc-800 hover:bg-zinc-700 text-[#F5A623] border border-zinc-700 transition-colors cursor-pointer flex items-center justify-center space-x-1"
           >
             <RotateCcw className="w-2.5 h-2.5" />
-            <span>Reset Auto AI</span>
+            <span>{lang === 'HI' ? 'ऑटो AI रीसेट' : 'Reset Auto AI'}</span>
           </button>
         </div>
       </div>
@@ -152,13 +153,15 @@ export const RightPanelController = () => {
           <div className="flex items-center space-x-1.5">
             <ShieldAlert className={`w-3.5 h-3.5 ${emergencyCorridor.isActive ? 'text-rose-400 animate-pulse' : 'text-zinc-400'}`} />
             <span className="text-[11px] font-mono font-bold text-zinc-200 uppercase tracking-wider">
-              CORRIDOR PREEMPTION DOCK
+              {lang === 'HI' ? 'कॉरिडोर प्री-एम्प्शन डॉक' : 'CORRIDOR PREEMPTION DOCK'}
             </span>
           </div>
           <span className={`px-1.5 py-0.2 text-[9px] font-mono font-bold rounded ${
             emergencyCorridor.isActive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-zinc-800 text-zinc-400'
           }`}>
-            {emergencyCorridor.isActive ? 'ENGAGED' : 'STANDBY'}
+            {emergencyCorridor.isActive 
+              ? (lang === 'HI' ? 'संलग्न' : 'ENGAGED') 
+              : (lang === 'HI' ? 'स्टैंडबाय' : 'STANDBY')}
           </span>
         </div>
 
@@ -166,7 +169,7 @@ export const RightPanelController = () => {
           <div className="space-y-2 text-xs font-mono">
             <div className="p-2 rounded bg-zinc-950/80 border border-rose-500/30 space-y-1">
               <div className="flex justify-between text-zinc-400">
-                <span>UNIT: <strong className="text-rose-400">{emergencyCorridor.vehicleId}</strong></span>
+                <span>{lang === 'HI' ? 'इकाई:' : 'UNIT:'} <strong className="text-rose-400">{emergencyCorridor.vehicleId}</strong></span>
                 <span>ETA: <strong className="text-amber-400 tabular-nums">{emergencyCorridor.etaSeconds}s</strong></span>
               </div>
               <div className="text-[10px] text-zinc-400 truncate">
@@ -197,20 +200,22 @@ export const RightPanelController = () => {
               onClick={cancelEmergencyCorridor}
               className="w-full py-1.5 px-2 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-mono font-bold transition-colors cursor-pointer flex items-center justify-between"
             >
-              <span>Disengage Corridor Preemption</span>
+              <span>{lang === 'HI' ? 'कॉरिडोर प्री-एम्प्शन समाप्त करें' : 'Disengage Corridor Preemption'}</span>
               <kbd className="bg-rose-800 text-white border-rose-700">[E]</kbd>
             </button>
           </div>
         ) : (
           <div className="space-y-2">
             <p className="text-[11px] text-zinc-400 font-mono leading-tight">
-              Preemption ready for cardiac and trauma life support dispatch.
+              {lang === 'HI'
+                ? 'कार्डिएक एवं ट्रॉमा लाइफ सपोर्ट प्रेषण हेतु प्री-एम्प्शन तैयार।'
+                : 'Preemption ready for cardiac and trauma life support dispatch.'}
             </p>
             <button
               onClick={() => triggerScenario('emergency_ambulance')}
               className="w-full py-1.5 px-2.5 rounded bg-zinc-800 hover:bg-zinc-700 text-[#F5A623] border border-zinc-700 text-xs font-mono font-semibold transition-colors cursor-pointer flex items-center justify-between"
             >
-              <span>Dispatch Priority Ambulance</span>
+              <span>{lang === 'HI' ? 'प्राथमिकता एम्बुलेंस भेजें' : 'Dispatch Priority Ambulance'}</span>
               <kbd>[E]</kbd>
             </button>
           </div>

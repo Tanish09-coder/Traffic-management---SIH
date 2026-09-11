@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { 
   Video, 
-  Cpu, 
   ArrowUp, 
   ArrowDown, 
   ArrowLeft, 
-  ArrowRight, 
-  RotateCcw
+  ArrowRight
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const JunctionInspector = () => {
-  const { selectedJunction, setJunctionOverride } = useTraffic();
+  const { selectedJunction } = useTraffic();
+  const { lang } = useLanguage();
   const canvasRef = useRef(null);
 
   // Simulated YOLOv8 Bounding Box Stream with ROI Lane Counting Lines
@@ -88,10 +88,10 @@ export const JunctionInspector = () => {
   }, [selectedJunction]);
 
   const approaches = [
-    { dir: 'N', name: 'N-Approach', icon: ArrowUp, data: selectedJunction.approachData.N },
-    { dir: 'S', name: 'S-Approach', icon: ArrowDown, data: selectedJunction.approachData.S },
-    { dir: 'E', name: 'E-Approach', icon: ArrowRight, data: selectedJunction.approachData.E },
-    { dir: 'W', name: 'W-Approach', icon: ArrowLeft, data: selectedJunction.approachData.W }
+    { dir: 'N', name: lang === 'HI' ? 'उत्तर पहुंच' : 'N-Approach', icon: ArrowUp, data: selectedJunction.approachData.N },
+    { dir: 'S', name: lang === 'HI' ? 'दक्षिण पहुंच' : 'S-Approach', icon: ArrowDown, data: selectedJunction.approachData.S },
+    { dir: 'E', name: lang === 'HI' ? 'पूर्व पहुंच' : 'E-Approach', icon: ArrowRight, data: selectedJunction.approachData.E },
+    { dir: 'W', name: lang === 'HI' ? 'पश्चिम पहुंच' : 'W-Approach', icon: ArrowLeft, data: selectedJunction.approachData.W }
   ];
 
   return (
@@ -101,11 +101,11 @@ export const JunctionInspector = () => {
         <div className="flex items-center space-x-2">
           <Video className="w-3.5 h-3.5 text-[#0F2C59]" />
           <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-            CCTV / Computer Vision HUD [{selectedJunction.code}]
+            {lang === 'HI' ? 'CCTV / कंप्यूटर विजन HUD' : 'CCTV / Computer Vision HUD'} [{selectedJunction.code}]
           </span>
         </div>
         <div className="flex items-center space-x-2 text-xs">
-          <span className="text-[#64748B] text-[10px]">PHASE:</span>
+          <span className="text-[#64748B] text-[10px]">{lang === 'HI' ? 'चरण:' : 'PHASE:'}</span>
           <span className="font-bold text-[#16A34A]">{selectedJunction.activePhase}</span>
           <span className="px-1.5 py-0.2 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[#0A1F44] font-bold text-[10px]">
             {selectedJunction.phaseTimer}s
@@ -146,14 +146,14 @@ export const JunctionInspector = () => {
                   <span className={`text-[8px] font-bold px-1 py-0.2 rounded ${
                     isApproachGreen ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'
                   }`}>
-                    {isApproachGreen ? 'GRN' : 'RED'}
+                    {isApproachGreen ? (lang === 'HI' ? 'हरा' : 'GRN') : (lang === 'HI' ? 'लाल' : 'RED')}
                   </span>
                 </div>
                 <div className="font-bold text-[#0A1F44] text-xs tabular-nums">
                   {app.data.pcu} <span className="text-[8px] font-normal text-[#64748B]">PCU</span>
                 </div>
                 <div className="text-[9px] text-[#64748B] mt-0.5">
-                  {app.data.count} veh ({app.data.queueMeters}m)
+                  {app.data.count} {lang === 'HI' ? 'वाहन' : 'veh'} ({app.data.queueMeters}m)
                 </div>
               </div>
             );
@@ -163,11 +163,11 @@ export const JunctionInspector = () => {
         {/* Webster Timing & Split Bar */}
         <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between text-xs font-mono">
           <div className="flex items-center space-x-1.5">
-            <span className="text-[10px] text-[#64748B]">ADAPTIVE GREEN:</span>
+            <span className="text-[10px] text-[#64748B]">{lang === 'HI' ? 'एडेप्टिव ग्रीन:' : 'ADAPTIVE GREEN:'}</span>
             <span className="font-bold text-[#16A34A]">{selectedJunction.dynamicGreenTime}s</span>
           </div>
           <div className="flex items-center space-x-1.5">
-            <span className="text-[10px] text-[#64748B]">FIXED PLAN:</span>
+            <span className="text-[10px] text-[#64748B]">{lang === 'HI' ? 'फिक्स्ड योजना:' : 'FIXED PLAN:'}</span>
             <span className="font-bold text-[#475569]">{selectedJunction.fixedGreenTime}s</span>
           </div>
           <div className="text-[#16A34A] font-bold text-[10px]">

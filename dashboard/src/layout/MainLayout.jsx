@@ -1,15 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
 import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck, LayoutDashboard, TrafficCone, Video, LineChart, Landmark } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
   const [timeString, setTimeString] = useState('');
   const [dateString, setDateString] = useState('');
-  const [lang, setLang] = useState('EN'); // 'EN' | 'HI'
-  const [fontSizeClass, setFontSizeClass] = useState('font-size-normal'); // 'font-size-sm' | 'font-size-normal' | 'font-size-lg'
+  const { lang, setLang } = useLanguage();
+  const [fontSizeClass, setFontSizeClass] = useState(() => {
+    try {
+      return localStorage.getItem('stms_font_size') || 'font-size-normal';
+    } catch {
+      return 'font-size-normal';
+    }
+  });
   const [isZoneMenuOpen, setIsZoneMenuOpen] = useState(false);
   const [selectedZone, setSelectedZone] = useState('Mumbai BKC Corridor — Jn 04');
 
   const zoneMenuRef = useRef(null);
+
+  // Sync font size class to document.documentElement for universal rem scaling
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('font-size-sm', 'font-size-normal', 'font-size-lg');
+    root.classList.add(fontSizeClass);
+    try {
+      localStorage.setItem('stms_font_size', fontSizeClass);
+    } catch {
+      // ignore storage error
+    }
+  }, [fontSizeClass]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -43,9 +62,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
 
   const zones = [
     'Mumbai BKC Corridor — Jn 04',
-    'Pune Shivaji Nagar — Node 02',
-    'Delhi Ring Road — Jn 11',
-    'Bengaluru Outer Ring — Node 07'
+    'Pune Shivaji Nagar — Node 02'
   ];
 
   return (
@@ -82,7 +99,8 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
               <button
                 onClick={() => setFontSizeClass('font-size-sm')}
                 className={`px-1 hover:text-[#F5A623] cursor-pointer transition ${fontSizeClass === 'font-size-sm' ? 'text-[#F5A623] font-black' : 'text-slate-400'}`}
-                title="Small Font Size"
+                title={lang === 'HI' ? 'छोटा फ़ॉन्ट आकार (A-)' : 'Decrease Font Size (A-)'}
+                aria-label={lang === 'HI' ? 'छोटा फ़ॉन्ट आकार' : 'Decrease Font Size'}
               >
                 A-
               </button>
@@ -90,7 +108,8 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
               <button
                 onClick={() => setFontSizeClass('font-size-normal')}
                 className={`px-1 hover:text-[#F5A623] cursor-pointer transition ${fontSizeClass === 'font-size-normal' ? 'text-[#F5A623] font-black' : 'text-slate-400'}`}
-                title="Default Font Size"
+                title={lang === 'HI' ? 'सामान्य फ़ॉन्ट आकार (A)' : 'Standard Font Size (A)'}
+                aria-label={lang === 'HI' ? 'सामान्य फ़ॉन्ट आकार' : 'Standard Font Size'}
               >
                 A
               </button>
@@ -98,7 +117,8 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
               <button
                 onClick={() => setFontSizeClass('font-size-lg')}
                 className={`px-1 hover:text-[#F5A623] cursor-pointer transition ${fontSizeClass === 'font-size-lg' ? 'text-[#F5A623] font-black' : 'text-slate-400'}`}
-                title="Large Font Size"
+                title={lang === 'HI' ? 'बड़ा फ़ॉन्ट आकार (A+)' : 'Increase Font Size (A+)'}
+                aria-label={lang === 'HI' ? 'बड़ा फ़ॉन्ट आकार' : 'Increase Font Size'}
               >
                 A+
               </button>
@@ -127,11 +147,11 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
               <div className="cursor-pointer select-none" onClick={() => onNavigate && onNavigate('dashboard')}>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="font-black text-lg sm:text-xl tracking-tight text-[#0A1F44] leading-snug">
-                    Integrated Traffic Management System (ITMS)
+                    {lang === 'HI' ? 'एकीकृत यातायात प्रबंधन प्रणाली (ITMS)' : 'Integrated Traffic Management System (ITMS)'}
                   </h1>
                 </div>
                 <p className="text-xs text-[#475569] font-medium mt-0.5 flex flex-wrap items-center gap-2">
-                  <span>National Urban Transport Control • Ministry of Road Transport & Highways</span>
+                  <span>{lang === 'HI' ? 'राष्ट्रीय शहरी परिवहन नियंत्रण • सड़क परिवहन एवं राजमार्ग मंत्रालय' : 'National Urban Transport Control • Ministry of Road Transport & Highways'}</span>
                 </p>
               </div>
             </div>
@@ -152,7 +172,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                 {isZoneMenuOpen && (
                   <div className="absolute right-0 mt-2 w-72 rounded-xl shadow-xl py-1.5 z-50 bg-white border border-[#E2E8F0]">
                     <div className="px-3.5 py-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                      Active Smart City Corridors
+                      {lang === 'HI' ? 'सक्रिय स्मार्ट सिटी कॉरिडोर' : 'Active Smart City Corridors'}
                     </div>
                     {zones.map((zone) => (
                       <button
@@ -226,26 +246,30 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
               </div>
               <div>
                 <span className="font-bold text-slate-200">
-                  National Informatics Centre (NIC) Portal
+                  {lang === 'HI' ? 'राष्ट्रीय सूचना विज्ञान केंद्र (NIC) पोर्टल' : 'National Informatics Centre (NIC) Portal'}
                 </span>
                 <p className="text-[11px] text-slate-400">
-                  Ministry of Road Transport & Highways (MoRTH), Government of India
+                  {lang === 'HI' ? 'सड़क परिवहन एवं राजमार्ग मंत्रालय (MoRTH), भारत सरकार' : 'Ministry of Road Transport & Highways (MoRTH), Government of India'}
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-300">
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">GIGW Compliant</span>
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">NCAP Carbon Audited</span>
+              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">{lang === 'HI' ? 'GIGW अनुपालन' : 'GIGW Compliant'}</span>
+              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700">{lang === 'HI' ? 'NCAP कार्बन ऑडिटेड' : 'NCAP Carbon Audited'}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
             <div>
-              © 2026 Government of India • Content Owned & Maintained by MoRTH Integrated Command & Control Center.
+              {lang === 'HI'
+                ? '© 2026 भारत सरकार • सामग्री स्वामित्व एवं रखरखाव MoRTH एकीकृत कमान एवं नियंत्रण केंद्र द्वारा'
+                : '© 2026 Government of India • Content Owned & Maintained by MoRTH Integrated Command & Control Center.'}
             </div>
             <div>
-              Designed for Smart Mobility & Viksit Bharat @ 2047
+              {lang === 'HI'
+                ? 'स्मार्ट गतिशीलता व विकसित भारत @ 2047 के लिए संकल्पित'
+                : 'Designed for Smart Mobility & Viksit Bharat @ 2047'}
             </div>
           </div>
         </div>
