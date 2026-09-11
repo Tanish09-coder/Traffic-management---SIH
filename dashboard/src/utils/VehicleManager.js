@@ -1,6 +1,7 @@
 import { TRAFFIC_CONSTANTS } from './constants.js';
 
-const INTERSECTION_ENTRY_THRESHOLD = 42;
+const INTERSECTION_ENTRY_THRESHOLD = 38;
+const INTERSECTION_EXIT_THRESHOLD = 58;
 const MIN_VEHICLE_GAP = 5.5;
 const STOP_LINE_POSITION = 25;
 const QUEUE_APPROACH_SPEED = 1.2;
@@ -302,12 +303,21 @@ export class VehicleManager {
 
   isIntersectionOccupied() {
     const normalOccupied = Object.values(this.cars).some(lane =>
-      lane.some(car => car.inIntersection || (car.position > STOP_LINE_POSITION && car.position < 100))
+      lane.some(car => car.inIntersection || (car.position > STOP_LINE_POSITION && car.position <= INTERSECTION_EXIT_THRESHOLD))
     );
     const emgOccupied = !!(this.emergencyVehicle &&
-      (this.emergencyVehicle.inIntersection || (this.emergencyVehicle.position > STOP_LINE_POSITION && this.emergencyVehicle.position < 100))
+      (this.emergencyVehicle.inIntersection || (this.emergencyVehicle.position > STOP_LINE_POSITION && this.emergencyVehicle.position <= INTERSECTION_EXIT_THRESHOLD))
     );
     return normalOccupied || emgOccupied;
+  }
+
+  hasActiveCrossingVehicles(direction = null) {
+    if (direction && this.cars[direction]) {
+      return this.cars[direction].some(c => c.position > STOP_LINE_POSITION && c.position <= INTERSECTION_EXIT_THRESHOLD);
+    }
+    return Object.values(this.cars).some(lane =>
+      lane.some(c => c.position > STOP_LINE_POSITION && c.position <= INTERSECTION_EXIT_THRESHOLD)
+    );
   }
 
   /**
@@ -378,8 +388,10 @@ export class VehicleManager {
       const laneArr = this.cars[direction];
 
       const updatedCars = laneArr.filter(car => {
-        if (car.position >= INTERSECTION_ENTRY_THRESHOLD && !car.inIntersection) {
+        if (car.position > STOP_LINE_POSITION && car.position <= INTERSECTION_EXIT_THRESHOLD) {
           car.inIntersection = true;
+        } else {
+          car.inIntersection = false;
         }
 
         const isCommittedPastStopLine = car.position > STOP_LINE_POSITION;
@@ -490,8 +502,10 @@ export class VehicleManager {
         const targetPos = this.emergencyVehicle.position + Math.max(this.emergencyVehicle.speed || 8, 8) * deltaSec;
         this.emergencyVehicle.position = Math.min(targetPos, Math.max(this.emergencyVehicle.position + 2.0 * deltaSec, maxAllowedPos));
 
-        if (this.emergencyVehicle.position >= INTERSECTION_ENTRY_THRESHOLD) {
+        if (this.emergencyVehicle.position > STOP_LINE_POSITION && this.emergencyVehicle.position <= INTERSECTION_EXIT_THRESHOLD) {
           this.emergencyVehicle.inIntersection = true;
+        } else {
+          this.emergencyVehicle.inIntersection = false;
         }
 
         if (this.emergencyVehicle.position >= 100) {
