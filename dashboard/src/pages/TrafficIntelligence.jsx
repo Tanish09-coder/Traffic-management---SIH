@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSimulation } from '../context/SimulationContext';
 import { useLanguage } from '../context/LanguageContext';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Upload, 
-  Video, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Activity, 
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Upload,
+  Video,
+  CheckCircle2,
+  AlertTriangle,
+  Activity,
   ArrowRight,
   Layers,
   Crosshair,
@@ -26,8 +26,9 @@ import {
 } from 'lucide-react';
 import LiveVisionTelemetryPanel from '../components/LiveVisionTelemetryPanel';
 import fallbackBundledAnalysis from '../data/bundledVideoAnalysis.json';
+import { BACKEND_ORIGIN } from '../utils/backendUrl';
 
-const API_BASE = 'http://localhost:5000/api/video';
+const API_BASE = `${BACKEND_ORIGIN}/api/video`;
 
 const DEFAULT_REGION = [
   [0.01, 0.35],
@@ -86,9 +87,9 @@ const isPointInPolygon = (point, vs) => {
 
 const TrafficIntelligence = ({ onNavigate }) => {
   const { lang } = useLanguage();
-  const { 
-    startVideoDrivenSimulation, 
-    stopVideoDrivenSimulation, 
+  const {
+    startVideoDrivenSimulation,
+    stopVideoDrivenSimulation,
     videoReplayActive,
     videoReplayConfig,
     videoReplayStats,
@@ -693,7 +694,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
         // Track label in Noto Sans
         const trackLabel = (det.trackId !== null && det.trackId !== undefined) ? `#${det.trackId}` : 'untracked';
         const labelText = assignedDir ? `${displayType} ${trackLabel} [${assignedDir}]` : `${displayType} ${trackLabel}`;
-        
+
         ctx.font = 'bold 10px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
         const tagWidth = Math.max(60, ctx.measureText(labelText).width + 10);
         ctx.fillStyle = boxColor;
@@ -886,9 +887,9 @@ const TrafficIntelligence = ({ onNavigate }) => {
                     <AlertTriangle size={13} className="text-amber-100 shrink-0" />
                     <span>
                       {lang === 'HI' ? (
-                        <>पोर्ट 5000 पर बैकएंड सर्वर ऑफलाइन है • पूर्व-बंडल YOLOv8 बुद्धिमत्ता के साथ कार्यरत (<code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code> में <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> चलाएं)</>
+                        <>बैकएंड सर्वर ऑफलाइन है • पूर्व-बंडल YOLOv8 बुद्धिमत्ता के साथ कार्यरत (<code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code> में <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> चलाएं)</>
                       ) : (
-                        <>Backend server offline on port 5000 • Running with pre-bundled YOLOv8 intelligence (Run <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> in <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code>)</>
+                        <>Backend server offline • Running with pre-bundled YOLOv8 intelligence (Run <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> in <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code>)</>
                       )}
                     </span>
                   </div>
@@ -1193,9 +1194,8 @@ const TrafficIntelligence = ({ onNavigate }) => {
                         <span>{name}</span>
                         <span className="text-slate-400 font-bold">{arrow}</span>
                       </span>
-                      <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
-                        isVisible ? 'bg-[#003366] text-white' : 'bg-slate-200 text-slate-600'
-                      }`}>
+                      <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${isVisible ? 'bg-[#003366] text-white' : 'bg-slate-200 text-slate-600'
+                        }`}>
                         {isVisible ? (lang === 'HI' ? 'वीडियो AI' : 'Video AI') : (lang === 'HI' ? 'दृश्यमान नहीं' : 'Not Visible')}
                       </span>
                     </div>

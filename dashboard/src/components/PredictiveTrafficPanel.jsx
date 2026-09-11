@@ -22,8 +22,9 @@ import {
   Legend
 } from 'recharts';
 import { useLanguage } from '../context/LanguageContext';
+import { BACKEND_ORIGIN } from '../utils/backendUrl';
 
-const PREDICTION_API_BASE = 'http://localhost:5000/api/prediction';
+const PREDICTION_API_BASE = `${BACKEND_ORIGIN}/api/prediction`;
 
 const formatNumber = (val, decimals = 1) => {
   if (val === null || val === undefined || isNaN(val)) return 'N/A';
@@ -35,10 +36,10 @@ export const PredictiveTrafficPanel = () => {
   const [selectedDate, setSelectedDate] = useState('2023-01-17');
   const [availableTimes, setAvailableTimes] = useState([]);
   const [selectedTime, setSelectedTime] = useState('');
-  
+
   const [forecastData, setForecastData] = useState(null);
   const [validationData, setValidationData] = useState(null);
-  
+
   const [loadingTimes, setLoadingTimes] = useState(false);
   const [loadingForecast, setLoadingForecast] = useState(false);
   const [loadingValidation, setLoadingValidation] = useState(false);
@@ -80,7 +81,7 @@ export const PredictiveTrafficPanel = () => {
       const data = await res.json();
       const times = data.times || [];
       setAvailableTimes(times);
-      
+
       // Default to 10:00:00 if present, otherwise first available time
       if (times.includes('10:00:00')) {
         setSelectedTime('10:00:00');
@@ -249,7 +250,7 @@ export const PredictiveTrafficPanel = () => {
                 {lang === 'HI' ? 'चरण 1 केवल-प्रदर्शन' : 'Phase 1 Display-Only'}
               </span>
             </div>
-            
+
             <h2 className="text-xl sm:text-2xl font-black text-[#0F2942]">
               {lang === 'HI' ? 'पूर्वानुमानित यातायात इंटेलिजेंस' : 'Predictive Traffic Intelligence'}
             </h2>
@@ -527,13 +528,12 @@ export const PredictiveTrafficPanel = () => {
                   <div className="flex justify-between text-slate-600">
                     <span>{lang === 'HI' ? 'विचलन %:' : 'Deviation %:'}</span>
                     <span
-                      className={`font-bold ${
-                        (anomaly.deviationPercent ?? 0) > 50
+                      className={`font-bold ${(anomaly.deviationPercent ?? 0) > 50
                           ? 'text-rose-600'
                           : (anomaly.deviationPercent ?? 0) >= 25
-                          ? 'text-amber-600'
-                          : 'text-emerald-600'
-                      }`}
+                            ? 'text-amber-600'
+                            : 'text-emerald-600'
+                        }`}
                     >
                       {formatNumber(anomaly.deviationPercent)}%
                     </span>
@@ -605,7 +605,7 @@ export const PredictiveTrafficPanel = () => {
         </div>
 
         <p className="text-[11px] text-slate-500 italic pt-1">
-          {lang === 'HI' 
+          {lang === 'HI'
             ? 'MAE औसत PCU पूर्वानुमान त्रुटि दर्शाता है। WAPE वास्तविक यातायात मात्रा के सापेक्ष कुल पूर्वानुमान त्रुटि दर्शाता है।'
             : 'MAE shows the average PCU forecast error. WAPE shows total forecast error relative to actual traffic volume.'}
         </p>
