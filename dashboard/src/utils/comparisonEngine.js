@@ -176,7 +176,10 @@ export function runSingleSession({ strategy, arrivalTimeline, targetDurationSec,
       totalQueueTimeIntegral += stepTotalStopped * subDt;
 
       // Advance signal controller & vehicle physics
-      sm.updateSignal(stoppedQueues, stoppedQueues, queuedPCUs, oldestWaitTimes, subDt, isOccupied);
+      const hasCrossing = typeof vm.hasActiveCrossingVehicles === 'function'
+        ? vm.hasActiveCrossingVehicles(sm.currentSignal)
+        : false;
+      sm.updateSignal(stoppedQueues, stoppedQueues, queuedPCUs, oldestWaitTimes, subDt, isOccupied, hasCrossing);
       const stepUpdate = vm.updateVehicles(sm.currentSignal, sm.phase, subDt);
 
       // Track departures and departed wait times

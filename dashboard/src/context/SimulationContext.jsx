@@ -466,8 +466,12 @@ export const SimulationProvider = ({ children }) => {
           SignalOptimizer.clearDemandOverrides();
         }
 
+        const hasActiveCrossing = typeof vehicleManager.hasActiveCrossingVehicles === 'function'
+          ? vehicleManager.hasActiveCrossingVehicles(signalManager.currentSignal)
+          : false;
+
         // Advance signal controller with clearance occupancy check
-        signalManager.updateSignal(totalQueues, stoppedQueues, queuedPCUs, oldestWaitTimes, subDt, isIntersectionOccupied);
+        signalManager.updateSignal(totalQueues, stoppedQueues, queuedPCUs, oldestWaitTimes, subDt, isIntersectionOccupied, hasActiveCrossing);
 
         // Advance vehicle positions with clearance physics
         vehicleManager.updateVehicles(

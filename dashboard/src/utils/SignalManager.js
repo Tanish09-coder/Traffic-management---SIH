@@ -100,7 +100,7 @@ export class SignalManager {
    * Note: Emergency active mode allows YELLOW and ALL_RED clearance phases to advance,
    * reaching GREEN for the emergency approach before holding green priority.
    */
-  updateSignal(queues = {}, stoppedCounts = {}, queuedPCUs = {}, oldestWaitTimes = {}, dt = 1.0, isIntersectionOccupied = false) {
+  updateSignal(queues = {}, stoppedCounts = {}, queuedPCUs = {}, oldestWaitTimes = {}, dt = 1.0, isIntersectionOccupied = false, hasActiveCrossingVehicles = false) {
     const deltaSec = typeof dt === 'number' && dt > 0 ? dt : 1.0;
 
     // Accumulate wait time for non-green / stopped approaches
@@ -129,6 +129,16 @@ export class SignalManager {
       // Continuous green limit check: yield signal if approach exceeds max continuous green bound (60s)
       const maxContinuousGreen = TRAFFIC_CONSTANTS.SIGNAL_POLICY?.MAX_CONTINUOUS_GREEN || 60;
       if (this.continuousGreenTimeSec >= maxContinuousGreen) {
+        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, true);
+        return;
+      }
+
+      // Dynamic early switch when all queued vehicles have cleared past the opposite signal
+      const minGreen = TRAFFIC_CONSTANTS.SIGNAL_POLICY?.MIN_GREEN || 10;
+      const currentStopped = (stoppedCounts && stoppedCounts[this.currentSignal]) || 0;
+      const otherApproachesHaveDemand = Object.entries(stoppedCounts || {}).some(([d, cnt]) => d !== this.currentSignal && cnt > 0);
+
+      if (this.strategy === 'adaptive' && this.signalTimer >= minGreen && currentStopped === 0 && !hasActiveCrossingVehicles && otherApproachesHaveDemand) {
         this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, true);
         return;
       }
