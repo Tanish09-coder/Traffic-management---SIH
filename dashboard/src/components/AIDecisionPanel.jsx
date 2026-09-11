@@ -1,8 +1,10 @@
 import React from 'react';
 import { Cpu, Layers, AlertCircle, Clock, Database, PlayCircle, Info, CheckCircle2, ArrowRight, Activity } from 'lucide-react';
 import { useSimulation } from '../context/SimulationContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
+  const { lang } = useLanguage();
   const {
     state,
     strategy,
@@ -50,11 +52,11 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-base font-bold text-[#0A1F44]">
-                MoRTH Adaptive Signal Controller & Demand Optimization
+                {lang === 'HI' ? 'MoRTH अनुकूली सिग्नल नियंत्रक एवं मांग अनुकूलन' : 'MoRTH Adaptive Signal Controller & Demand Optimization'}
               </h3>
             </div>
             <p className="text-xs text-[#475569]">
-              Real-time PCU demand allocation, 35s starvation protection & dynamic weather clearance
+              {lang === 'HI' ? 'रीयल-टाइम PCU मांग आवंटन, 35s स्टार्वेशन सुरक्षा एवं गतिशील मौसम निकासी' : 'Real-time PCU demand allocation, 35s starvation protection & dynamic weather clearance'}
             </p>
           </div>
         </div>
@@ -63,10 +65,10 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         <button
           onClick={activatePredictivePuneDemo}
           className="flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg text-white shadow-xs transition-all hover:bg-[#163A6B] active:scale-95 cursor-pointer bg-[#0F2C59] border border-[#1E4D8C]"
-          title="Preset: Set Traffic Source to Pune Historical & Strategy to Predictive Adaptive"
+          title={lang === 'HI' ? 'प्रीसेट: ट्रैफिक स्रोत को पुणे ऐतिहासिक और रणनीति को प्रिडिक्टिव एडेप्टिव पर सेट करें' : 'Preset: Set Traffic Source to Pune Historical & Strategy to Predictive Adaptive'}
         >
           <PlayCircle className="w-4 h-4 text-[#F5A623]" />
-          <span>Predict & Optimize</span>
+          <span>{lang === 'HI' ? 'पूर्वानुमान एवं अनुकूलन' : 'Predict & Optimize'}</span>
           <span className="text-xs text-[#F5A623]">▶</span>
         </button>
       </div>
@@ -76,13 +78,13 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         {/* Optimization Mode */}
         <div className="flex items-center space-x-2">
           <span className="text-xs font-bold text-[#475569]">
-            Optimization Mode:
+            {lang === 'HI' ? 'अनुकूलन मोड:' : 'Optimization Mode:'}
           </span>
           <div className="flex items-center space-x-1 p-1 rounded-md bg-[#E2E8F0]">
             {[
-              { id: 'fixed', label: 'Fixed' },
-              { id: 'adaptive', label: 'Adaptive' },
-              { id: 'predictive', label: 'Predictive' }
+              { id: 'fixed', label: lang === 'HI' ? 'स्थिर' : 'Fixed' },
+              { id: 'adaptive', label: lang === 'HI' ? 'अनुकूली' : 'Adaptive' },
+              { id: 'predictive', label: lang === 'HI' ? 'पूर्वानुमानित' : 'Predictive' }
             ].map(({ id, label }) => {
               const isActive = strategy === id;
               return (
@@ -105,7 +107,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         {/* Demand Source */}
         <div className="flex items-center space-x-2">
           <span className="text-xs font-bold text-[#475569]">
-            Demand Source:
+            {lang === 'HI' ? 'मांग स्रोत:' : 'Demand Source:'}
           </span>
           <div className="flex items-center space-x-1 p-1 rounded-md bg-[#E2E8F0]">
             <button
@@ -116,7 +118,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                   : 'text-slate-600 hover:text-[#0A1F44]'
               }`}
             >
-              Synthetic
+              {lang === 'HI' ? 'सिंथेटिक' : 'Synthetic'}
             </button>
             <button
               onClick={() => setTrafficSource('pune_historical')}
@@ -126,11 +128,11 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                   : 'text-slate-600 hover:text-[#0A1F44]'
               }`}
             >
-              Pune Jan 17
+              {lang === 'HI' ? 'पुणे 17 जन' : 'Pune Jan 17'}
             </button>
             {trafficSource === 'recorded_video' && (
               <span className="px-3 py-1 text-xs font-bold rounded bg-[#F5A623] text-white">
-                Recorded Video
+                {lang === 'HI' ? 'रिकॉर्डेड वीडियो' : 'Recorded Video'}
               </span>
             )}
           </div>
@@ -142,18 +144,18 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
         <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A]">
           <div className="flex items-center space-x-2">
             <Database className="w-3.5 h-3.5 text-[#16A34A]" />
-            <span className="font-bold">Traffic Source: Pune Historical Replay (Deterministic)</span>
+            <span className="font-bold">{lang === 'HI' ? 'ट्रैफिक स्रोत: पुणे ऐतिहासिक रीप्ले (नियत)' : 'Traffic Source: Pune Historical Replay (Deterministic)'}</span>
             <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#DCFCE7] text-[#15803D]">
-              Jan 17, 2023 ({state?.predictiveTimestamp || '09:00:00'})
+              {lang === 'HI' ? '17 जन, 2023' : 'Jan 17, 2023'} ({state?.predictiveTimestamp || '09:00:00'})
             </span>
           </div>
           <div className="text-[10px] font-mono flex items-center space-x-2 text-[#15803D]">
-            <span>Due: {historicalReplayStats?.scheduledDue ?? 0}</span>
-            <span>Accepted: {historicalReplayStats?.accepted ?? 0}</span>
+            <span>{lang === 'HI' ? 'देय:' : 'Due:'} {historicalReplayStats?.scheduledDue ?? 0}</span>
+            <span>{lang === 'HI' ? 'स्वीकृत:' : 'Accepted:'} {historicalReplayStats?.accepted ?? 0}</span>
             <span className="text-[#94A3B8]">
-              (Road: {historicalReplayStats?.currentlyOnRoad ?? 0}, Backlog: {historicalReplayStats?.pendingBacklog ?? 0}, Exited: {historicalReplayStats?.completed ?? 0})
+              ({lang === 'HI' ? 'सड़क:' : 'Road:'} {historicalReplayStats?.currentlyOnRoad ?? 0}, {lang === 'HI' ? 'बैकलॉग:' : 'Backlog:'} {historicalReplayStats?.pendingBacklog ?? 0}, {lang === 'HI' ? 'बाहर निकले:' : 'Exited:'} {historicalReplayStats?.completed ?? 0})
             </span>
-            <span className="font-bold px-1.5 rounded text-[#16A34A] bg-[#F0FDF4]">Loss: 0</span>
+            <span className="font-bold px-1.5 rounded text-[#16A34A] bg-[#F0FDF4]">{lang === 'HI' ? 'नुकसान: 0' : 'Loss: 0'}</span>
           </div>
         </div>
       )}
@@ -167,8 +169,8 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             />
             <span className="font-semibold">
               {state?.predictiveStatus === 'fallback'
-                ? 'Predictive Demand: Fallback to Current PCU'
-                : 'Predictive Demand: Active Fusion Model'}
+                ? (lang === 'HI' ? 'पूर्वानुमानित मांग: वर्तमान PCU पर फॉलबैक' : 'Predictive Demand: Fallback to Current PCU')
+                : (lang === 'HI' ? 'पूर्वानुमानित मांग: सक्रिय फ्यूजन मॉडल' : 'Predictive Demand: Active Fusion Model')}
             </span>
           </div>
           {state?.predictiveTimestamp && (
@@ -183,7 +185,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {isStaged && (
         <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-[#F5A623]" />
-          <span>Strategy change to <strong>{stagedStrategy}</strong> staged; applying at next phase boundary.</span>
+          <span>{lang === 'HI' ? <>रणनीति परिवर्तन <strong>{stagedStrategy}</strong> तैयार; अगले चरण पर लागू होगा।</> : <>Strategy change to <strong>{stagedStrategy}</strong> staged; applying at next phase boundary.</>}</span>
         </div>
       )}
 
@@ -199,7 +201,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {!useMock && (
         <div className="mb-3 text-[11px] px-3.5 py-2 rounded-xl flex items-center space-x-2 bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F2C59]">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-[#0F2C59]" />
-          <span>Backend mode active. Local heuristic strategy controls are disabled.</span>
+          <span>{lang === 'HI' ? 'बैकएंड मोड सक्रिय है। स्थानीय अनुमानी रणनीति नियंत्रण अक्षम हैं।' : 'Backend mode active. Local heuristic strategy controls are disabled.'}</span>
         </div>
       )}
 
@@ -210,7 +212,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="flex items-center space-x-1.5 mb-1">
             <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              Active Signal
+              {lang === 'HI' ? 'सक्रिय सिग्नल' : 'Active Signal'}
             </span>
           </div>
           <div className="flex items-center space-x-2 mt-1">
@@ -224,7 +226,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                 color: phase === 'GREEN' ? '#15803D' : phase === 'YELLOW' ? '#B45309' : '#DC2626'
               }}
             >
-              {phase || 'GREEN'}
+              {phase === 'GREEN' ? (lang === 'HI' ? 'हरा' : 'GREEN') : phase === 'YELLOW' ? (lang === 'HI' ? 'पीला' : 'YELLOW') : (lang === 'HI' ? 'लाल' : 'RED')}
             </span>
           </div>
         </div>
@@ -234,15 +236,15 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="flex items-center space-x-1.5 mb-1">
             <Clock className="w-3 h-3 text-[#475569]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              {phase_label || 'Green Remaining'}
+              {phase_label ? (lang === 'HI' ? 'शेष ग्रीन समय' : phase_label) : (lang === 'HI' ? 'शेष ग्रीन समय' : 'Green Remaining')}
             </span>
           </div>
           <div className="flex items-baseline space-x-1 mt-1">
             <span className="text-xl font-black text-[#0A1F44]">
-              {clearance_status ? 'Clear' : `${phase_remaining_sec ?? 2}s`}
+              {clearance_status ? (lang === 'HI' ? 'साफ़' : 'Clear') : `${phase_remaining_sec ?? 2}s`}
             </span>
             <span className="text-xs text-[#94A3B8]">
-              / {active_green_duration || 26}s cycle
+              / {active_green_duration || 26}{lang === 'HI' ? 's चक्र' : 's cycle'}
             </span>
           </div>
         </div>
@@ -252,7 +254,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="flex items-center space-x-1.5 mb-1">
             <ArrowRight className="w-3 h-3 text-[#0F2C59]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              Next Pending
+              {lang === 'HI' ? 'अगला लंबित' : 'Next Pending'}
             </span>
           </div>
           <div className="flex items-baseline space-x-1 mt-1">
@@ -270,11 +272,11 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="flex items-center space-x-1.5 mb-1">
             <Activity className="w-3 h-3 text-[#475569]" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#475569]">
-              Strategy Mode
+              {lang === 'HI' ? 'रणनीति मोड' : 'Strategy Mode'}
             </span>
           </div>
           <div className="text-base font-black text-[#0A1F44] capitalize mt-1.5">
-            {strategy || 'Adaptive'}
+            {strategy === 'adaptive' ? (lang === 'HI' ? 'अनुकूली' : 'Adaptive') : strategy === 'fixed' ? (lang === 'HI' ? 'स्थिर' : 'Fixed') : strategy === 'predictive' ? (lang === 'HI' ? 'पूर्वानुमानित' : 'Predictive') : (strategy || 'Adaptive')}
           </div>
         </div>
       </div>
@@ -282,7 +284,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
       {/* 4. Approach Demand (PCU) Cards matching screenshot */}
       <div className="mb-4">
         <span className="text-[10px] font-bold uppercase tracking-wider block mb-2 text-[#475569]">
-          Approach Demand (PCU) / Vehicle Mapping • Upstream Backlog
+          {lang === 'HI' ? 'पहुंच मांग (PCU) / वाहन मैपिंग • अपस्ट्रीम बैकलॉग' : 'Approach Demand (PCU) / Vehicle Mapping • Upstream Backlog'}
         </span>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -311,7 +313,7 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
                   </span>
                 </div>
                 <div className="text-[10px] text-slate-500 mb-2 truncate">
-                  ({visibleStopped} vehicles mapped{backlog > 0 ? ` + ${backlog} b/l` : ''})
+                  ({visibleStopped} {lang === 'HI' ? 'वाहन मैप' : 'vehicles mapped'}{backlog > 0 ? ` + ${backlog} b/l` : ''})
                 </div>
                 {/* Horizontal Progress Bar */}
                 <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
@@ -332,9 +334,9 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="mb-2 text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F8FAFC] border border-[#E2E8F0]">
             <Info className="w-4 h-4 text-[#0F2C59] flex-shrink-0" />
             <div className="truncate">
-              <span className="font-bold text-[#0A1F44] mr-1.5">Allocation Snapshot:</span>
+              <span className="font-bold text-[#0A1F44] mr-1.5">{lang === 'HI' ? 'आवंटन स्नैपशॉट:' : 'Allocation Snapshot:'}</span>
               <span className="font-mono text-[#0F2C59]">
-                {decision?.allocationExplanation || 'Allocated from 0 PCU: 10s base green allocation (Adaptive cycle initialized).'}
+                {decision?.allocationExplanation || (lang === 'HI' ? '0 PCU से आवंटित: 10s बेस ग्रीन आवंटन (अनुकूली चक्र प्रारंभ)।' : 'Allocated from 0 PCU: 10s base green allocation (Adaptive cycle initialized).')}
               </span>
             </div>
           </div>
@@ -343,9 +345,9 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
           <div className="text-xs rounded-xl p-2.5 flex items-center space-x-2 bg-[#F0FDF4] border border-[#DCFCE7]">
             <CheckCircle2 className="w-4 h-4 text-[#16A34A] flex-shrink-0" />
             <div className="truncate">
-              <span className="font-bold text-[#0A1F44] mr-1.5">Recommendation Reason:</span>
+              <span className="font-bold text-[#0A1F44] mr-1.5">{lang === 'HI' ? 'सिफारिश का कारण:' : 'Recommendation Reason:'}</span>
               <span className="text-[#475569]">
-                {decision?.reason || 'Adaptive mode active: Monitoring real-time arrival queues across all approaches.'}
+                {decision?.reason || (lang === 'HI' ? 'अनुकूली मोड सक्रिय: सभी पहुंच मार्गों पर रीयल-टाइम कतारों की निगरानी।' : 'Adaptive mode active: Monitoring real-time arrival queues across all approaches.')}
               </span>
             </div>
           </div>

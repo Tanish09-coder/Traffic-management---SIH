@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Target, Zap, Fuel, Clock, Leaf, IndianRupee, AlertTriangle, Siren, TrafficCone, ArrowUp, ArrowRight, ArrowDown, ArrowLeft, PersonStanding, Hand, ShieldCheck, CheckCircle2, XCircle, Radio, RotateCcw, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTrafficData } from '../utils/useTrafficData';
+import { useLanguage } from '../context/LanguageContext';
 import Car from '../components/car';
 import TrafficLight from '../components/TrafficLight';
 import PedestrianLight from '../components/PedestrianLight';
@@ -10,6 +11,7 @@ import Loader from '../components/Loader';
 import StatCard from '../components/StatCard';
 
 const LiveIntersection = () => {
+  const { lang } = useLanguage();
   const { 
     state, 
     metrics, 
@@ -158,7 +160,7 @@ const LiveIntersection = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader message="Loading Intelligent Mumbai Traffic System..." />
+        <Loader message={lang === 'HI' ? 'इंटेलिजेंट मुंबई यातायात प्रणाली लोड हो रही है...' : 'Loading Intelligent Mumbai Traffic System...'} />
       </div>
     );
   }
@@ -200,9 +202,15 @@ const LiveIntersection = () => {
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <AlertTriangle size={20} className="text-amber-500" />
                   </div>
-                  <h2 className="text-xl font-bold text-red-600 mb-2">MANUAL OVERRIDE WARNING</h2>
+                  <h2 className="text-xl font-bold text-red-600 mb-2">
+                    {lang === 'HI' ? 'मैनुअल ओवरराइड चेतावनी' : 'MANUAL OVERRIDE WARNING'}
+                  </h2>
                   <p className="text-gray-700 text-sm">
-                    You are about to override the Mumbai AI traffic management system for direction <strong>{selectedOverrideDirection}</strong>.
+                    {lang === 'HI' ? (
+                      <>आप दिशा <strong>{selectedOverrideDirection}</strong> के लिए मुंबई AI यातायात प्रबंधन प्रणाली को ओवरराइड करने जा रहे हैं।</>
+                    ) : (
+                      <>You are about to override the Mumbai AI traffic management system for direction <strong>{selectedOverrideDirection}</strong>.</>
+                    )}
                   </p>
                 </div>
                 
@@ -210,12 +218,14 @@ const LiveIntersection = () => {
                   <div className="flex items-start space-x-2">
                     <Siren size={16} className="text-yellow-600" />
                     <div className="text-sm text-yellow-800">
-                      <p className="font-semibold mb-1">MUMBAI TRAFFIC POLICE NOTICE:</p>
+                      <p className="font-semibold mb-1">
+                        {lang === 'HI' ? 'मुंबई ट्रैफिक पुलिस सूचना:' : 'MUMBAI TRAFFIC POLICE NOTICE:'}
+                      </p>
                       <ul className="list-disc list-inside space-y-1 text-xs">
-                        <li>This action will be logged and monitored by Mumbai Traffic Police</li>
-                        <li>Override will automatically disable after 60 seconds</li>
-                        <li>You are responsible for any traffic disruption caused</li>
-                        <li>Emergency vehicles will still have priority</li>
+                        <li>{lang === 'HI' ? 'यह कार्रवाई मुंबई ट्रैफिक पुलिस द्वारा लॉग और मॉनिटर की जाएगी' : 'This action will be logged and monitored by Mumbai Traffic Police'}</li>
+                        <li>{lang === 'HI' ? 'ओवरराइड 60 सेकंड के बाद स्वचालित रूप से अक्षम हो जाएगा' : 'Override will automatically disable after 60 seconds'}</li>
+                        <li>{lang === 'HI' ? 'उत्पन्न किसी भी यातायात व्यवधान के लिए आप उत्तरदायी हैं' : 'You are responsible for any traffic disruption caused'}</li>
+                        <li>{lang === 'HI' ? 'आपातकालीन वाहनों को निरंतर प्राथमिकता मिलेगी' : 'Emergency vehicles will still have priority'}</li>
                       </ul>
                     </div>
                   </div>
@@ -223,7 +233,7 @@ const LiveIntersection = () => {
 
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Reason for Override *
+                    {lang === 'HI' ? 'ओवरराइड का कारण *' : 'Reason for Override *'}
                   </label>
                   <select
                     value={overrideReason}
@@ -231,30 +241,30 @@ const LiveIntersection = () => {
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     required
                   >
-                    <option value="">Select reason...</option>
-                    <option value="VIP Movement">VIP Movement</option>
-                    <option value="Accident Management">Accident Management</option>
-                    <option value="Road Construction">Road Construction</option>
-                    <option value="Festival/Special Event">Festival/Special Event</option>
-                    <option value="System Malfunction">System Malfunction</option>
-                    <option value="Heavy Traffic Congestion">Heavy Traffic Congestion</option>
-                    <option value="Other">Other</option>
+                    <option value="">{lang === 'HI' ? 'कारण चुनें...' : 'Select reason...'}</option>
+                    <option value="VIP Movement">{lang === 'HI' ? 'VIP आवागमन' : 'VIP Movement'}</option>
+                    <option value="Accident Management">{lang === 'HI' ? 'दुर्घटना प्रबंधन' : 'Accident Management'}</option>
+                    <option value="Road Construction">{lang === 'HI' ? 'सड़क निर्माण कार्य' : 'Road Construction'}</option>
+                    <option value="Festival/Special Event">{lang === 'HI' ? 'त्योहार / विशेष कार्यक्रम' : 'Festival/Special Event'}</option>
+                    <option value="System Malfunction">{lang === 'HI' ? 'सिस्टम में खराबी' : 'System Malfunction'}</option>
+                    <option value="Heavy Traffic Congestion">{lang === 'HI' ? 'अत्यधिक यातायात भीड़भाड़' : 'Heavy Traffic Congestion'}</option>
+                    <option value="Other">{lang === 'HI' ? 'अन्य' : 'Other'}</option>
                   </select>
                 </div>
 
                 <div className="flex space-x-3">
                   <button
                     onClick={cancelOverride}
-                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium"
+                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium cursor-pointer"
                   >
-                    Cancel
+                    {lang === 'HI' ? 'रद्द करें' : 'Cancel'}
                   </button>
                   <button
                     onClick={confirmOverride}
                     disabled={!overrideReason.trim()}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    Confirm Override
+                    {lang === 'HI' ? 'ओवरराइड की पुष्टि करें' : 'Confirm Override'}
                   </button>
                 </div>
               </motion.div>
@@ -268,16 +278,16 @@ const LiveIntersection = () => {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="px-2 py-0.5 rounded bg-[#0A1F44] text-[#F5A623] text-[10px] font-extrabold uppercase tracking-wider border border-[#1E4D8C]">
-                  MoRTH Live Actuation
+                  {lang === 'HI' ? 'MoRTH लाइव एक्टिवेशन' : 'MoRTH Live Actuation'}
                 </span>
-                <span className="text-xs font-semibold text-[#475569]">Node #04</span>
+                <span className="text-xs font-semibold text-[#475569]">{lang === 'HI' ? 'नोड #04' : 'Node #04'}</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-[#0A1F44] mt-1">
-                Integrated Traffic Management System (ITMS) • Live Junction
+                {lang === 'HI' ? 'एकीकृत यातायात प्रबंधन प्रणाली (ITMS) • लाइव जंक्शन' : 'Integrated Traffic Management System (ITMS) • Live Junction'}
               </h1>
               <p className="text-xs text-[#475569] mt-0.5 flex items-center gap-1.5">
                 <MapPin size={14} className="text-[#0F2C59]" />
-                <span>BKC Financial District, Mumbai Metropolitan Region</span>
+                <span>{lang === 'HI' ? 'BKC वित्तीय क्षेत्र, मुंबई महानगर क्षेत्र' : 'BKC Financial District, Mumbai Metropolitan Region'}</span>
               </p>
               
               {/* Target Achievement Indicator */}
@@ -288,21 +298,23 @@ const LiveIntersection = () => {
                     : 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
                 }`}>
                   <Target size={14} />
-                  <span>{targetAchieved ? 'Target Achieved' : 'Target: 20-30s Avg Delay'}</span>
+                  <span>{targetAchieved ? (lang === 'HI' ? 'लक्ष्य प्राप्त' : 'Target Achieved') : (lang === 'HI' ? 'लक्ष्य: 20-30s औसत विलंब' : 'Target: 20-30s Avg Delay')}</span>
                 </div>
                 <div className="text-xs text-[#475569]">
-                  Current Wait: {(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s
+                  {lang === 'HI'
+                    ? `वर्तमान प्रतीक्षा: ${(state?.avg_wait_time ?? 0).toFixed(1)}s | नियत बेसलाइन: 45.0s`
+                    : `Current Wait: ${(state?.avg_wait_time ?? 0).toFixed(1)}s | Fixed Baseline: 45.0s`}
                 </div>
               </div>
             </div>
             <div className="text-right">
               {overrideActive && (
                 <div className="text-xs text-[#DC2626] font-bold">
-                  Police Manual Override
+                  {lang === 'HI' ? 'पुलिस मैनुअल ओवरराइड' : 'Police Manual Override'}
                 </div>
               )}
               <div className="text-xs text-[#0F2C59] font-bold mt-1">
-                Delay Improvement: {mumbaiStats.waitTimeImprovement.toFixed(1)}s
+                {lang === 'HI' ? `विलंब में सुधार: ${mumbaiStats.waitTimeImprovement.toFixed(1)}s` : `Delay Improvement: ${mumbaiStats.waitTimeImprovement.toFixed(1)}s`}
               </div>
             </div>
           </div>
@@ -322,10 +334,12 @@ const LiveIntersection = () => {
                   <div className="w-4 h-4 bg-[#DC2626] rounded-full animate-ping"></div>
                   <div>
                     <p className="font-bold flex items-center gap-2">
-                      <Siren size={16} /> MUMBAI MANUAL OVERRIDE ACTIVE
+                      <Siren size={16} /> {lang === 'HI' ? 'मुंबई मैनुअल ओवरराइड सक्रिय' : 'MUMBAI MANUAL OVERRIDE ACTIVE'}
                     </p>
                     <p className="text-sm text-[#991B1B]">
-                      Signal manually controlled • Auto-disable in {overrideStartTime ? 60 - Math.floor((Date.now() - overrideStartTime) / 1000) : 60}s
+                      {lang === 'HI'
+                        ? `सिग्नल मैनुअल नियंत्रित • ${overrideStartTime ? 60 - Math.floor((Date.now() - overrideStartTime) / 1000) : 60}s में स्वतः निष्क्रिय`
+                        : `Signal manually controlled • Auto-disable in ${overrideStartTime ? 60 - Math.floor((Date.now() - overrideStartTime) / 1000) : 60}s`}
                     </p>
                   </div>
                 </div>
@@ -333,7 +347,7 @@ const LiveIntersection = () => {
                   onClick={disableOverride}
                   className="px-3 py-1.5 bg-[#DC2626] text-white text-xs font-bold rounded-lg hover:bg-[#B91C1C] transition shadow-xs cursor-pointer"
                 >
-                  Disable Override
+                  {lang === 'HI' ? 'ओवरराइड हटाएं' : 'Disable Override'}
                 </button>
               </div>
             </motion.div>
@@ -353,11 +367,14 @@ const LiveIntersection = () => {
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-[#DC2626] rounded-full animate-ping"></div>
                   <p className="font-bold flex items-center gap-2">
-                    <Siren size={16} className="text-[#DC2626]" /> EMERGENCY PRIORITY: Approach {state.emergencyDirection} → GREEN • Other Approaches → RED
+                    <Siren size={16} className="text-[#DC2626]" />
+                    {lang === 'HI'
+                      ? `आपातकालीन प्राथमिकता: मार्ग ${state.emergencyDirection} → हरा • अन्य मार्ग → लाल`
+                      : `EMERGENCY PRIORITY: Approach ${state.emergencyDirection} → GREEN • Other Approaches → RED`}
                   </p>
                 </div>
                 <div className="text-sm font-bold bg-[#FEE2E2] px-3 py-1 rounded-lg text-[#DC2626]">
-                  Way {state.emergencyDirection} Priority Preemption
+                  {lang === 'HI' ? `मार्ग ${state.emergencyDirection} प्राथमिकता प्रीएम्प्शन` : `Way ${state.emergencyDirection} Priority Preemption`}
                 </div>
               </div>
             </motion.div>
@@ -371,11 +388,13 @@ const LiveIntersection = () => {
               <div className="flex items-center space-x-2">
                 <Zap size={18} className="text-[#F5A623]" />
                 <p className="font-bold">
-                  MoRTH AI Detection: Heavy congestion in {highestQueueLane} direction ({state.queues[highestQueueLane]} vehicles)
+                  {lang === 'HI'
+                    ? `MoRTH AI पहचान: ${highestQueueLane} दिशा में भारी भीड़भाड़ (${state.queues[highestQueueLane]} वाहन)`
+                    : `MoRTH AI Detection: Heavy congestion in ${highestQueueLane} direction (${state.queues[highestQueueLane]} vehicles)`}
                 </p>
               </div>
               <div className="text-sm font-bold text-[#B8860B]">
-                Extended Signal Duration: {state?.signal_duration}s
+                {lang === 'HI' ? `विस्तारित सिग्नल अवधि: ${state?.signal_duration}s` : `Extended Signal Duration: ${state?.signal_duration}s`}
               </div>
             </div>
           </div>
@@ -384,37 +403,37 @@ const LiveIntersection = () => {
         {/* Mumbai Statistics Cards - Showing absolute improvements */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Fuel Saved"
+            title={lang === 'HI' ? 'ईंधन बचत' : 'Fuel Saved'}
             value={mumbaiStats.fuelSavedLiters}
             unit="L"
             icon={Fuel}
             color="green"
-            trend={`₹${(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} saved`}
-            trendSubtext="per hour"
+            trend={lang === 'HI' ? `₹${(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} बचत` : `₹${(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} saved`}
+            trendSubtext={lang === 'HI' ? 'प्रति घंटा' : 'per hour'}
           />
           <StatCard
-            title="Time Saved"
+            title={lang === 'HI' ? 'समय बचत' : 'Time Saved'}
             value={mumbaiStats.timeSavedMinutes}
-            unit="min"
+            unit={lang === 'HI' ? 'मिनट' : 'min'}
             icon={Clock}
             color="blue"
-            trendSubtext="per hour"
+            trendSubtext={lang === 'HI' ? 'प्रति घंटा' : 'per hour'}
           />
           <StatCard
-            title="CO2 Reduced"
+            title={lang === 'HI' ? 'CO2 में कमी' : 'CO2 Reduced'}
             value={mumbaiStats.co2ReducedKg}
             unit="kg"
             icon={Leaf}
             color="blue"
-            trendSubtext="per hour"
+            trendSubtext={lang === 'HI' ? 'प्रति घंटा' : 'per hour'}
           />
           <StatCard
-            title="Total Savings"
+            title={lang === 'HI' ? 'कुल आर्थिक बचत' : 'Total Savings'}
             value={mumbaiStats.totalSavingsRupees}
             valuePrefix="₹"
             icon={IndianRupee}
             color="orange"
-            trendSubtext="per hour"
+            trendSubtext={lang === 'HI' ? 'प्रति घंटा' : 'per hour'}
           />
         </div>
 
@@ -427,11 +446,13 @@ const LiveIntersection = () => {
         <div className="mb-8 bg-white rounded-xl shadow-xs p-6 border-l-4 border-[#DC2626] border-t border-r border-b border-[#E2E8F0]">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="text-lg font-bold text-[#0A1F44] flex items-center gap-2"><TrafficCone size={18} className="text-[#DC2626]" /> MoRTH Traffic Control Override</h3>
-              <p className="text-xs text-[#475569]">Emergency traffic control - Use only when necessary</p>
+              <h3 className="text-lg font-bold text-[#0A1F44] flex items-center gap-2">
+                <TrafficCone size={18} className="text-[#DC2626]" /> {lang === 'HI' ? 'MoRTH यातायात नियंत्रण ओवरराइड' : 'MoRTH Traffic Control Override'}
+              </h3>
+              <p className="text-xs text-[#475569]">{lang === 'HI' ? 'आपातकालीन यातायात नियंत्रण - केवल आवश्यकता पड़ने पर उपयोग करें' : 'Emergency traffic control - Use only when necessary'}</p>
             </div>
             <div className="text-xs text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] px-2.5 py-1 rounded-md font-bold">
-              Monitored by Traffic Police ICCC
+              {lang === 'HI' ? 'ट्रैफिक पुलिस ICCC द्वारा मॉनिटर' : 'Monitored by Traffic Police ICCC'}
             </div>
           </div>
           
@@ -439,7 +460,7 @@ const LiveIntersection = () => {
             {[
               {
                 direction: 'N',
-                location: 'Kurla',
+                location: lang === 'HI' ? 'कुर्ला' : 'Kurla',
                 bg: '#F1F5F9',
                 labelColor: '#475569',
                 titleColor: '#0F2C59',
@@ -449,7 +470,7 @@ const LiveIntersection = () => {
               },
               {
                 direction: 'E',
-                location: 'Chembur',
+                location: lang === 'HI' ? 'चेंबूर' : 'Chembur',
                 bg: '#F0FDF4',
                 labelColor: '#16A34A',
                 titleColor: '#15803D',
@@ -459,7 +480,7 @@ const LiveIntersection = () => {
               },
               {
                 direction: 'S',
-                location: 'Fort',
+                location: lang === 'HI' ? 'फोर्ट' : 'Fort',
                 bg: '#FFFBEB',
                 labelColor: '#B8860B',
                 titleColor: '#92400E',
@@ -469,7 +490,7 @@ const LiveIntersection = () => {
               },
               {
                 direction: 'W',
-                location: 'Bandra',
+                location: lang === 'HI' ? 'बांद्रा' : 'Bandra',
                 bg: '#F8FAFC',
                 labelColor: '#475569',
                 titleColor: '#1E4D8C',
@@ -509,7 +530,7 @@ const LiveIntersection = () => {
                       {location}
                     </div>
                     <div className="font-bold text-xs" style={{ color: titleColor }}>
-                      Queue: {state?.queues?.[direction] || 0}
+                      {lang === 'HI' ? 'कतार' : 'Queue'}: {state?.queues?.[direction] || 0}
                     </div>
                   </div>
                 </button>
@@ -518,8 +539,13 @@ const LiveIntersection = () => {
           </div>
           
           <div className="mt-4 text-xs text-[#475569] bg-[#F8FAFC] border border-[#E2E8F0] p-3 rounded-lg">
-            <p><strong>Warning:</strong> Manual overrides are logged with timestamp, reason, and operator details. 
-            Use only for emergency situations, VIP movements, or when AI system requires intervention.</p>
+            <p>
+              {lang === 'HI' ? (
+                <><strong>चेतावनी:</strong> मैनुअल ओवरराइड टाइमस्टैम्प, कारण और ऑपरेटर विवरण के साथ रिकॉर्ड किए जाते हैं। केवल आपातकालीन स्थितियों, VIP आवागमन या जब AI सिस्टम में मानवीय हस्तक्षेप की आवश्यकता हो, तभी उपयोग करें।</>
+              ) : (
+                <><strong>Warning:</strong> Manual overrides are logged with timestamp, reason, and operator details. Use only for emergency situations, VIP movements, or when AI system requires intervention.</>
+              )}
+            </p>
           </div>
         </div>
 
@@ -527,7 +553,10 @@ const LiveIntersection = () => {
         <div className="bg-white rounded-xl shadow-xs p-6 mb-8 border border-[#E2E8F0]">
           <h3 className="text-lg font-bold text-[#0A1F44] mb-4 flex items-center gap-2">
             <Brain size={18} className="text-[#0F2C59]" />
-            <span>AI Traffic Analysis {overrideActive && <span className="text-[#DC2626] text-sm">(Override Active)</span>}</span>
+            <span>
+              {lang === 'HI' ? 'AI यातायात विश्लेषण' : 'AI Traffic Analysis'}{' '}
+              {overrideActive && <span className="text-[#DC2626] text-sm">{lang === 'HI' ? '(ओवरराइड सक्रिय)' : '(Override Active)'}</span>}
+            </span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {['N', 'S', 'E', 'W'].map(direction => {
@@ -546,16 +575,16 @@ const LiveIntersection = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-bold text-sm text-[#0A1F44]">
-                        {direction === 'N' ? 'North (Kurla)' : 
-                         direction === 'S' ? 'South (Fort)' : 
-                         direction === 'E' ? 'East (Chembur)' : 'West (Bandra)'}
+                        {direction === 'N' ? (lang === 'HI' ? 'उत्तर (कुर्ला)' : 'North (Kurla)') : 
+                         direction === 'S' ? (lang === 'HI' ? 'दक्षिण (फोर्ट)' : 'South (Fort)') : 
+                         direction === 'E' ? (lang === 'HI' ? 'पूर्व (चेंबूर)' : 'East (Chembur)') : (lang === 'HI' ? 'पश्चिम (बांद्रा)' : 'West (Bandra)')}
                       </div>
                       <div className="text-xs text-[#475569] mt-0.5">
-                        Queue: {queueCount} vehicles
+                        {lang === 'HI' ? `कतार: ${queueCount} वाहन` : `Queue: ${queueCount} vehicles`}
                       </div>
                       {isActive && (
                         <div className="text-xs text-[#16A34A] font-bold mt-1">
-                          Duration: {state?.signal_duration}s
+                          {lang === 'HI' ? `अवधि: ${state?.signal_duration}s` : `Duration: ${state?.signal_duration}s`}
                         </div>
                       )}
                     </div>
@@ -575,14 +604,14 @@ const LiveIntersection = () => {
         <div className="bg-white rounded-xl shadow-xs p-6 mb-8 border border-[#E2E8F0]">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-bold text-[#0A1F44]">
-              Live Traffic Flow
+              {lang === 'HI' ? 'लाइव यातायात प्रवाह' : 'Live Traffic Flow'}
             </h2>
             <div className={`text-xs px-3.5 py-1.5 rounded-lg font-bold border shadow-xs ${
               overrideActive 
                 ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' 
                 : 'bg-[#0A1F44] text-[#F5A623] border-[#1E4D8C]'
             }`}>
-              {overrideActive ? 'Manual Control' : 'Smart Signal'}: {state?.signal} ({state?.phase || 'GREEN'}) | {state?.clearance_status ? state.clearance_status : `${state?.phase_label || 'Remaining'}: ${state?.phase_remaining_sec ?? 0}s`}
+              {overrideActive ? (lang === 'HI' ? 'मैनुअल नियंत्रण' : 'Manual Control') : (lang === 'HI' ? 'स्मार्ट सिग्नल' : 'Smart Signal')}: {state?.signal} ({state?.phase || 'GREEN'}) | {state?.clearance_status ? state.clearance_status : `${lang === 'HI' ? 'शेष' : (state?.phase_label || 'Remaining')}: ${state?.phase_remaining_sec ?? 0}s`}
             </div>
           </div>
 
@@ -787,14 +816,14 @@ const LiveIntersection = () => {
               overrideActive ? 'bg-[#DC2626] border-[#B91C1C]' : 'bg-[#0A1F44] border-[#1E4D8C] text-[#F5A623]'
             }`}>
               <span className="text-sm font-bold">
-                {overrideActive ? 'Manual Control' : 'Smart Signal'}: {state?.signal} ({state?.phase || 'GREEN'}) | 
-                Duration: {state?.active_green_duration || state?.signal_duration || 30}s | 
-                {state?.clearance_status ? state.clearance_status : `${state?.phase_label || 'Remaining'}: ${state?.phase_remaining_sec ?? 0}s`}
+                {overrideActive ? (lang === 'HI' ? 'मैनुअल नियंत्रण' : 'Manual Control') : (lang === 'HI' ? 'स्मार्ट सिग्नल' : 'Smart Signal')}: {state?.signal} ({state?.phase || 'GREEN'}) | 
+                {' '}{lang === 'HI' ? 'अवधि' : 'Duration'}: {state?.active_green_duration || state?.signal_duration || 30}s | 
+                {' '}{state?.clearance_status ? state.clearance_status : `${lang === 'HI' ? 'शेष' : (state?.phase_label || 'Remaining')}: ${state?.phase_remaining_sec ?? 0}s`}
               </span>
             </div>
             {state?.emergencyActive && (
               <div className="bg-[#DC2626] border border-[#B91C1C] text-white px-6 py-3 rounded-xl animate-pulse shadow-xs">
-                <span className="text-sm font-bold flex items-center gap-2"><Siren size={18} /> EMERGENCY MODE</span>
+                <span className="text-sm font-bold flex items-center gap-2"><Siren size={18} /> {lang === 'HI' ? 'आपातकालीन मोड' : 'EMERGENCY MODE'}</span>
               </div>
             )}
           </div>
@@ -807,26 +836,42 @@ const LiveIntersection = () => {
               <PersonStanding size={20} className="text-[#0F2C59]" />
               <div>
                 <h3 className="text-lg font-bold text-[#0A1F44]">
-                  Automated Pedestrian Crosswalk Intelligence
+                  {lang === 'HI' ? 'स्वचालित पैदल यात्री क्रॉसिंग इंटेलिजेंस' : 'Automated Pedestrian Crosswalk Intelligence'}
                 </h3>
                 <p className="text-xs text-[#475569]">
-                  Continuous AI signal scanning • Dynamic non-conflicting crossing allocation
+                  {lang === 'HI' ? 'निरंतर AI सिग्नल स्कैनिंग • गतिशील टकराव-रहित क्रॉसिंग आवंटन' : 'Continuous AI signal scanning • Dynamic non-conflicting crossing allocation'}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]">
-                <ShieldCheck size={16} className="text-[#16A34A]" /> 100% Zero-Conflict Active
+                <ShieldCheck size={16} className="text-[#16A34A]" /> {lang === 'HI' ? '100% शून्य-टकराव सक्रिय' : '100% Zero-Conflict Active'}
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { dir: 'N', name: 'North Crosswalk (Kurla)', laneType: 'Vertical Corridor' },
-              { dir: 'S', name: 'South Crosswalk (Fort)', laneType: 'Vertical Corridor' },
-              { dir: 'E', name: 'East Crosswalk (Chembur)', laneType: 'Horizontal Corridor' },
-              { dir: 'W', name: 'West Crosswalk (Bandra)', laneType: 'Horizontal Corridor' }
+              {
+                dir: 'N',
+                name: lang === 'HI' ? 'उत्तर क्रॉसिंग (कुर्ला)' : 'North Crosswalk (Kurla)',
+                laneType: lang === 'HI' ? 'वर्टिकल कॉरिडोर' : 'Vertical Corridor'
+              },
+              {
+                dir: 'S',
+                name: lang === 'HI' ? 'दक्षिण क्रॉसिंग (फोर्ट)' : 'South Crosswalk (Fort)',
+                laneType: lang === 'HI' ? 'वर्टिकल कॉरिडोर' : 'Vertical Corridor'
+              },
+              {
+                dir: 'E',
+                name: lang === 'HI' ? 'पूर्व क्रॉसिंग (चेंबूर)' : 'East Crosswalk (Chembur)',
+                laneType: lang === 'HI' ? 'हॉरिजॉन्टल कॉरिडोर' : 'Horizontal Corridor'
+              },
+              {
+                dir: 'W',
+                name: lang === 'HI' ? 'पश्चिम क्रॉसिंग (बांद्रा)' : 'West Crosswalk (Bandra)',
+                laneType: lang === 'HI' ? 'हॉरिजॉन्टल कॉरिडोर' : 'Horizontal Corridor'
+              }
             ].map(({ dir, name, laneType }) => {
               const pStatus = state?.pedestrian_signals?.[dir] || (
                 (state?.signal === 'E' || state?.signal === 'W') && !state?.emergencyActive
@@ -855,16 +900,16 @@ const LiveIntersection = () => {
                           ? 'bg-[#16A34A] text-white shadow-xs'
                           : 'bg-[#E2E8F0] text-[#475569]'
                     }`}>
-                      {state?.emergencyActive ? <><Hand size={14} className="inline" /> CLEAR</> : isWalk ? <><PersonStanding size={14} className="inline" /> WALK</> : <><Hand size={14} className="inline" /> WAIT</>}
+                      {state?.emergencyActive ? <><Hand size={14} className="inline" /> {lang === 'HI' ? 'खाली करें' : 'CLEAR'}</> : isWalk ? <><PersonStanding size={14} className="inline" /> {lang === 'HI' ? 'चलें (WALK)' : 'WALK'}</> : <><Hand size={14} className="inline" /> {lang === 'HI' ? 'रुकें (WAIT)' : 'WAIT'}</>}
                     </span>
                   </div>
 
                   <p className="text-xs text-[#475569]">
                     {state?.emergencyActive
-                      ? <span className="flex items-center gap-1 text-[#DC2626]"><Siren size={14} /> Emergency corridor priority — Crossing held</span>
+                      ? <span className="flex items-center gap-1 text-[#DC2626]"><Siren size={14} /> {lang === 'HI' ? 'आपातकालीन कॉरिडोर प्राथमिकता — क्रॉसिंग रोकी गई' : 'Emergency corridor priority — Crossing held'}</span>
                       : isWalk
-                        ? <span className="flex items-center gap-1 text-[#15803D]"><CheckCircle2 size={14} className="text-[#16A34A]" /> Safe to walk ({laneType} halted)</span>
-                        : <span className="flex items-center gap-1 text-[#64748B]"><XCircle size={14} className="text-[#94A3B8]" /> Stopped — {state?.signal} vehicular flow active</span>}
+                        ? <span className="flex items-center gap-1 text-[#15803D]"><CheckCircle2 size={14} className="text-[#16A34A]" /> {lang === 'HI' ? `चलने के लिए सुरक्षित (${laneType} रुका हुआ)` : `Safe to walk (${laneType} halted)`}</span>
+                        : <span className="flex items-center gap-1 text-[#64748B]"><XCircle size={14} className="text-[#94A3B8]" /> {lang === 'HI' ? `रुकें — ${state?.signal} वाहन प्रवाह सक्रिय` : `Stopped — ${state?.signal} vehicular flow active`}</span>}
                   </p>
                 </div>
               );
@@ -874,35 +919,35 @@ const LiveIntersection = () => {
 
         {/* Enhanced Real-time Statistics */}
         <div className="mt-8 bg-white rounded-xl shadow-xs p-6 border border-[#E2E8F0]">
-          <h3 className="text-lg font-bold text-[#0A1F44] mb-4">Performance Metrics</h3>
+          <h3 className="text-lg font-bold text-[#0A1F44] mb-4">{lang === 'HI' ? 'प्रदर्शन मेट्रिक्स' : 'Performance Metrics'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
               <div className="text-3xl font-black text-[#0A1F44]">{state?.cars_passed || 0}</div>
-              <div className="text-xs font-bold text-[#475569] mt-1">Vehicles Processed</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">{lang === 'HI' ? 'निकाले गए वाहन' : 'Vehicles Processed'}</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
               <div className="text-3xl font-black text-[#F5A623]">{(state?.avg_wait_time || 0).toFixed(1)}s</div>
-              <div className="text-xs font-bold text-[#475569] mt-1">Avg Wait Time</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">{lang === 'HI' ? 'औसत प्रतीक्षा समय' : 'Avg Wait Time'}</div>
               <div className="text-xs text-[#16A34A] font-bold mt-0.5">
-                {mumbaiStats.efficiencyGain.toFixed(1)}% improvement
+                {lang === 'HI' ? `${mumbaiStats.efficiencyGain.toFixed(1)}% सुधार` : `${mumbaiStats.efficiencyGain.toFixed(1)}% improvement`}
               </div>
             </div>
             <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
               <div className="text-3xl font-black text-[#16A34A]">{(metrics?.throughput || 0).toFixed(1)}</div>
-              <div className="text-xs font-bold text-[#475569] mt-1">Cars per Minute</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">{lang === 'HI' ? 'वाहन प्रति मिनट' : 'Cars per Minute'}</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
               <div className="text-3xl font-black text-[#0F2C59]">
                 {Math.max(...Object.values(state?.queues || {0: 0}))}
               </div>
-              <div className="text-xs font-bold text-[#475569] mt-1">Highest Queue</div>
+              <div className="text-xs font-bold text-[#475569] mt-1">{lang === 'HI' ? 'अधिकतम कतार' : 'Highest Queue'}</div>
             </div>
           </div>
         </div>
 
         {/* System Controls */}
         <div className="mt-8 bg-white rounded-xl shadow-xs p-6 border border-[#E2E8F0]">
-          <h3 className="text-lg font-bold text-[#0A1F44] mb-4">Intelligent System Controls</h3>
+          <h3 className="text-lg font-bold text-[#0A1F44] mb-4">{lang === 'HI' ? 'इंटेलिजेंट सिस्टम नियंत्रण' : 'Intelligent System Controls'}</h3>
           <div className="flex flex-wrap items-center space-x-4">
             <div className="flex space-x-2">
               <button
@@ -912,7 +957,7 @@ const LiveIntersection = () => {
                 }`}
               >
                 <Brain size={16} className={useMock ? 'text-[#F5A623]' : 'text-slate-500'} />
-                <span>AI Simulation</span>
+                <span>{lang === 'HI' ? 'AI सिमुलेशन' : 'AI Simulation'}</span>
               </button>
               {switchToBackend && (
                 <button
@@ -921,14 +966,14 @@ const LiveIntersection = () => {
                     !useMock ? 'bg-[#0F2C59] text-white border border-[#1E4D8C]' : 'bg-[#F1F5F9] text-[#475569] hover:text-[#0A1F44] border border-[#E2E8F0]'
                   }`}
                 >
-                  <Radio size={14} className="inline mr-1" /> Live Data
+                  <Radio size={14} className="inline mr-1" /> {lang === 'HI' ? 'लाइव डेटा' : 'Live Data'}
                 </button>
               )}
             </div>
             
             {useMock && (
               <div className="flex items-center space-x-2">
-                <label className="text-xs font-bold text-[#475569]">Speed: {simulationSpeed}x</label>
+                <label className="text-xs font-bold text-[#475569]">{lang === 'HI' ? `गति: ${simulationSpeed}x` : `Speed: ${simulationSpeed}x`}</label>
                 <input
                   type="range"
                   min="0.1"
@@ -950,9 +995,9 @@ const LiveIntersection = () => {
                     ? 'bg-red-700 animate-pulse cursor-default'
                     : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
                 }`}
-                title="Dispatch emergency vehicle (Random approach)"
+                title={lang === 'HI' ? 'आपातकालीन वाहन डिस्पैच करें (यादृच्छिक पहुंच)' : 'Dispatch emergency vehicle (Random approach)'}
               >
-                {state?.emergencyActive ? <><Siren size={14} className="inline mr-1" /> Emergency Active ({state?.emergencyDirection || ''})</> : <><Siren size={14} className="inline mr-1" /> Emergency Mode</>}
+                {state?.emergencyActive ? <><Siren size={14} className="inline mr-1" /> {lang === 'HI' ? `आपातकाल सक्रिय (${state?.emergencyDirection || ''})` : `Emergency Active (${state?.emergencyDirection || ''})`}</> : <><Siren size={14} className="inline mr-1" /> {lang === 'HI' ? 'आपातकालीन मोड' : 'Emergency Mode'}</>}
               </button>
             )}
             
@@ -961,7 +1006,7 @@ const LiveIntersection = () => {
                 onClick={resetSimulation}
                 className="px-4 py-2 text-xs font-bold text-[#0A1F44] bg-white border border-[#E2E8F0] rounded-lg hover:bg-[#F8FAFC] transition shadow-xs cursor-pointer"
               >
-                <RotateCcw size={14} className="inline mr-1 text-[#0F2C59]" /> Reset System
+                <RotateCcw size={14} className="inline mr-1 text-[#0F2C59]" /> {lang === 'HI' ? 'सिस्टम रीसेट करें' : 'Reset System'}
               </button>
             )}
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Car, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const StatCard = ({
   title = '',
@@ -9,10 +10,14 @@ const StatCard = ({
   valuePrefix = '',
   icon: Icon = Car,
   trend = '',
-  trendSubtext = 'vs. last 5 minutes',
+  trendSubtext,
   color = 'blue',
   showTrend = true
 }) => {
+  const { lang } = useLanguage();
+  const resolvedTrendSubtext = trendSubtext !== undefined
+    ? (trendSubtext === 'vs. last 5 minutes' && lang === 'HI' ? 'पिछले 5 मिनट की तुलना में' : trendSubtext)
+    : (lang === 'HI' ? 'पिछले 5 मिनट की तुलना में' : 'vs. last 5 minutes');
   // Determine trend text & color if not explicitly provided
   const titleLower = title.toLowerCase().trim();
   const shouldShowTrend = Boolean(showTrend && trend !== null && trend !== false);
@@ -124,7 +129,7 @@ const StatCard = ({
         )}
       </div>
 
-      {shouldShowTrend && (defaultTrend || trendSubtext !== 'vs. last 5 minutes') && (
+      {shouldShowTrend && (defaultTrend || (trendSubtext && trendSubtext !== 'vs. last 5 minutes') || lang === 'HI') && (
         <div className="flex items-center space-x-1.5 text-xs">
           {TrendIcon && <TrendIcon size={12} style={{ color: trendColor }} />}
           {defaultTrend && (
@@ -133,7 +138,7 @@ const StatCard = ({
             </span>
           )}
           <span className="text-[11px] text-[#94A3B8]">
-            {trendSubtext}
+            {resolvedTrendSubtext}
           </span>
         </div>
       )}

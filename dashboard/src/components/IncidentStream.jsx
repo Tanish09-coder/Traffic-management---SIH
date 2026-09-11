@@ -1,13 +1,14 @@
 import React from 'react';
 import { 
-  Radio,
-  CheckCircle2,
-  Terminal
+  CheckCircle2, 
+  Terminal 
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const IncidentStream = () => {
   const { incidentLogs, acknowledgeIncident } = useTraffic();
+  const { lang } = useLanguage();
 
   const getSeverityStyle = (severity) => {
     switch (severity) {
@@ -37,11 +38,11 @@ export const IncidentStream = () => {
         <div className="flex items-center space-x-2">
           <Terminal className="w-3.5 h-3.5 text-[#0F2C59]" />
           <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-            Anomaly & Event Stream
+            {lang === 'HI' ? 'विसंगति एवं घटना स्ट्रीम' : 'Anomaly & Event Stream'}
           </span>
         </div>
         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F1F5F9] border border-[#E2E8F0] text-[#0A1F44] font-bold">
-          {incidentLogs.filter(i => !i.acknowledged).length} PENDING
+          {incidentLogs.filter(i => !i.acknowledged).length} {lang === 'HI' ? 'लंबित' : 'PENDING'}
         </span>
       </div>
 
@@ -49,7 +50,7 @@ export const IncidentStream = () => {
       <div className="p-2.5 flex-1 overflow-y-auto space-y-2 font-mono text-xs max-h-[320px] bg-white">
         {incidentLogs.length === 0 ? (
           <div className="text-center py-4 text-[#94A3B8] text-xs">
-            [LOG STREAM IDLE - NO ANOMALIES]
+            {lang === 'HI' ? '[लॉग स्ट्रीम निष्क्रिय - कोई विसंगति नहीं]' : '[LOG STREAM IDLE - NO ANOMALIES]'}
           </div>
         ) : (
           incidentLogs.map((incident) => {
@@ -89,7 +90,7 @@ export const IncidentStream = () => {
                       onClick={() => acknowledgeIncident(incident.id)}
                       className="px-2.5 py-1 rounded bg-[#0F2C59] hover:bg-[#163A6B] text-[10px] font-bold text-white transition-all cursor-pointer whitespace-nowrap shadow-xs"
                     >
-                      ACK
+                      {lang === 'HI' ? 'पुष्टि' : 'ACK'}
                     </button>
                   ) : (
                     <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0 mt-1" />

@@ -5,11 +5,10 @@ import {
   Cpu, 
   Clock, 
   SlidersHorizontal,
-  MapPin,
-  Radio,
-  Server
+  MapPin
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }) => {
   const { 
@@ -20,6 +19,7 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
     cycleTime,
     selectedJunction 
   } = useTraffic();
+  const { lang } = useLanguage();
 
   const [timeStr, setTimeStr] = useState({ ist: '', utc: '' });
 
@@ -36,10 +36,10 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
   }, []);
 
   const navTabs = [
-    { id: 'command-center', label: 'ICCC Grid Overview', icon: MapPin, shortcut: '1-4' },
-    { id: 'intersection-ai', label: 'Signal Controller', icon: Cpu, shortcut: 'O' },
-    { id: 'emergency-corridor', label: 'Preemption CAD', icon: ShieldAlert, shortcut: 'E', badge: emergencyCorridor.isActive ? 'ENGAGED' : null },
-    { id: 'analytics-kpis', label: 'Telemetry & Analytics', icon: Activity, shortcut: 'A' },
+    { id: 'command-center', label: lang === 'HI' ? 'ICCC ग्रिड अवलोकन' : 'ICCC Grid Overview', icon: MapPin, shortcut: '1-4' },
+    { id: 'intersection-ai', label: lang === 'HI' ? 'सिग्नल नियंत्रक' : 'Signal Controller', icon: Cpu, shortcut: 'O' },
+    { id: 'emergency-corridor', label: lang === 'HI' ? 'प्री-एम्प्शन CAD' : 'Preemption CAD', icon: ShieldAlert, shortcut: 'E', badge: emergencyCorridor.isActive ? (lang === 'HI' ? 'संलग्न' : 'ENGAGED') : null },
+    { id: 'analytics-kpis', label: lang === 'HI' ? 'टेलीमेट्री एवं एनालिटिक्स' : 'Telemetry & Analytics', icon: Activity, shortcut: 'A' },
   ];
 
   return (
@@ -56,11 +56,11 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
             </div>
             <div className="flex items-center space-x-2">
               <span className="font-bold text-zinc-100 font-mono tracking-tight">
-                MUNICIPAL TRAFFIC CONTROL // NODE 25050
+                {lang === 'HI' ? 'नगर निगम यातायात नियंत्रण // नोड 25050' : 'MUNICIPAL TRAFFIC CONTROL // NODE 25050'}
               </span>
               <span className="text-zinc-600 hidden md:inline">|</span>
               <span className="text-[10px] font-mono text-zinc-400 hidden lg:inline uppercase">
-                ZONE 1-CENTRAL [MUMBAI]
+                {lang === 'HI' ? 'ज़ोन 1-मध्य [मुंबई]' : 'ZONE 1-CENTRAL [MUMBAI]'}
               </span>
             </div>
           </div>
@@ -70,16 +70,18 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
             <div className="flex items-center space-x-2 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px] font-mono">
               <span className={`w-1.5 h-1.5 rounded-full ${systemMode === 'adaptive' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
               <span className="text-zinc-300 font-semibold uppercase">
-                {systemMode === 'adaptive' ? 'ADAPTIVE PCU-OPTIMIZED' : 'FIXED PRE-TIMED'}
+                {systemMode === 'adaptive' 
+                  ? (lang === 'HI' ? 'एडेप्टिव PCU-अनुकूलित' : 'ADAPTIVE PCU-OPTIMIZED') 
+                  : (lang === 'HI' ? 'फिक्स्ड प्री-टाइम्ड' : 'FIXED PRE-TIMED')}
               </span>
               <span className="text-zinc-600">|</span>
-              <span className="text-zinc-400">CYCLE: {cycleTime}s</span>
+              <span className="text-zinc-400">{lang === 'HI' ? 'चक्र:' : 'CYCLE:'} {cycleTime}s</span>
             </div>
 
             {emergencyCorridor.isActive && (
               <div className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[11px] font-mono animate-pulse">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                <span className="font-bold">PREEMPTION: {emergencyCorridor.vehicleId}</span>
+                <span className="font-bold">{lang === 'HI' ? 'प्री-एम्प्शन:' : 'PREEMPTION:'} {emergencyCorridor.vehicleId}</span>
               </div>
             )}
           </div>
@@ -109,10 +111,10 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
             <button
               onClick={onOpenJudgeDrawer}
               className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 transition-colors cursor-pointer"
-              title="Open Hardware & Scenario Simulator Drawer"
+              title={lang === 'HI' ? 'हार्डवेयर एवं परिदृश्य सिम्युलेटर ड्रॉअर खोलें' : 'Open Hardware & Scenario Simulator Drawer'}
             >
               <SlidersHorizontal className="w-3 h-3 text-[#F5A623]" />
-              <span className="hidden sm:inline font-sans font-medium">Scenarios</span>
+              <span className="hidden sm:inline font-sans font-medium">{lang === 'HI' ? 'परिदृश्य' : 'Scenarios'}</span>
               <kbd>[S]</kbd>
             </button>
           </div>

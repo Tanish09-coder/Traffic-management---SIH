@@ -1,12 +1,13 @@
 import React from 'react';
 import { 
-  Compass,
   MapPin
 } from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const NetworkMapView = ({ onSelectJunction }) => {
   const { junctions, selectedJunctionId, emergencyCorridor } = useTraffic();
+  const { lang } = useLanguage();
 
   const arterialRoutes = [
     { from: 'J1', to: 'J2', name: 'WORLI-DADAR ARTERIAL', isCorridor: true, status: 'moderate' },
@@ -24,10 +25,10 @@ export const NetworkMapView = ({ onSelectJunction }) => {
         <div className="flex items-center space-x-2">
           <MapPin className="w-3.5 h-3.5 text-[#0F2C59]" />
           <span className="text-xs font-bold text-[#0A1F44] uppercase tracking-wider">
-            Primary Arterial GIS Topology
+            {lang === 'HI' ? 'प्राथमिक मुख्य मार्ग GIS टोपोलॉजी' : 'Primary Arterial GIS Topology'}
           </span>
           <span className="text-[10px] text-[#64748B] hidden sm:inline">
-            [MUMBAI ZONE-1]
+            {lang === 'HI' ? '[मुंबई ज़ोन-1]' : '[MUMBAI ZONE-1]'}
           </span>
         </div>
 
@@ -166,7 +167,7 @@ export const NetworkMapView = ({ onSelectJunction }) => {
             className="absolute transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none transition-all duration-300"
           >
             <div className="px-2 py-0.5 rounded-full bg-[#DC2626] border border-white text-[9px] font-bold font-mono text-white shadow-md flex items-center space-x-1">
-              <span>PRIORITY</span>
+              <span>{lang === 'HI' ? 'प्राथमिकता' : 'PRIORITY'}</span>
               <span>{emergencyCorridor.vehicleId}</span>
             </div>
           </div>

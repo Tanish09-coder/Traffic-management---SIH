@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSimulation } from '../context/SimulationContext';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   Play, 
   Pause, 
@@ -84,6 +85,7 @@ const isPointInPolygon = (point, vs) => {
 };
 
 const TrafficIntelligence = ({ onNavigate }) => {
+  const { lang } = useLanguage();
   const { 
     startVideoDrivenSimulation, 
     stopVideoDrivenSimulation, 
@@ -851,15 +853,15 @@ const TrafficIntelligence = ({ onNavigate }) => {
           <div>
             <div className="flex items-center space-x-2">
               <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
-                MoRTH Live Vision
+                {lang === 'HI' ? 'MoRTH लाइव विज़न' : 'MoRTH Live Vision'}
               </span>
-              <span className="text-xs font-semibold text-slate-500">Node #04 • BKC Camera Grid</span>
+              <span className="text-xs font-semibold text-slate-500">{lang === 'HI' ? 'नोड #04 • BKC कैमरा ग्रिड' : 'Node #04 • BKC Camera Grid'}</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">
-              Integrated Traffic Management System (ITMS) • Camera AI & Video Grid
+              {lang === 'HI' ? 'एकीकृत यातायात प्रबंधन प्रणाली (ITMS) • कैमरा AI एवं वीडियो ग्रिड' : 'Integrated Traffic Management System (ITMS) • Camera AI & Video Grid'}
             </h1>
             <p className="text-xs text-slate-600 mt-0.5">
-              📍 Optical Vehicle Detection & ByteTrack Actuation • Real-Time Stream Ingestion
+              {lang === 'HI' ? '📍 ऑप्टिकल वाहन पहचान एवं ByteTrack एक्टिवेशन • रीयल-टाइम स्ट्रीम डेटा' : '📍 Optical Vehicle Detection & ByteTrack Actuation • Real-Time Stream Ingestion'}
             </p>
           </div>
 
@@ -869,7 +871,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
               className="px-4 py-2 text-xs font-bold rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white flex items-center gap-1.5 transition shadow-xs cursor-pointer active:scale-95"
             >
               <Eye size={14} />
-              <span>View Simulator</span>
+              <span>{lang === 'HI' ? 'सिम्युलेटर देखें' : 'View Simulator'}</span>
             </button>
           </div>
         </div>
@@ -886,10 +888,10 @@ const TrafficIntelligence = ({ onNavigate }) => {
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2.5">
                 <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider flex items-center gap-1">
-                  <Video size={14} className="text-[#003366]" /> Video Source:
+                  <Video size={14} className="text-[#003366]" /> {lang === 'HI' ? 'वीडियो स्रोत:' : 'Video Source:'}
                 </span>
                 <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#003366] text-white shadow-xs">
-                  {bundledVideoInfo.title || 'Traffic Simulation Video (Default)'}
+                  {lang === 'HI' ? 'यातायात सिमुलेशन वीडियो (डिफ़ॉल्ट)' : (bundledVideoInfo.title || 'Traffic Simulation Video (Default)')}
                 </span>
               </div>
 
@@ -897,12 +899,14 @@ const TrafficIntelligence = ({ onNavigate }) => {
               <div className="flex items-center space-x-2">
                 {analysisStatus === 'RUNNING' ? (
                   <div className="flex items-center gap-2 bg-[#F1F5F9] border border-[#CBD5E1] px-2.5 py-1 rounded-lg">
-                    <span className="text-xs font-bold text-[#0F2942]">Analyzing... {analysisProgress}%</span>
+                    <span className="text-xs font-bold text-[#0F2942]">
+                      {lang === 'HI' ? `विश्लेषण जारी... ${analysisProgress}%` : `Analyzing... ${analysisProgress}%`}
+                    </span>
                     <button
                       onClick={handleCancelAnalysis}
                       className="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-xs font-bold hover:bg-red-100 cursor-pointer transition"
                     >
-                      Cancel
+                      {lang === 'HI' ? 'रद्द करें' : 'Cancel'}
                     </button>
                   </div>
                 ) : (
@@ -911,7 +915,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                     className="px-3.5 py-1.5 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Sparkles size={14} />
-                    Analyze Video (YOLO Tracking)
+                    {lang === 'HI' ? 'वीडियो विश्लेषण करें (YOLO ट्रैकिंग)' : 'Analyze Video (YOLO Tracking)'}
                   </button>
                 )}
               </div>
@@ -924,7 +928,13 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 <div className="absolute top-2.5 left-2.5 right-2.5 bg-amber-500/90 backdrop-blur-xs text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center justify-between z-10">
                   <div className="flex items-center gap-1.5">
                     <AlertTriangle size={13} className="text-amber-100 shrink-0" />
-                    <span>Backend server offline on port 5000 • Running with pre-bundled YOLOv8 intelligence (Run <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> in <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code>)</span>
+                    <span>
+                      {lang === 'HI' ? (
+                        <>पोर्ट 5000 पर बैकएंड सर्वर ऑफलाइन है • पूर्व-बंडल YOLOv8 बुद्धिमत्ता के साथ कार्यरत (<code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code> में <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> चलाएं)</>
+                      ) : (
+                        <>Backend server offline on port 5000 • Running with pre-bundled YOLOv8 intelligence (Run <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">npm start</code> in <code className="bg-amber-700/60 px-1 py-0.5 rounded text-[10px]">backend/</code>)</>
+                      )}
+                    </span>
                   </div>
                 </div>
               )}
@@ -932,7 +942,13 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 <div className="absolute top-2.5 left-2.5 right-2.5 bg-slate-900/85 backdrop-blur-xs text-slate-200 text-[11px] font-medium px-3 py-1.5 rounded-lg border border-slate-700/60 shadow-sm flex items-center justify-between z-10">
                   <div className="flex items-center gap-1.5">
                     <Info size={13} className="text-blue-400 shrink-0" />
-                    <span>Simulated Vision Mode • Place <code className="text-amber-300 font-mono text-[10px]">vid_sim.mp4</code> in <code className="text-amber-300 font-mono text-[10px]">backend/videos/</code> (Full YOLO AI Telemetry active below)</span>
+                    <span>
+                      {lang === 'HI' ? (
+                        <>सिम्युलेटेड विज़न मोड • <code className="text-amber-300 font-mono text-[10px]">backend/videos/</code> में <code className="text-amber-300 font-mono text-[10px]">vid_sim.mp4</code> रखें (पूर्ण YOLO AI टेलीमेट्री सक्रिय)</>
+                      ) : (
+                        <>Simulated Vision Mode • Place <code className="text-amber-300 font-mono text-[10px]">vid_sim.mp4</code> in <code className="text-amber-300 font-mono text-[10px]">backend/videos/</code> (Full YOLO AI Telemetry active below)</>
+                      )}
+                    </span>
                   </div>
                 </div>
               )}
@@ -960,9 +976,11 @@ const TrafficIntelligence = ({ onNavigate }) => {
               {isReplayComplete && (
                 <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-3 z-20">
                   <CheckCircle2 size={48} className="text-emerald-400" />
-                  <h3 className="text-xl font-bold">Replay Complete</h3>
+                  <h3 className="text-xl font-bold">{lang === 'HI' ? 'रीप्ले पूर्ण' : 'Replay Complete'}</h3>
                   <p className="text-xs text-slate-300 max-w-sm text-center">
-                    Recorded video arrival stream has finished. You can restart replay or switch back to simulated traffic.
+                    {lang === 'HI'
+                      ? 'रिकॉर्डेड वीडियो आगमन स्ट्रीम समाप्त हो गई है। आप रीप्ले पुनः प्रारंभ कर सकते हैं या सिम्युलेटेड यातायात पर वापस जा सकते हैं।'
+                      : 'Recorded video arrival stream has finished. You can restart replay or switch back to simulated traffic.'}
                   </p>
                   <button
                     onClick={() => {
@@ -978,7 +996,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                     }}
                     className="px-4 py-2 rounded-lg bg-[#003366] hover:bg-[#0F2942] text-white text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer"
                   >
-                    <RotateCcw size={14} /> Restart Replay
+                    <RotateCcw size={14} /> {lang === 'HI' ? 'रीप्ले पुनः प्रारंभ करें' : 'Restart Replay'}
                   </button>
                 </div>
               )}
@@ -1025,7 +1043,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                 </button>
 
                 <div className="flex items-center space-x-1.5 pl-2">
-                  <span className="text-xs text-slate-500 font-semibold">Speed:</span>
+                  <span className="text-xs text-slate-500 font-semibold">{lang === 'HI' ? 'गति:' : 'Speed:'}</span>
                   <div className="flex items-center p-0.5 rounded-lg bg-[#F1F5F9] border border-[#CBD5E1]">
                     {[0.5, 1.0, 2.0].map(s => (
                       <button
@@ -1057,7 +1075,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   title="Toggle approach queue zones & count overlays on video"
                 >
                   {showApproachZones ? <Eye size={14} /> : <EyeOff size={14} />}
-                  <span>Zones {showApproachZones ? 'ON' : 'OFF'}</span>
+                  <span>{lang === 'HI' ? `ज़ोन ${showApproachZones ? 'चालू' : 'बंद'}` : `Zones ${showApproachZones ? 'ON' : 'OFF'}`}</span>
                 </button>
 
                 {/* Edit Approach Zones Button */}
@@ -1071,7 +1089,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   title="Configure directional road queue polygons for each approach"
                 >
                   <MapPin size={14} />
-                  <span>Edit Approach Zones</span>
+                  <span>{lang === 'HI' ? 'एप्रोच ज़ोन संपादित करें' : 'Edit Approach Zones'}</span>
                 </button>
 
                 {/* Edit ROI */}
@@ -1121,14 +1139,14 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black text-[#0F2942] uppercase tracking-wider flex items-center gap-1">
                       <MapPin size={14} className="text-amber-600" />
-                      Select Zone:
+                      {lang === 'HI' ? 'ज़ोन चुनें:' : 'Select Zone:'}
                     </span>
                     <div className="flex items-center gap-1.5">
                       {[
-                        { dir: 'N', label: 'North' },
-                        { dir: 'E', label: 'East' },
-                        { dir: 'S', label: 'South' },
-                        { dir: 'W', label: 'West' }
+                        { dir: 'N', label: lang === 'HI' ? 'उत्तर' : 'North' },
+                        { dir: 'E', label: lang === 'HI' ? 'पूर्व' : 'East' },
+                        { dir: 'S', label: lang === 'HI' ? 'दक्षिण' : 'South' },
+                        { dir: 'W', label: lang === 'HI' ? 'पश्चिम' : 'West' }
                       ].map(({ dir, label }) => {
                         const pts = approachZones[dir];
                         const isConf = pts && pts.length >= 3;
@@ -1157,24 +1175,28 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       className="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-red-600 border border-red-300 hover:bg-red-50 cursor-pointer transition"
                       title={`Mark ${editingZone} as not visible from this camera (shows N/A)`}
                     >
-                      Clear {editingZone} (Set N/A)
+                      {lang === 'HI' ? `${editingZone} हटाएं (N/A सेट करें)` : `Clear ${editingZone} (Set N/A)`}
                     </button>
                     <button
                       onClick={() => setApproachZones(DEFAULT_APPROACH_ZONES)}
                       className="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-[#475569] border border-[#CBD5E1] hover:bg-slate-100 cursor-pointer transition"
                     >
-                      Reset Defaults
+                      {lang === 'HI' ? 'डिफ़ॉल्ट रीसेट करें' : 'Reset Defaults'}
                     </button>
                     <button
                       onClick={() => setDrawingMode('none')}
                       className="px-3 py-1 rounded-md text-xs font-bold bg-[#003366] text-white hover:bg-[#0F2942] cursor-pointer shadow-xs transition"
                     >
-                      Done Editing
+                      {lang === 'HI' ? 'संपादन पूर्ण' : 'Done Editing'}
                     </button>
                   </div>
                 </div>
                 <p className="text-[11px] text-amber-900 leading-tight">
-                  👉 Click 4 corners on the video canvas to define the queue detection polygon for <strong>Approach {editingZone}</strong>. Vehicles with bottom road-contact anchor in this zone will contribute to the live {editingZone} queue.
+                  {lang === 'HI' ? (
+                    <>👉 <strong>एप्रोच {editingZone}</strong> के लिए कतार पहचान बहुभुज परिभाषित करने हेतु वीडियो कैनवास पर 4 कोनों पर क्लिक करें। इस ज़ोन में निचले सड़क-संपर्क एंकर वाले वाहन लाइव {editingZone} कतार में गिने जाएंगे।</>
+                  ) : (
+                    <>👉 Click 4 corners on the video canvas to define the queue detection polygon for <strong>Approach {editingZone}</strong>. Vehicles with bottom road-contact anchor in this zone will contribute to the live {editingZone} queue.</>
+                  )}
                 </p>
               </div>
             )}
@@ -1191,31 +1213,31 @@ const TrafficIntelligence = ({ onNavigate }) => {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="px-2 py-0.5 rounded bg-[#0F2942] text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-[#1E3A8A]">
-                    Direct Camera Feed
+                    {lang === 'HI' ? 'सीधा कैमरा फीड' : 'Direct Camera Feed'}
                   </span>
                   <span className="text-[11px] font-bold text-slate-500">YOLOv8 + ByteTrack</span>
                 </div>
                 <h3 className="text-sm font-black text-[#0F2942] flex items-center gap-1.5 mt-1">
                   <Activity size={16} className="text-emerald-600" />
-                  LIVE SIGNAL QUEUE STATUS
+                  {lang === 'HI' ? 'लाइव सिग्नल कतार स्थिति' : 'LIVE SIGNAL QUEUE STATUS'}
                 </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Direct optical count of vehicles waiting in each camera approach zone
+                  {lang === 'HI' ? 'प्रत्येक कैमरा एप्रोच ज़ोन में प्रतीक्षा कर रहे वाहनों की प्रत्यक्ष ऑप्टिकल गणना' : 'Direct optical count of vehicles waiting in each camera approach zone'}
                 </p>
               </div>
               <span className="px-2 py-1 rounded-md text-[10px] font-bold border transition-all flex-shrink-0 bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-400/20 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                {isPlaying ? 'Live Video' : 'Paused Frame'}
+                {isPlaying ? (lang === 'HI' ? 'लाइव वीडियो' : 'Live Video') : (lang === 'HI' ? 'पॉज़ किया गया फ्रेम' : 'Paused Frame')}
               </span>
             </div>
 
             {/* 4 Approach Queue Cards (NORTH, EAST, SOUTH, WEST) */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { dir: 'N', name: 'NORTH', arrow: '↑' },
-                { dir: 'E', name: 'EAST', arrow: '→' },
-                { dir: 'S', name: 'SOUTH', arrow: '↓' },
-                { dir: 'W', name: 'WEST', arrow: '←' }
+                { dir: 'N', name: lang === 'HI' ? 'उत्तर' : 'NORTH', arrow: '↑' },
+                { dir: 'E', name: lang === 'HI' ? 'पूर्व' : 'EAST', arrow: '→' },
+                { dir: 'S', name: lang === 'HI' ? 'दक्षिण' : 'SOUTH', arrow: '↓' },
+                { dir: 'W', name: lang === 'HI' ? 'पश्चिम' : 'WEST', arrow: '←' }
               ].map(({ dir, name, arrow }) => {
                 const count = liveApproachCounts[dir];
                 const isVisible = count !== null;
@@ -1238,7 +1260,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
                       <span className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
                         isVisible ? 'bg-[#003366] text-white' : 'bg-slate-200 text-slate-600'
                       }`}>
-                        {isVisible ? 'Video AI' : 'Not Visible'}
+                        {isVisible ? (lang === 'HI' ? 'वीडियो AI' : 'Video AI') : (lang === 'HI' ? 'दृश्यमान नहीं' : 'Not Visible')}
                       </span>
                     </div>
 
@@ -1253,22 +1275,22 @@ const TrafficIntelligence = ({ onNavigate }) => {
                         </span>
                       )}
                       <span className="text-[11px] font-bold text-slate-500">
-                        {isVisible ? 'Vehicles Waiting' : 'Not in View'}
+                        {isVisible ? (lang === 'HI' ? 'प्रतीक्षारत वाहन' : 'Vehicles Waiting') : (lang === 'HI' ? 'दृश्य में नहीं' : 'Not in View')}
                       </span>
                     </div>
 
                     <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200/60 flex items-center justify-between">
                       {isVisible ? (
                         <>
-                          <span>Track IDs:</span>
+                          <span>{lang === 'HI' ? 'ट्रैक IDs:' : 'Track IDs:'}</span>
                           <span className="font-mono font-bold text-[#003366] truncate max-w-[90px]" title={activeTracks.map(t => `#${t.trackId}`).join(', ')}>
                             {activeTracks.length > 0
                               ? activeTracks.map(t => `#${t.trackId}`).slice(0, 3).join(', ') + (activeTracks.length > 3 ? ` +${activeTracks.length - 3}` : '')
-                              : '0 active'}
+                              : (lang === 'HI' ? '0 सक्रिय' : '0 active')}
                           </span>
                         </>
                       ) : (
-                        <span className="italic text-slate-400">Camera zone not set</span>
+                        <span className="italic text-slate-400">{lang === 'HI' ? 'कैमरा ज़ोन सेट नहीं है' : 'Camera zone not set'}</span>
                       )}
                     </div>
                   </div>
@@ -1280,14 +1302,14 @@ const TrafficIntelligence = ({ onNavigate }) => {
             <div className="p-3.5 rounded-xl bg-[#0F2942] text-white shadow-xs flex items-center justify-between">
               <div>
                 <div className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
-                  Total Visible Queue (Direct Video Observation)
+                  {lang === 'HI' ? 'कुल दृश्यमान कतार (प्रत्यक्ष वीडियो अवलोकन)' : 'Total Visible Queue (Direct Video Observation)'}
                 </div>
                 <div className="text-2xl font-black font-mono tracking-tight text-white mt-0.5">
-                  {totalVisibleQueue !== null ? `${String(totalVisibleQueue).padStart(2, '0')} VEHICLES` : 'N/A'}
+                  {totalVisibleQueue !== null ? `${String(totalVisibleQueue).padStart(2, '0')} ${lang === 'HI' ? 'वाहन' : 'VEHICLES'}` : 'N/A'}
                 </div>
               </div>
               <div className="text-right text-[10px] text-slate-300 max-w-[150px] leading-tight">
-                Physical count from camera perspective. Zero simulator estimation.
+                {lang === 'HI' ? 'कैमरा दृष्टिकोण से वास्तविक भौतिक गणना। शून्य सिमुलेटर अनुमान।' : 'Physical count from camera perspective. Zero simulator estimation.'}
               </div>
             </div>
 
@@ -1298,14 +1320,14 @@ const TrafficIntelligence = ({ onNavigate }) => {
                   onClick={handleStopSimulation}
                   className="w-full py-2.5 rounded-lg bg-[#0F2942] hover:bg-slate-900 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Pause size={16} /> Stop Video Replay (Return to Random Traffic)
+                  <Pause size={16} /> {lang === 'HI' ? 'वीडियो रीप्ले रोकें (यादृच्छिक यातायात पर लौटें)' : 'Stop Video Replay (Return to Random Traffic)'}
                 </button>
               ) : (
                 <button
                   onClick={handleStartSimulation}
                   className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Play size={16} /> Stream Video Arrivals into Intersection Simulator
+                  <Play size={16} /> {lang === 'HI' ? 'वीडियो आगमन डेटा को जंक्शन सिम्युलेटर में स्ट्रीम करें' : 'Stream Video Arrivals into Intersection Simulator'}
                 </button>
               )}
             </div>

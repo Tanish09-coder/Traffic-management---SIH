@@ -1,32 +1,3 @@
-/**
- * EmergencyAlert.jsx
- *
- * Owner:  Shreya (brand-new file, created from scratch)
- * Role:   Styling, Polish & Feature Prototyping
- *
- * Purpose:
- *   Visual feedback banner for AI Emergency Priority Override events —
- *   shown when an ambulance, fire truck, or other emergency vehicle
- *   enters the intersection and the AI grants it priority.
- *
- * Integration note (for teammates):
- *   — Nishit: drop <EmergencyAlert /> into LiveIntersection.jsx or
- *     Dashboard.jsx wherever the existing emergency alert banner is.
- *     Pass the four props from the `state` object already available there.
- *   — Arnav: no changes needed to existing components.
- *
- * Props:
- *   active      {boolean} – true when emergency override is live
- *   lane        {string}  – direction code, e.g. "N", "S", "E", "W"
- *   vehicleType {string}  – e.g. "Ambulance", "Fire Truck"
- *   eta         {string}  – e.g. "~8s", "Arriving now"
- *
- * Requires:
- *   lucide-react  (already in package.json)
- *   framer-motion (already in package.json)
- *   dashboard/src/index.css  for .emergency-strobe-active and .beacon-flash
- */
-
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Siren,
@@ -35,18 +6,10 @@ import {
   Clock,
   Navigation,
 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 /* ── helpers ────────────────────────────────────────────────── */
 
-/** Full direction name from single-letter code */
-const DIRECTION_LABELS = {
-  N: 'North',
-  S: 'South',
-  E: 'East',
-  W: 'West',
-};
-
-/** Vehicle-type → accent color (Tailwind arbitrary / inline) */
 const VEHICLE_COLORS = {
   Ambulance:    { bg: 'rgba(239,68,68,0.12)',  border: '#ef4444', text: '#fca5a5' },
   'Fire Truck': { bg: 'rgba(249,115,22,0.12)', border: '#f97316', text: '#fdba74' },
@@ -55,9 +18,9 @@ const VEHICLE_COLORS = {
 const DEFAULT_COLOR = { bg: 'rgba(239,68,68,0.12)', border: '#ef4444', text: '#fca5a5' };
 
 /* ══════════════════════════════════════════════════════════════
-   STANDBY STATE  — compact monitoring pill
+   STANDBY STATE — compact monitoring pill
    ══════════════════════════════════════════════════════════════ */
-function StandbyBadge() {
+function StandbyBadge({ lang }) {
   return (
     <div
       id="emergency-alert-standby"
@@ -68,10 +31,10 @@ function StandbyBadge() {
         color: '#94a3b8',
       }}
       role="status"
-      aria-label="Emergency system monitoring"
+      aria-label={lang === 'HI' ? 'आपातकालीन प्रणाली निगरानी' : 'Emergency system monitoring'}
     >
       <CheckCircle2 size={12} aria-hidden="true" />
-      Emergency System: Monitoring
+      {lang === 'HI' ? 'आपातकालीन प्रणाली: निगरानी सक्रिय' : 'Emergency System: Monitoring'}
     </div>
   );
 }
@@ -79,9 +42,20 @@ function StandbyBadge() {
 /* ══════════════════════════════════════════════════════════════
    ACTIVE OVERRIDE BANNER
    ══════════════════════════════════════════════════════════════ */
-function ActiveBanner({ lane, vehicleType, eta }) {
+function ActiveBanner({ lane, vehicleType, eta, lang }) {
   const colors  = VEHICLE_COLORS[vehicleType] ?? DEFAULT_COLOR;
-  const dirFull = DIRECTION_LABELS[lane] ?? lane;
+
+  const directionLabels = {
+    N: lang === 'HI' ? 'उत्तर' : 'North',
+    S: lang === 'HI' ? 'दक्षिण' : 'South',
+    E: lang === 'HI' ? 'पूर्व' : 'East',
+    W: lang === 'HI' ? 'पश्चिम' : 'West',
+  };
+  const dirFull = directionLabels[lane] ?? lane;
+
+  const vehicleTypeLabel = lang === 'HI' 
+    ? (vehicleType === 'Ambulance' ? 'एम्बुलेंस' : vehicleType === 'Fire Truck' ? 'दमकल वाहन' : vehicleType === 'Police' ? 'पुलिस' : vehicleType)
+    : vehicleType;
 
   return (
     <motion.div
@@ -91,8 +65,6 @@ function ActiveBanner({ lane, vehicleType, eta }) {
       animate={{ opacity: 1, y: 0,   scale: 1 }}
       exit={{    opacity: 0, y: -12,  scale: 0.97 }}
       transition={{ duration: 0.22, ease: 'easeOut' }}
-
-      /* .emergency-strobe-active supplies the cycling border + glow */
       className="emergency-strobe-active rounded-xl overflow-hidden"
       role="alert"
       aria-live="assertive"
@@ -114,10 +86,10 @@ function ActiveBanner({ lane, vehicleType, eta }) {
           <span className="beacon-flash" aria-hidden="true">
             <Siren size={14} color={colors.text} />
           </span>
-          Priority Override Active
+          {lang === 'HI' ? 'प्राथमिकता ओवरराइड सक्रिय' : 'Priority Override Active'}
         </div>
         <span style={{ color: '#64748b', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
-          AI managed
+          {lang === 'HI' ? 'AI प्रबंधित' : 'AI managed'}
         </span>
       </div>
 
@@ -130,9 +102,11 @@ function ActiveBanner({ lane, vehicleType, eta }) {
             <Siren size={20} color={colors.text} />
           </span>
           <div>
-            <div className="text-xs font-medium" style={{ color: '#64748b' }}>Vehicle</div>
+            <div className="text-xs font-medium" style={{ color: '#64748b' }}>
+              {lang === 'HI' ? 'वाहन' : 'Vehicle'}
+            </div>
             <div className="text-sm font-bold" style={{ color: colors.text }}>
-              {vehicleType}
+              {vehicleTypeLabel}
             </div>
           </div>
         </div>
@@ -144,7 +118,9 @@ function ActiveBanner({ lane, vehicleType, eta }) {
         <div className="flex items-center gap-2">
           <Navigation size={16} color={colors.text} aria-hidden="true" />
           <div>
-            <div className="text-xs font-medium" style={{ color: '#64748b' }}>Priority Lane</div>
+            <div className="text-xs font-medium" style={{ color: '#64748b' }}>
+              {lang === 'HI' ? 'प्राथमिकता लेन' : 'Priority Lane'}
+            </div>
             <div className="text-sm font-bold" style={{ color: colors.text }}>
               {dirFull} ({lane})
             </div>
@@ -186,7 +162,7 @@ function ActiveBanner({ lane, vehicleType, eta }) {
           }}
         >
           <ShieldAlert size={12} aria-hidden="true" />
-          All other lanes HELD
+          {lang === 'HI' ? 'अन्य सभी लेन रोकी गईं' : 'All other lanes HELD'}
         </div>
       </div>
 
@@ -199,7 +175,9 @@ function ActiveBanner({ lane, vehicleType, eta }) {
           color: '#475569',
         }}
       >
-        Override auto-disables after 60 s · Mumbai Traffic Police notified
+        {lang === 'HI' 
+          ? 'ओवरराइड 60s बाद स्वतः निष्क्रिय · मुंबई ट्रैफिक पुलिस को सूचित किया गया'
+          : 'Override auto-disables after 60 s · Mumbai Traffic Police notified'}
       </div>
     </motion.div>
   );
@@ -209,20 +187,14 @@ function ActiveBanner({ lane, vehicleType, eta }) {
    MAIN EXPORT
    ══════════════════════════════════════════════════════════════ */
 
-/**
- * EmergencyAlert
- *
- * @param {boolean} active      – true when override is live
- * @param {string}  lane        – direction code ("N" | "S" | "E" | "W")
- * @param {string}  vehicleType – "Ambulance" | "Fire Truck" | "Police" | any string
- * @param {string}  eta         – e.g. "~8s" or "Arriving now"
- */
 const EmergencyAlert = ({
   active      = false,
   lane        = 'N',
   vehicleType = 'Ambulance',
   eta         = '~8s',
 }) => {
+  const { lang } = useLanguage();
+
   return (
     <AnimatePresence mode="wait">
       {active ? (
@@ -231,6 +203,7 @@ const EmergencyAlert = ({
           lane={lane}
           vehicleType={vehicleType}
           eta={eta}
+          lang={lang}
         />
       ) : (
         <motion.div
@@ -240,7 +213,7 @@ const EmergencyAlert = ({
           exit={{    opacity: 0 }}
           transition={{ duration: 0.15 }}
         >
-          <StandbyBadge />
+          <StandbyBadge lang={lang} />
         </motion.div>
       )}
     </AnimatePresence>
