@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
 
-const Loader = ({ message = "Loading..." }) => {
+const Loader = ({ message }) => {
+  const { lang } = useLanguage();
+  const defaultMessage = lang === 'HI' ? 'लोड हो रहा है...' : 'Loading...';
+
   return (
     <div className="flex flex-col items-center justify-center p-8">
       <div className="flex space-x-2 mb-4">
@@ -20,7 +24,7 @@ const Loader = ({ message = "Loading..." }) => {
           />
         ))}
       </div>
-      <p className="text-gray-600 text-sm">{message}</p>
+      <p className="text-gray-600 text-sm">{message || defaultMessage}</p>
     </div>
   );
 };

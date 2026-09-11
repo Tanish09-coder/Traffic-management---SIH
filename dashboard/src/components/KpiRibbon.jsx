@@ -1,49 +1,53 @@
 import React from 'react';
-import { 
-  TrendingDown, 
-  Layers, 
-  ShieldAlert, 
-  Leaf, 
-  Activity,
-  ArrowDownRight
-} from 'lucide-react';
 import { useTraffic } from '../context/TrafficContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const KpiRibbon = ({ layout = 'horizontal' }) => {
   const { systemMetrics, emergencyCorridor, junctions, systemMode } = useTraffic();
+  const { lang } = useLanguage();
 
   const congestedCount = junctions.filter(j => j.status === 'congested').length;
 
   const kpis = [
     {
       id: 'wait-reduction',
-      title: 'NETWORK WAIT REDUCTION',
+      title: lang === 'HI' ? 'नेटवर्क प्रतीक्षा में कमी' : 'NETWORK WAIT REDUCTION',
       value: systemMode === 'adaptive' ? `-${systemMetrics.avgWaitTimeReductionPercent}%` : '0.0%',
-      trend: systemMode === 'adaptive' ? '▲ 38.6% vs Fixed Plan' : 'Baseline Active',
+      trend: systemMode === 'adaptive' 
+        ? (lang === 'HI' ? '▲ 38.6% बनाम फिक्स्ड प्लान' : '▲ 38.6% vs Fixed Plan') 
+        : (lang === 'HI' ? 'बेसलाइन सक्रिय' : 'Baseline Active'),
       status: 'optimal',
       badge: systemMode === 'adaptive' ? 'AI OPT' : 'BASE'
     },
     {
       id: 'pcu-flow',
-      title: 'TOTAL PCU FLOW / HR',
+      title: lang === 'HI' ? 'कुल PCU प्रवाह / घंटा' : 'TOTAL PCU FLOW / HR',
       value: `${systemMetrics.pcuFlowPerHour.toLocaleString()} PCU`,
-      trend: `${junctions.length - congestedCount}/${junctions.length} Nodes Free Flow`,
+      trend: lang === 'HI' 
+        ? `${junctions.length - congestedCount}/${junctions.length} नोड्स निर्बाध प्रवाह` 
+        : `${junctions.length - congestedCount}/${junctions.length} Nodes Free Flow`,
       status: congestedCount > 0 ? 'warning' : 'optimal',
       badge: 'SCADA'
     },
     {
       id: 'emergency-alerts',
-      title: 'ACTIVE CORRIDOR ALERTS',
-      value: emergencyCorridor.isActive ? '1 ACTIVE' : '0 DISPATCH',
-      trend: emergencyCorridor.isActive ? `${emergencyCorridor.vehicleId} (ETA ${emergencyCorridor.etaSeconds}s)` : 'Preemption Armed',
+      title: lang === 'HI' ? 'सक्रिय कॉरिडोर अलर्ट' : 'ACTIVE CORRIDOR ALERTS',
+      value: emergencyCorridor.isActive 
+        ? (lang === 'HI' ? '1 सक्रिय' : '1 ACTIVE') 
+        : (lang === 'HI' ? '0 प्रेषण' : '0 DISPATCH'),
+      trend: emergencyCorridor.isActive 
+        ? `${emergencyCorridor.vehicleId} (ETA ${emergencyCorridor.etaSeconds}s)` 
+        : (lang === 'HI' ? 'प्री-एम्प्शन तैयार' : 'Preemption Armed'),
       status: emergencyCorridor.isActive ? 'critical' : 'neutral',
       badge: emergencyCorridor.isActive ? 'PRIORITY' : 'ARMED'
     },
     {
       id: 'carbon-avoided',
-      title: 'IDLE CARBON AVOIDED',
+      title: lang === 'HI' ? 'बचाया गया निष्क्रिय कार्बन' : 'IDLE CARBON AVOIDED',
       value: `${systemMetrics.co2ReducedKg.toFixed(1)} kg`,
-      trend: `${systemMetrics.fuelSavedLiters.toFixed(1)} L Fuel (₹${systemMetrics.totalCostSavedRupees.toLocaleString()})`,
+      trend: lang === 'HI'
+        ? `${systemMetrics.fuelSavedLiters.toFixed(1)} L ईंधन (₹${systemMetrics.totalCostSavedRupees.toLocaleString()})`
+        : `${systemMetrics.fuelSavedLiters.toFixed(1)} L Fuel (₹${systemMetrics.totalCostSavedRupees.toLocaleString()})`,
       status: 'optimal',
       badge: 'SAVED'
     }
@@ -106,7 +110,7 @@ export const KpiRibbon = ({ layout = 'horizontal' }) => {
           </div>
 
           <div className="my-2">
-            <span className="text-2xl font-black tracking-tight text-[#0A1F44] tabular-nums">
+            <span className="text-xl font-black font-mono text-[#0A1F44] tabular-nums">
               {kpi.value}
             </span>
           </div>

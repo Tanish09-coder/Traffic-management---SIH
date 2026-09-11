@@ -1,29 +1,3 @@
-/**
- * Legend.jsx
- *
- * Owner: Shreya (new file, created from scratch)
- * Role:  Styling, Polish & Feature Prototyping
- *
- * Purpose:
- *   Self-contained legend panel explaining the visual language of the
- *   Traffic Management dashboard — car colors, signal states, and key
- *   metric terms (Queue, Throughput, etc.).
- *
- * Integration note:
- *   This is a prototype. Hand off to:
- *     - Nishit  → if you want it inserted into a page (Dashboard / LiveIntersection)
- *     - Arnav   → if you want it promoted to a reusable component alongside the others
- *
- * Usage:
- *   import Legend from '../components/Legend';
- *   <Legend />                        // default: collapsed, bottom-right
- *   <Legend defaultOpen position="inline" />   // always open, inline layout
- *
- * Props:
- *   defaultOpen  {boolean}  – start expanded (default: false)
- *   position     {string}   – 'floating' | 'inline'  (default: 'floating')
- */
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -38,69 +12,7 @@ import {
   ChevronUp,
   Info,
 } from 'lucide-react';
-
-/* ── Data definitions ────────────────────────────────────── */
-
-const CAR_TYPES = [
-  {
-    swatch: '#3b82f6',          // blue-500
-    label: 'Standard vehicle',
-    desc: 'Regular car or motorbike in the queue.',
-  },
-  {
-    swatch: '#ef4444',          // red-500
-    label: 'Emergency vehicle',
-    desc: 'Ambulance / fire truck — triggers priority override for its lane.',
-    pulse: true,
-  },
-];
-
-const SIGNAL_STATES = [
-  {
-    dot: '#22c55e',             // green-500
-    label: 'GREEN — Active lane',
-    desc: 'Vehicles in this direction are cleared to move.',
-  },
-  {
-    dot: '#ef4444',             // red-500
-    label: 'RED — Held lane',
-    desc: 'Vehicles must wait; signal not granted to this direction.',
-  },
-  {
-    dot: '#f59e0b',             // amber-500
-    label: 'YELLOW — Emergency',
-    desc: 'Emergency vehicle detected; light flashes amber for caution.',
-    pulse: true,
-  },
-];
-
-const TERMS = [
-  {
-    icon: Layers,
-    term: 'Queue',
-    def: 'Number of vehicles waiting at a lane entrance right now.',
-  },
-  {
-    icon: TrendingUp,
-    term: 'Throughput',
-    def: 'Vehicles cleared through the intersection per minute.',
-  },
-  {
-    icon: AlarmClock,
-    term: 'Avg Wait Time',
-    def: 'Mean time a vehicle spends waiting before the signal turns green.',
-  },
-  {
-    icon: TrafficCone,
-    term: 'Signal Duration',
-    def: 'How long (seconds) the current green phase lasts — set adaptively by the AI.',
-  },
-  {
-    icon: CircleDot,
-    term: 'Priority Override',
-    def: 'AI or operator forces one lane green, ignoring the normal rotation.',
-  },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 /* ── Sub-components ──────────────────────────────────────── */
 
@@ -187,26 +99,88 @@ function TermRow({ icon: Icon, term, def }) {
 
 const Legend = ({ defaultOpen = false, position = 'floating' }) => {
   const [open, setOpen] = useState(defaultOpen);
+  const { lang } = useLanguage();
+
+  const carTypes = [
+    {
+      swatch: '#3b82f6',          // blue-500
+      label: lang === 'HI' ? 'मानक वाहन' : 'Standard vehicle',
+      desc: lang === 'HI' ? 'कतार में सामान्य कार या मोटरबाइक।' : 'Regular car or motorbike in the queue.',
+    },
+    {
+      swatch: '#ef4444',          // red-500
+      label: lang === 'HI' ? 'आपातकालीन वाहन' : 'Emergency vehicle',
+      desc: lang === 'HI' ? 'एम्बुलेंस / दमकल — अपनी लेन के लिए प्राथमिकता ओवरराइड ट्रिगर करता है।' : 'Ambulance / fire truck — triggers priority override for its lane.',
+      pulse: true,
+    },
+  ];
+
+  const signalStates = [
+    {
+      dot: '#22c55e',             // green-500
+      label: lang === 'HI' ? 'हरा — सक्रिय लेन' : 'GREEN — Active lane',
+      desc: lang === 'HI' ? 'इस दिशा के वाहनों को आगे बढ़ने की अनुमति है।' : 'Vehicles in this direction are cleared to move.',
+    },
+    {
+      dot: '#ef4444',             // red-500
+      label: lang === 'HI' ? 'लाल — रोकी गई लेन' : 'RED — Held lane',
+      desc: lang === 'HI' ? 'वाहनों को प्रतीक्षा करनी होगी; इस दिशा को सिग्नल नहीं मिला है।' : 'Vehicles must wait; signal not granted to this direction.',
+    },
+    {
+      dot: '#f59e0b',             // amber-500
+      label: lang === 'HI' ? 'पीला — आपातकालीन' : 'YELLOW — Emergency',
+      desc: lang === 'HI' ? 'आपातकालीन वाहन का पता चला; सावधानी के लिए बत्ती पीली चमकती है।' : 'Emergency vehicle detected; light flashes amber for caution.',
+      pulse: true,
+    },
+  ];
+
+  const terms = [
+    {
+      icon: Layers,
+      term: lang === 'HI' ? 'कतार (Queue)' : 'Queue',
+      def: lang === 'HI' ? 'लेन प्रवेश द्वार पर अभी प्रतीक्षा कर रहे वाहनों की संख्या।' : 'Number of vehicles waiting at a lane entrance right now.',
+    },
+    {
+      icon: TrendingUp,
+      term: lang === 'HI' ? 'थ्रूपुट (Throughput)' : 'Throughput',
+      def: lang === 'HI' ? 'प्रति मिनट चौराहे से निकलने वाले वाहन।' : 'Vehicles cleared through the intersection per minute.',
+    },
+    {
+      icon: AlarmClock,
+      term: lang === 'HI' ? 'औसत प्रतीक्षा समय' : 'Avg Wait Time',
+      def: lang === 'HI' ? 'सिग्नल हरा होने से पहले किसी वाहन द्वारा प्रतीक्षा करने का औसत समय।' : 'Mean time a vehicle spends waiting before the signal turns green.',
+    },
+    {
+      icon: TrafficCone,
+      term: lang === 'HI' ? 'सिग्नल अवधि' : 'Signal Duration',
+      def: lang === 'HI' ? 'वर्तमान ग्रीन चरण कितने समय (सेकंड) तक रहता है — AI द्वारा गतिशील रूप से निर्धारित।' : 'How long (seconds) the current green phase lasts — set adaptively by the AI.',
+    },
+    {
+      icon: CircleDot,
+      term: lang === 'HI' ? 'प्राथमिकता ओवरराइड' : 'Priority Override',
+      def: lang === 'HI' ? 'सामान्य चक्र की उपेक्षा करते हुए AI या ऑपरेटर एक लेन को हरा करता है।' : 'AI or operator forces one lane green, ignoring the normal rotation.',
+    },
+  ];
 
   const panelContent = (
     <div className="legend-panel" style={{ minWidth: 260, maxWidth: 320 }}>
       {/* ── Car colours ── */}
-      <h4>Vehicle colours</h4>
-      {CAR_TYPES.map((c) => (
+      <h4>{lang === 'HI' ? 'वाहन के रंग' : 'Vehicle colours'}</h4>
+      {carTypes.map((c) => (
         <CarRow key={c.label} {...c} />
       ))}
 
       {/* ── Signal states ── */}
       <div className="legend-divider" />
-      <h4>Signal states</h4>
-      {SIGNAL_STATES.map((s) => (
+      <h4>{lang === 'HI' ? 'सिग्नल स्थितियां' : 'Signal states'}</h4>
+      {signalStates.map((s) => (
         <SignalRow key={s.label} {...s} />
       ))}
 
       {/* ── Terms ── */}
       <div className="legend-divider" />
-      <h4>Key terms</h4>
-      {TERMS.map((t) => (
+      <h4>{lang === 'HI' ? 'प्रमुख शब्दावली' : 'Key terms'}</h4>
+      {terms.map((t) => (
         <TermRow key={t.term} {...t} />
       ))}
 
@@ -225,8 +199,9 @@ const Legend = ({ defaultOpen = false, position = 'floating' }) => {
       >
         <Info size={12} color="var(--clr-primary)" style={{ flexShrink: 0, marginTop: 1 }} />
         <span style={{ fontSize: '0.68rem', color: 'var(--clr-text-muted)', lineHeight: 1.4 }}>
-          Signal timing is set dynamically by the AI based on real-time queue lengths.
-          Manual overrides are logged and auto-expire after&nbsp;60&nbsp;s.
+          {lang === 'HI'
+            ? 'सिग्नल का समय वास्तविक समय की कतार की लंबाई के आधार पर AI द्वारा गतिशील रूप से निर्धारित किया जाता है। मैन्युअल ओवरराइड लॉग किए जाते हैं और 60 सेकंड के बाद स्वतः समाप्त हो जाते हैं।'
+            : 'Signal timing is set dynamically by the AI based on real-time queue lengths. Manual overrides are logged and auto-expire after 60 s.'}
         </span>
       </div>
     </div>
@@ -273,7 +248,7 @@ const Legend = ({ defaultOpen = false, position = 'floating' }) => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-expanded={open}
-        aria-label={open ? 'Close legend' : 'Open legend'}
+        aria-label={open ? (lang === 'HI' ? 'संकेत विवरण बंद करें' : 'Close legend') : (lang === 'HI' ? 'संकेत विवरण खोलें' : 'Open legend')}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -292,7 +267,7 @@ const Legend = ({ defaultOpen = false, position = 'floating' }) => {
         }}
       >
         <Info size={14} aria-hidden="true" />
-        Legend
+        {lang === 'HI' ? 'संकेत विवरण' : 'Legend'}
         {open ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
       </motion.button>
     </div>
