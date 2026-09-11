@@ -114,7 +114,12 @@ export class VehicleManager {
     const sortedLane = this.cars[direction];
     const rearCar = sortedLane.length > 0 ? sortedLane[sortedLane.length - 1] : null;
 
-    if (!rearCar || rearCar.position >= MIN_VEHICLE_GAP) {
+    let effectiveRear = rearCar ? rearCar.position : Infinity;
+    if (this.emergencyVehicle && this.emergencyVehicle.position < 100 && this.emergencyVehicle.approach === direction) {
+      effectiveRear = Math.min(effectiveRear, this.emergencyVehicle.position);
+    }
+
+    if (effectiveRear >= MIN_VEHICLE_GAP) {
       this.cars[direction].push(newVeh);
       this.cars[direction].sort((a, b) => b.position - a.position);
       return { accepted: true, spawnedImmediately: true, queuedInBacklog: false };
@@ -374,7 +379,12 @@ export class VehicleManager {
       const sortedLane = this.cars[direction];
       const rearCar = sortedLane.length > 0 ? sortedLane[sortedLane.length - 1] : null;
 
-      if (!rearCar || rearCar.position >= MIN_VEHICLE_GAP) {
+      let effectiveRear = rearCar ? rearCar.position : Infinity;
+      if (isEmergencyActive && this.emergencyVehicle && this.emergencyVehicle.approach === direction) {
+        effectiveRear = Math.min(effectiveRear, this.emergencyVehicle.position);
+      }
+
+      if (effectiveRear >= MIN_VEHICLE_GAP) {
         this.cars[direction].push(newVeh);
         this.cars[direction].sort((a, b) => b.position - a.position);
       } else {
@@ -411,11 +421,14 @@ export class VehicleManager {
 
         if (canMove) {
           car.isStopped = false;
-          const moveSpeed = car.speed * deltaSec;
+          // In emergency corridor, expedite vehicles ahead of ambulance to pass smoothly
+          const isEmgApproach = isEmergencyActive && this.emergencyVehicle && this.emergencyVehicle.approach === direction;
+          const effectiveSpeed = isEmgApproach ? Math.max(car.speed, 8.5) : car.speed;
+          const moveSpeed = effectiveSpeed * deltaSec;
           car.position += moveSpeed;
 
           if (carAhead && car.position > carAhead.position - MIN_VEHICLE_GAP) {
-            car.position = carAhead.position - MIN_VEHICLE_GAP;
+            car.position = Math.max(0, carAhead.position - MIN_VEHICLE_GAP);
           }
 
           if (car.position >= 100) {
@@ -499,8 +512,8 @@ export class VehicleManager {
           ? Math.max(0, carDirectlyAhead.position - MIN_VEHICLE_GAP)
           : 105;
 
-        const targetPos = this.emergencyVehicle.position + Math.max(this.emergencyVehicle.speed || 8, 8) * deltaSec;
-        this.emergencyVehicle.position = Math.min(targetPos, Math.max(this.emergencyVehicle.position + 2.0 * deltaSec, maxAllowedPos));
+        const targetPos = this.emergencyVehicle.position + Math.max(this.emergencyVehicle.speed || 8.5, 8.5) * deltaSec;
+        this.emergencyVehicle.position = Math.min(targetPos, maxAllowedPos);
 
         if (this.emergencyVehicle.position > STOP_LINE_POSITION && this.emergencyVehicle.position <= INTERSECTION_EXIT_THRESHOLD) {
           this.emergencyVehicle.inIntersection = true;
@@ -523,7 +536,16 @@ export class VehicleManager {
           this.emergencyVehicle = null;
         }
       } else {
-        const naturalSlot = STOP_LINE_POSITION;
+        const laneArr = this.cars[emgApp] || [];
+        const carsAhead = laneArr.filter(c => c.position > this.emergencyVehicle.position);
+        const carDirectlyAhead = carsAhead.length > 0
+          ? carsAhead.reduce((prev, curr) => curr.position < prev.position ? curr : prev)
+          : null;
+
+        const naturalSlot = carDirectlyAhead
+          ? Math.min(STOP_LINE_POSITION, carDirectlyAhead.position - MIN_VEHICLE_GAP)
+          : STOP_LINE_POSITION;
+
         if (this.emergencyVehicle.position < naturalSlot) {
           this.emergencyVehicle.isStopped = false;
           this.emergencyVehicle.position = Math.min(naturalSlot, this.emergencyVehicle.position + QUEUE_APPROACH_SPEED * deltaSec);
@@ -571,19 +593,47 @@ export class VehicleManager {
     return { departedCars: stepDepartedCars };
   }
 
-  triggerEmergency(direction) {
-    return this.triggerEmergencyVehicle(direction);
+  triggerEmergency(direction, type, activeSignal) {
+    return this.triggerEmergencyVehicle(direction, type, activeSignal);
   }
 
-  triggerEmergencyVehicle(direction) {
-    const app = ['N', 'S', 'E', 'W'].includes(direction) ? direction : 'S';
-    const emgId = `emg-${app}-${Date.now()}`;
+  triggerEmergencyVehicle(direction, type = 'ambulance', activeSignal = null) {
+    const validDirs = ['N', 'S', 'E', 'W'];
+    let app = validDirs.includes(direction)
+      ? direction
+      : (activeSignal && validDirs.includes(activeSignal) ? activeSignal : 'S');
 
+    if (this.emergencyVehicle && this.emergencyVehicle.position < 100) {
+      return this.emergencyVehicle;
+    }
+
+    const emgId = `emg-${app}-${Date.now()}`;
+    const sortedLane = this.cars[app] || [];
+
+    // Cascading forward clearance: Ensure vehicles in this lane have MIN_VEHICLE_GAP spacing
+    // Shift from front (index 0) to back (index length - 1) so space opens up cleanly
+    if (sortedLane.length > 0) {
+      const rearCar = sortedLane[sortedLane.length - 1];
+      if (rearCar.position < MIN_VEHICLE_GAP) {
+        const neededShift = (MIN_VEHICLE_GAP - rearCar.position) + 0.5;
+        for (let i = 0; i < sortedLane.length; i++) {
+          const c = sortedLane[i];
+          if (i === 0) {
+            c.position = c.position + neededShift;
+          } else {
+            const aheadPos = sortedLane[i - 1].position - MIN_VEHICLE_GAP;
+            c.position = Math.min(aheadPos, c.position + neededShift);
+          }
+        }
+      }
+    }
+
+    const emgType = type || 'ambulance';
     this.emergencyVehicle = {
       id: emgId,
       position: 0,
       speed: 8.5,
-      type: 'ambulance',
+      type: emgType,
       approach: app,
       waitTime: 0,
       isStopped: false,
@@ -593,7 +643,7 @@ export class VehicleManager {
     this._completedArrivals.push({
       id: emgId,
       direction: app,
-      type: 'ambulance',
+      type: emgType,
       timeSec: this.sessionDurationSeconds
     });
 
