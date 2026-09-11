@@ -785,30 +785,6 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-
-            {/* 3. Wait Time */}
-            <div className="p-2.5 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <Clock size={16} className="text-[#F5A623]" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#B8860B]">
-                    {lang === 'HI' ? 'औसत प्रतीक्षा समय' : 'Average Wait Time'}
-                  </div>
-                  <div className="text-sm font-extrabold text-[#F5A623]">
-                    {(state?.avg_wait_time ?? 0).toFixed(1)} s
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-[#16A34A] flex items-center justify-end space-x-0.5">
-                  <TrendingDown size={12} />
-                  <span>-18%</span>
-                </span>
-                <div className="text-[9px] text-[#94A3B8]">
-                  {lang === 'HI' ? 'नियत समय की तुलना में' : 'vs. fixed time'}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Chart Panel (Wait Time Line Chart, Queue Lengths Bar Chart, Traffic Summary) */}

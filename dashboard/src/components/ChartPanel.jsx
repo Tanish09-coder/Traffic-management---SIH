@@ -1,6 +1,5 @@
 import React from 'react';
 import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { FileText } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const LANE_COLORS = {
@@ -74,12 +73,8 @@ const ChartPanel = ({ metrics, state }) => {
     };
   });
 
-  const totalActiveQueues = queueChartData.reduce((sum, item) => sum + item.count, 0);
   const maxQueueCount = Math.max(5, ...queueChartData.map((d) => d.count));
   const queueYMax = Math.ceil(maxQueueCount * 1.25);
-
-  const totalCars = state?.cars_passed ?? metrics?.total_cars ?? 0;
-  const throughput = Math.round(state?.throughput ?? metrics?.throughput ?? 0);
 
   return (
     <div className="space-y-3">
@@ -188,34 +183,6 @@ const ChartPanel = ({ metrics, state }) => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* 3. Traffic Summary */}
-      <div className="rounded-lg p-3 bg-[#F8FAFC] border border-[#CBD5E1]">
-        <div className="flex items-center space-x-1.5 mb-2">
-          <FileText className="w-3.5 h-3.5 text-[#003366]" />
-          <h4 className="text-xs font-bold text-[#0F2942]">
-            {lang === 'HI' ? 'MoRTH नोड सारांश' : 'MoRTH Node Summary'}
-          </h4>
-        </div>
-        <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 text-[11px]">
-          <div className="flex justify-between">
-            <span className="text-[#475569]">{lang === 'HI' ? 'कुल वाहन:' : 'Total Vehicles:'}</span>
-            <span className="font-bold text-[#0F2942]">{totalCars}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[#475569]">{lang === 'HI' ? 'औसत विलंब:' : 'Avg Delay:'}</span>
-            <span className="font-bold text-[#0F2942]">{(Number(currentWait) || 0).toFixed(1)}s</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[#475569]">{lang === 'HI' ? 'थ्रूपुट:' : 'Throughput:'}</span>
-            <span className="font-bold text-[#0F2942]">{throughput} {lang === 'HI' ? 'वाहन/मिनट' : 'veh/min'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[#475569]">{lang === 'HI' ? 'सक्रिय बैकलाग:' : 'Active Backlog:'}</span>
-            <span className="font-bold text-[#0F2942]">{totalActiveQueues} {lang === 'HI' ? 'वाहन' : 'veh'}</span>
-          </div>
         </div>
       </div>
     </div>

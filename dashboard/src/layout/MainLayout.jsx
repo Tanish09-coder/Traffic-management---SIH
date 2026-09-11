@@ -59,7 +59,6 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
 
   const navItems = [
     { id: 'dashboard', label: lang === 'HI' ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
-    { id: 'live-intersection', label: lang === 'HI' ? 'लाइव जंक्शन मॉनिटर' : 'Live Junction Monitor', icon: TrafficCone },
     { id: 'traffic-intelligence', label: lang === 'HI' ? 'कैमरा एआई ग्रिड' : 'Camera AI Grid', icon: Video },
     { id: 'analytics', label: lang === 'HI' ? 'शहर एनालिटिक्स व कार्बन' : 'City Analytics & Carbon', icon: LineChart },
     { id: 'about', label: lang === 'HI' ? 'हमारे बारे में' : 'About Us', icon: Landmark }
@@ -137,22 +136,26 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
         <div className="max-w-[1520px] mx-auto px-4 sm:px-8 py-3.5">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             
-            {/* Left: Ashoka Emblem & Ministry Branding */}
-            <div className="flex items-center space-x-4">
-              {/* Ashoka Emblem Insignia Silhouette */}
+            {/* Left: MARG-DRISHTI Official Logo & Ministry Branding */}
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              {/* MARG-DRISHTI Logo */}
               <div
-                className="w-13 h-13 rounded-xl bg-[#0A1F44] border-2 border-[#1E4D8C] flex flex-col items-center justify-center text-white shadow-sm flex-shrink-0 cursor-pointer select-none"
+                className="h-13 sm:h-14 w-auto flex items-center justify-center cursor-pointer select-none rounded-xl overflow-hidden bg-white border border-slate-200/90 shadow-xs hover:border-[#1E4D8C] transition p-0.5 flex-shrink-0"
                 onClick={() => onNavigate && onNavigate('dashboard')}
+                title="मार्ग-दृष्टि • MARG-DRISHTI"
               >
-                <Shield className="w-6 h-6 text-[#F5A623]" />
-                <span className="text-[8px] font-black tracking-wider text-[#FBBF24] mt-0.5">MoRTH</span>
+                <img
+                  src="/marg_drishti_logo.jpg"
+                  alt="MARG-DRISHTI Logo"
+                  className="h-full w-auto object-contain"
+                />
               </div>
 
               {/* Ministry Titles with Clean Hierarchy */}
               <div className="cursor-pointer select-none" onClick={() => onNavigate && onNavigate('dashboard')}>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="font-black text-lg sm:text-xl tracking-tight text-[#0A1F44] leading-snug">
-                    {lang === 'HI' ? 'एकीकृत यातायात प्रबंधन प्रणाली (ITMS)' : 'Integrated Traffic Management System (ITMS)'}
+                    {lang === 'HI' ? 'मार्ग-दृष्टि (MARG-DRISHTI)' : 'MARG-DRISHTI'}
                   </h1>
                 </div>
                 <p className="text-xs text-[#475569] font-medium mt-0.5 flex flex-wrap items-center gap-2">
@@ -264,12 +267,12 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
         <div className="max-w-[1520px] mx-auto px-4 sm:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-[#0F2C59] border border-[#1E4D8C] flex items-center justify-center text-[#F5A623] font-bold text-sm">
-                🇮🇳
+              <div className="w-9 h-9 rounded-lg bg-white border border-[#1E4D8C]/60 flex items-center justify-center p-0.5 overflow-hidden flex-shrink-0 shadow-xs">
+                <img src="/marg_drishti_logo.jpg" alt="MARG-DRISHTI Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="font-bold text-slate-200">
-                  {lang === 'HI' ? 'राष्ट्रीय सूचना विज्ञान केंद्र (NIC) पोर्टल' : 'National Informatics Centre (NIC) Portal'}
+                  {lang === 'HI' ? 'मार्ग-दृष्टि (MARG-DRISHTI) • राष्ट्रीय सूचना विज्ञान केंद्र (NIC) पोर्टल' : 'MARG-DRISHTI • National Informatics Centre (NIC) Portal'}
                 </span>
                 <p className="text-[11px] text-slate-400">
                   {lang === 'HI' ? 'सड़क परिवहन एवं राजमार्ग मंत्रालय (MoRTH), भारत सरकार' : 'Ministry of Road Transport & Highways (MoRTH), Government of India'}
