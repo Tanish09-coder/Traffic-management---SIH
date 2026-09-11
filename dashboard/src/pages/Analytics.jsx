@@ -213,11 +213,11 @@ const Analytics = ({ onNavigate }) => {
             </button>
 
             <button
-              onClick={() => onNavigate && onNavigate('live-intersection')}
+              onClick={() => onNavigate && onNavigate('dashboard')}
               className="px-4 py-2 text-sm font-bold rounded-xl bg-[#0F2C59] hover:bg-[#163A6B] text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Compass size={14} />
-              <span>{lang === 'HI' ? 'लाइव जंक्शन' : 'Live Intersection'}</span>
+              <span>{lang === 'HI' ? 'डैशबोर्ड' : 'Dashboard'}</span>
             </button>
           </div>
 
@@ -433,10 +433,10 @@ const Analytics = ({ onNavigate }) => {
           </p>
           <div className="pt-2">
             <button
-              onClick={() => onNavigate && onNavigate('live-intersection')}
+              onClick={() => onNavigate && onNavigate('dashboard')}
               className="px-5 py-2.5 rounded-xl bg-[#0F2C59] text-white text-sm font-bold hover:bg-[#163A6B] transition cursor-pointer"
             >
-              {lang === 'HI' ? 'लाइव जंक्शन खोलें' : 'Open Live Intersection'}
+              {lang === 'HI' ? 'डैशबोर्ड खोलें' : 'Open Dashboard'}
             </button>
           </div>
         </div>
