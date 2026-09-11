@@ -591,39 +591,68 @@ const Dashboard = () => {
                 </div>
               ))}
 
-            {/* Fullscreen Floating Controls (Weather & Exit) */}
+            {/* Fullscreen Floating Controls */}
             {isFullscreen && (
-              <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#0A1F44]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
-                {[
-                  { mode: 'normal', label: 'Clear', icon: Sun },
-                  { mode: 'rain', label: 'Rain', icon: CloudRain },
-                  { mode: 'fog', label: 'Fog', icon: CloudFog }
-                ].map(({ mode, label, icon: Icon }) => {
-                  const currentMode = (state?.weather_mode || weatherMode || 'normal').toLowerCase();
-                  const isActive = (mode === 'normal' && (currentMode === 'normal' || currentMode === 'clear')) || currentMode === mode;
-                  return (
-                    <button
-                      key={mode}
-                      onClick={() => setWeather && setWeather(mode)}
-                      className={`px-3 py-1 text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer ${isActive
-                          ? 'bg-[#0F2C59] text-white shadow-xs border border-[#1E4D8C]'
-                          : 'text-slate-300 hover:text-white hover:bg-white/10'
-                        }`}
-                    >
-                      <Icon size={12} />
-                      <span>{label}</span>
-                    </button>
-                  );
-                })}
-                <div className="w-[1px] h-4 bg-white/20 mx-1" />
-                <button
-                  onClick={toggleFullscreen}
-                  className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                  title="Exit Fullscreen"
-                >
-                  <Minimize size={14} />
-                </button>
-              </div>
+              <>
+                {/* 1. Top-Left: Current Signal Indicator (Image 2) */}
+                <div className="absolute top-4 left-4 z-40 pointer-events-auto flex items-center px-4 py-2 rounded-full text-xs font-bold bg-[#0A1F44]/95 backdrop-blur-md text-[#F5A623] shadow-xl border border-[#1E4D8C] select-none">
+                  <span>
+                    Current Signal: {state?.signal || 'E'} ({state?.phase || 'GREEN'}) | Green remaining: {state?.phase_remaining_sec ?? 2}s
+                  </span>
+                </div>
+
+                {/* 2. Top-Right: Weather Controls & Exit Fullscreen */}
+                <div className="absolute top-4 right-4 z-40 flex items-center space-x-1.5 pointer-events-auto bg-[#0A1F44]/90 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-lg select-none">
+                  {[
+                    { mode: 'normal', label: 'Clear', icon: Sun },
+                    { mode: 'rain', label: 'Rain', icon: CloudRain },
+                    { mode: 'fog', label: 'Fog', icon: CloudFog }
+                  ].map(({ mode, label, icon: Icon }) => {
+                    const currentMode = (state?.weather_mode || weatherMode || 'normal').toLowerCase();
+                    const isActive = (mode === 'normal' && (currentMode === 'normal' || currentMode === 'clear')) || currentMode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setWeather && setWeather(mode)}
+                        className={`px-3 py-1 text-xs font-bold rounded-xl transition-all flex items-center space-x-1 cursor-pointer ${isActive
+                            ? 'bg-[#0F2C59] text-white shadow-xs border border-[#1E4D8C]'
+                            : 'text-slate-300 hover:text-white hover:bg-white/10'
+                          }`}
+                      >
+                        <Icon size={12} />
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                  <div className="w-[1px] h-4 bg-white/20 mx-1" />
+                  <button
+                    onClick={toggleFullscreen}
+                    className="p-1.5 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                    title="Exit Fullscreen"
+                  >
+                    <Minimize size={14} />
+                  </button>
+                </div>
+
+                {/* 3. Bottom-Right: Emergency Dispatch Button (Image 1) */}
+                <div className="absolute bottom-4 right-4 z-40 pointer-events-auto">
+                  <button
+                    onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
+                    disabled={state?.emergencyActive}
+                    className={`px-5 py-2.5 rounded-full font-black text-xs text-white transition-all shadow-xl flex items-center space-x-2 cursor-pointer border border-white/20 select-none ${
+                      state?.emergencyActive
+                        ? 'bg-red-800 animate-pulse cursor-default'
+                        : 'bg-[#DC2626] hover:bg-red-700 active:scale-95 hover:shadow-red-500/25'
+                    }`}
+                    title="Dispatch emergency vehicle priority clearance"
+                  >
+                    <AlertTriangle size={16} className="text-[#F5A623] fill-[#F5A623]/20" />
+                    <span className="tracking-wide">
+                      {state?.emergencyActive ? `EMERGENCY ACTIVE (${state?.emergencyDirection || ''})` : 'EMERGENCY DISPATCH'}
+                    </span>
+                  </button>
+                </div>
+              </>
             )}
           </div>
 
