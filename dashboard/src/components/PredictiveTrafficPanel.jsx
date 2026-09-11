@@ -433,8 +433,8 @@ export const PredictiveTrafficPanel = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                    <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
+                    <XAxis dataKey="label" stroke="#94A3B8" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: '#0F2942',

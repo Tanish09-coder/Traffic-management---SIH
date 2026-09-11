@@ -399,8 +399,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#475569" fontSize={11} tickLine={false} />
+                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
@@ -454,8 +454,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#475569" fontSize={11} tickLine={false} unit=" c/m" />
+                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} unit=" c/m" tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
@@ -504,8 +504,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={session.laneData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                      <XAxis dataKey="label" stroke="#475569" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#475569" fontSize={11} tickLine={false} />
+                      <XAxis dataKey="label" stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
@@ -675,8 +675,8 @@ const Analytics = ({ onNavigate }) => {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={session.timeSeries}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} />
-                      <YAxis stroke="#475569" fontSize={11} tickLine={false} allowDecimals={false} />
+                      <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} allowDecimals={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
                         itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}

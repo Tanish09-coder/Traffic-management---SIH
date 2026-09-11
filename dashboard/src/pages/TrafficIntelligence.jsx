@@ -515,7 +515,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
       // Watermark
       ctx.fillStyle = 'rgba(148, 163, 184, 0.5)';
-      ctx.font = 'bold 11px monospace';
+      ctx.font = 'bold 11px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
       ctx.fillText(`CAM-04 [SIMULATED VISION] • T: ${currentTimeSec.toFixed(1)}s`, 14, 22);
     }
 
@@ -574,7 +574,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
         const cx = (sumX / points.length) * w;
         const cy = (sumY / points.length) * h;
 
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = 'bold 11px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
         const tw = ctx.measureText(countText).width;
         ctx.fillStyle = 'rgba(15, 41, 66, 0.88)';
         ctx.fillRect(cx - tw / 2 - 8, cy - 12, tw + 16, 22);
@@ -676,7 +676,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
 
       if (crossingEvent) {
         const badgeText = `⚡ CROSSING: ${(crossingEvent.vehicleType || 'car').toUpperCase()} #${crossingEvent.trackId}`;
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = 'bold 11px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
         const tw = ctx.measureText(badgeText).width;
         ctx.fillStyle = 'rgba(16, 185, 129, 0.95)';
         ctx.fillRect(mx - tw / 2 - 8, my - 24, tw + 16, 20);
@@ -724,13 +724,16 @@ const TrafficIntelligence = ({ onNavigate }) => {
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Track label
+        // Track label in Noto Sans
         const trackLabel = (det.trackId !== null && det.trackId !== undefined) ? `#${det.trackId}` : 'untracked';
         const labelText = assignedDir ? `${det.type} ${trackLabel} [${assignedDir}]` : `${det.type} ${trackLabel}`;
+        
+        ctx.font = 'bold 10px "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif';
+        const tagWidth = Math.max(60, ctx.measureText(labelText).width + 10);
+        
         ctx.fillStyle = boxColor;
-        ctx.fillRect(rx, ry - 18, Math.max(60, ctx.measureText(labelText).width + 10), 18);
+        ctx.fillRect(rx, ry - 18, tagWidth, 18);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 10px sans-serif';
         ctx.fillText(labelText, rx + 4, ry - 5);
       });
     }
@@ -752,6 +755,15 @@ const TrafficIntelligence = ({ onNavigate }) => {
   useEffect(() => {
     renderCanvasOverlay();
   }, [currentTimeSec, approachZones, showApproachZones, editingZone, drawingMode, analysisResults, renderCanvasOverlay]);
+
+  // Re-render when fonts are loaded
+  useEffect(() => {
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        renderCanvasOverlay();
+      });
+    }
+  }, [renderCanvasOverlay]);
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {

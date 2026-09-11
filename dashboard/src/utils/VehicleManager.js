@@ -386,7 +386,16 @@ export class VehicleManager {
         const canMove = isGreenPhase || isCommittedPastStopLine || car.inIntersection;
 
         const myIndex = laneArr.indexOf(car);
-        const carAhead = myIndex > 0 ? laneArr[myIndex - 1] : null;
+        let carAhead = myIndex > 0 ? laneArr[myIndex - 1] : null;
+
+        if (isEmergencyActive && this.emergencyVehicle && this.emergencyVehicle.approach === direction) {
+          const emgPos = this.emergencyVehicle.position;
+          if (emgPos > car.position) {
+            if (!carAhead || emgPos < carAhead.position) {
+              carAhead = { position: emgPos };
+            }
+          }
+        }
 
         if (canMove) {
           car.isStopped = false;
@@ -446,7 +455,12 @@ export class VehicleManager {
       const sortedLane = this.cars[direction];
       const rearCar = sortedLane.length > 0 ? sortedLane[sortedLane.length - 1] : null;
 
-      if ((!rearCar || rearCar.position >= MIN_VEHICLE_GAP) && this.backlog[direction].length > 0) {
+      let effectiveRearPos = rearCar ? rearCar.position : Infinity;
+      if (isEmergencyActive && this.emergencyVehicle && this.emergencyVehicle.approach === direction) {
+        effectiveRearPos = Math.min(effectiveRearPos, this.emergencyVehicle.position);
+      }
+
+      if (effectiveRearPos >= MIN_VEHICLE_GAP && this.backlog[direction].length > 0) {
         const enteringVeh = this.backlog[direction].shift();
         enteringVeh.position = 0;
         enteringVeh.isStopped = false;
