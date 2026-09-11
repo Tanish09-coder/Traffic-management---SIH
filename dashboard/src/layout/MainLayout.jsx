@@ -43,9 +43,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
 
   const zones = [
     'Mumbai BKC Corridor — Jn 04',
-    'Pune Shivaji Nagar — Node 02',
-    'Delhi Ring Road — Jn 11',
-    'Bengaluru Outer Ring — Node 07'
+    'Pune Shivaji Nagar — Node 02'
   ];
 
   return (
