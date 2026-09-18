@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { stepApproachFlow, deriveApproachMetricsFromGoogleRatio } from '../utils/GoogleTrafficModel';
 
 const TrafficContext = createContext();
 
@@ -234,31 +235,23 @@ export const TrafficProvider = ({ children }) => {
           const updatedApproaches = { ...j.approachData };
           let totalPcuSum = 0;
 
+          // Realistic arterial arrival rates (PCU / sec) based on Mumbai corridor flow
+          const baseArrivalRates = {
+            N: j.id === 'J2' ? 0.42 : 0.28,
+            S: j.id === 'J2' ? 0.38 : 0.25,
+            E: 0.20,
+            W: 0.22
+          };
+
           ['N', 'S', 'E', 'W'].forEach(dir => {
             const isGreen = (dir === 'N' || dir === 'S') ? isGreenNS : !isGreenNS;
             const current = updatedApproaches[dir];
+            const arrivalRate = baseArrivalRates[dir] || 0.25;
 
-            const arrivals = Math.random() < 0.35 ? 1 : 0;
-            const departures = (isGreen && current.count > 0 && Math.random() < 0.7) ? 1 : 0;
-
-            const nextCount = Math.max(2, current.count + arrivals - departures);
-            const bikes = Math.round(nextCount * 0.45);
-            const cars = Math.round(nextCount * 0.42);
-            const heavies = Math.max(0, nextCount - bikes - cars);
-            const nextPcu = Number((bikes * 0.5 + cars * 1.0 + heavies * 2.5).toFixed(1));
-            const queueMeters = Math.round(nextPcu * 2.6);
-            const speedKmph = isGreen ? Math.min(50, current.speedKmph + 2) : Math.max(0, current.speedKmph - 4);
-
-            updatedApproaches[dir] = {
-              count: nextCount,
-              pcu: nextPcu,
-              bikes,
-              cars,
-              heavies,
-              speedKmph,
-              queueMeters
-            };
-            totalPcuSum += nextPcu;
+            // Physical queue step: green discharges at saturation flow, red accumulates arrivals
+            const updated = stepApproachFlow(current, isGreen, arrivalRate, 1);
+            updatedApproaches[dir] = updated;
+            totalPcuSum += updated.pcu;
           });
 
           let nextStatus = 'optimal';
@@ -379,18 +372,24 @@ export const TrafficProvider = ({ children }) => {
     const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
 
     if (scenarioType === 'rush_hour_surge') {
+      const surgeN = deriveApproachMetricsFromGoogleRatio(2.65);
+      const surgeS = deriveApproachMetricsFromGoogleRatio(2.40);
+      const surgeE = deriveApproachMetricsFromGoogleRatio(2.95);
+      const surgeW = deriveApproachMetricsFromGoogleRatio(2.55);
+
       setJunctions(prev => prev.map(j => {
         if (j.id === 'J2') {
+          const totalSurge = Number((surgeN.pcu + surgeS.pcu + surgeE.pcu + surgeW.pcu).toFixed(1));
           return {
             ...j,
             status: 'congested',
-            totalPcu: 235.0,
+            totalPcu: totalSurge,
             averageWaitTimeSec: 48.0,
             approachData: {
-              N: { count: 52, pcu: 64.0, bikes: 32, cars: 30, heavies: 8, speedKmph: 8, queueMeters: 180 },
-              S: { count: 48, pcu: 58.0, bikes: 28, cars: 26, heavies: 7, speedKmph: 10, queueMeters: 160 },
-              E: { count: 65, pcu: 78.5, bikes: 38, cars: 36, heavies: 10, speedKmph: 6, queueMeters: 220 },
-              W: { count: 55, pcu: 66.0, bikes: 30, cars: 32, heavies: 8, speedKmph: 8, queueMeters: 190 }
+              N: surgeN,
+              S: surgeS,
+              E: surgeE,
+              W: surgeW
             }
           };
         }
