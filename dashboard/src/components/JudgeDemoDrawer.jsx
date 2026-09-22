@@ -173,7 +173,7 @@ export const JudgeDemoDrawer = ({ isOpen, onClose }) => {
 
         {/* Footer */}
         <div className="p-4 bg-[#F8FAFC] border-t border-[#E2E8F0] text-[11px] text-[#64748B] text-center font-mono">
-          MoRTH ITMS // SIH PS-25050 Evaluation Framework
+          MoRTH ITMS // SIH PS-26205 Evaluation Framework
         </div>
 
       </div>

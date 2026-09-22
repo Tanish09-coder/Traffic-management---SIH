@@ -254,6 +254,134 @@ const PoliceSVG = () => {
   );
 };
 
+// 6. Delivery Van SVG (Compact commercial courier/van with cargo roof stripes and amber markers)
+const DeliveryVanSVG = ({ colorIndex = 0 }) => {
+  const isWhite = colorIndex % 2 === 0;
+  return (
+    <svg
+      viewBox="0 0 24 40"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 2px 3px rgba(245,158,11,0.35))' }}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* 4 Wheels */}
+      <rect x="0.5" y="6" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="6" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="0.5" y="28" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+      <rect x="21.1" y="28" width="2.4" height="5" rx="0.8" fill="#1E293B" />
+
+      {/* Van Body */}
+      <rect
+        x="2.5"
+        y="2"
+        width="19"
+        height="36"
+        rx="3.5"
+        fill={isWhite ? '#F8FAFC' : '#F59E0B'}
+        stroke={isWhite ? '#CBD5E1' : '#D97706'}
+        strokeWidth="0.8"
+      />
+
+      {/* Front Windshield */}
+      <rect x="4.5" y="7" width="15" height="5.5" rx="1.2" fill="#93C5FD" stroke="#334155" strokeWidth="0.4" />
+
+      {/* Cargo Compartment Separator Line */}
+      <line x1="3" y1="15" x2="21" y2="15" stroke="#475569" strokeWidth="0.8" />
+
+      {/* Cargo Roof Ribs */}
+      <rect x="5.5" y="17" width="13" height="17" rx="1" fill={isWhite ? '#E2E8F0' : '#D97706'} />
+      <line x1="7.5" y1="19" x2="7.5" y2="32" stroke="#64748B" strokeWidth="0.6" strokeDasharray="1.5 1" />
+      <line x1="12" y1="19" x2="12" y2="32" stroke="#64748B" strokeWidth="0.6" strokeDasharray="1.5 1" />
+      <line x1="16.5" y1="19" x2="16.5" y2="32" stroke="#64748B" strokeWidth="0.6" strokeDasharray="1.5 1" />
+
+      {/* Delivery Van Amber Roof Marker */}
+      <rect x="9.5" y="4" width="5" height="1.8" rx="0.6" fill="#F59E0B" />
+
+      {/* Headlights */}
+      <circle cx="5" cy="3.5" r="1.1" fill="#FEF08A" />
+      <circle cx="19" cy="3.5" r="1.1" fill="#FEF08A" />
+
+      {/* Rear Brake Lights */}
+      <rect x="4" y="36.5" width="2.8" height="1.2" rx="0.4" fill="#EF4444" />
+      <rect x="17.2" y="36.5" width="2.8" height="1.2" rx="0.4" fill="#EF4444" />
+    </svg>
+  );
+};
+
+// 7. Heavy Freight Truck SVG (Dual-axle heavy transport container with cab separation)
+const FreightTruckSVG = ({ colorIndex = 0 }) => {
+  const isBlue = colorIndex % 2 === 0;
+  return (
+    <svg
+      viewBox="0 0 26 48"
+      className="w-full h-full select-none"
+      style={{ filter: 'drop-shadow(0 2.5px 4px rgba(15,23,42,0.45))' }}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Front Wheels */}
+      <rect x="0.5" y="6" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+      <rect x="22.9" y="6" width="2.6" height="5.5" rx="1" fill="#0F172A" />
+
+      {/* Dual Rear Axle Wheels */}
+      <rect x="0.5" y="30" width="2.6" height="5" rx="1" fill="#0F172A" />
+      <rect x="22.9" y="30" width="2.6" height="5" rx="1" fill="#0F172A" />
+      <rect x="0.5" y="37" width="2.6" height="5" rx="1" fill="#0F172A" />
+      <rect x="22.9" y="37" width="2.6" height="5" rx="1" fill="#0F172A" />
+
+      {/* Front Cab */}
+      <rect
+        x="3"
+        y="2"
+        width="20"
+        height="12"
+        rx="2.5"
+        fill={isBlue ? '#1E3A8A' : '#7C2D12'}
+        stroke="#0F172A"
+        strokeWidth="0.8"
+      />
+      {/* Cab Windshield */}
+      <rect x="5.5" y="5" width="15" height="5" rx="1.2" fill="#BAE6FD" stroke="#0F172A" strokeWidth="0.4" />
+      {/* Cab Sun Visor */}
+      <rect x="5" y="3" width="16" height="1.5" rx="0.5" fill="#F59E0B" />
+
+      {/* Articulation Hitch Gap */}
+      <rect x="10" y="14" width="6" height="2" fill="#334155" />
+
+      {/* Heavy Cargo Container Body */}
+      <rect
+        x="2.5"
+        y="16"
+        width="21"
+        height="30"
+        rx="2"
+        fill={isBlue ? '#3B82F6' : '#EA580C'}
+        stroke="#0F172A"
+        strokeWidth="0.8"
+      />
+
+      {/* Container Corrugated Ridges */}
+      <line x1="3.5" y1="20" x2="22.5" y2="20" stroke="#1E293B" strokeWidth="0.5" />
+      <line x1="3.5" y1="25" x2="22.5" y2="25" stroke="#1E293B" strokeWidth="0.5" />
+      <line x1="3.5" y1="30" x2="22.5" y2="30" stroke="#1E293B" strokeWidth="0.5" />
+      <line x1="3.5" y1="35" x2="22.5" y2="35" stroke="#1E293B" strokeWidth="0.5" />
+      <line x1="3.5" y1="40" x2="22.5" y2="40" stroke="#1E293B" strokeWidth="0.5" />
+
+      {/* Rear Container Doors & Latches */}
+      <line x1="13" y1="16" x2="13" y2="46" stroke="#0F172A" strokeWidth="0.8" />
+
+      {/* Headlights */}
+      <circle cx="5.5" cy="3.5" r="1.2" fill="#FEF08A" />
+      <circle cx="20.5" cy="3.5" r="1.2" fill="#FEF08A" />
+
+      {/* Rear Heavy Lights & Reflectors */}
+      <rect x="4" y="44.5" width="3.5" height="1.5" rx="0.4" fill="#EF4444" />
+      <rect x="18.5" y="44.5" width="3.5" height="1.5" rx="0.4" fill="#EF4444" />
+    </svg>
+  );
+};
+
 const VEHICLE_RENDERERS = {
   car: ({ colorIndex }) => <SedanSVG colorIndex={colorIndex} />,
   bike: ({ colorIndex }) => {
@@ -261,6 +389,9 @@ const VEHICLE_RENDERERS = {
     return <Bike color={palette.color} helmetColor={palette.helmet} />;
   },
   bus: () => <BusSVG />,
+  delivery_van: ({ colorIndex }) => <DeliveryVanSVG colorIndex={colorIndex} />,
+  freight_truck: ({ colorIndex }) => <FreightTruckSVG colorIndex={colorIndex} />,
+  truck: ({ colorIndex }) => <FreightTruckSVG colorIndex={colorIndex} />,
   ambulance: () => <AmbulanceSVG />,
   firetruck: () => <FireTruckSVG />,
   police: () => <PoliceSVG />,
@@ -269,8 +400,8 @@ const VEHICLE_RENDERERS = {
 const resolveVehicle = (id, type) => {
   const hash = getDeterministicHash(String(id || ''));
 
-  if (['ambulance', 'firetruck', 'police', 'bus', 'bike', 'car'].includes(type)) {
-    return { kind: type, colorIndex: hash };
+  if (['ambulance', 'firetruck', 'police', 'bus', 'bike', 'car', 'delivery_van', 'freight_truck', 'truck'].includes(type)) {
+    return { kind: type === 'truck' ? 'freight_truck' : type, colorIndex: hash };
   }
 
   if (type === 'emergency') {
@@ -289,21 +420,22 @@ const resolveVehicle = (id, type) => {
   return { kind: 'car', colorIndex: hash };
 };
 
-const Car = ({ id, lane, position, type, isFullscreen = false }) => {
+const Car = ({ id, lane, position, type, isFullscreen = false, onClick = null, isSelected = false }) => {
   const vehicle = resolveVehicle(id, type);
-  const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus';
+  const isHeavyTruck = vehicle.kind === 'freight_truck';
+  const isLarge = vehicle.kind === 'firetruck' || vehicle.kind === 'bus' || isHeavyTruck;
   const isBike = vehicle.kind === 'bike';
 
-  // Compact top-down vehicle dimensions (Cars: 10px x 18px, Bikes: 8.5px x 16px, Bus: 11px x 20px)
+  // Compact top-down vehicle dimensions (Cars: 10px x 18px, Bikes: 8.5px x 16px, Bus/Truck: 11-12px x 20-22px)
   const getStyles = () => {
     const baseStyles = {
       position: 'absolute',
       width: isFullscreen
-        ? (isLarge ? '22px' : isBike ? '17px' : '20px')
-        : (isLarge ? '11px' : isBike ? '8.5px' : '10px'),
+        ? (isHeavyTruck ? '24px' : isLarge ? '22px' : isBike ? '17px' : '20px')
+        : (isHeavyTruck ? '12px' : isLarge ? '11px' : isBike ? '8.5px' : '10px'),
       height: isFullscreen
-        ? (isLarge ? '40px' : isBike ? '33px' : '36px')
-        : (isLarge ? '20px' : isBike ? '16px' : '18px'),
+        ? (isHeavyTruck ? '44px' : isLarge ? '40px' : isBike ? '33px' : '36px')
+        : (isHeavyTruck ? '22px' : isLarge ? '20px' : isBike ? '16px' : '18px'),
     };
 
     const laneOffsetPos = isFullscreen ? 'calc(50% + 24px)' : '53%';
@@ -351,10 +483,13 @@ const Car = ({ id, lane, position, type, isFullscreen = false }) => {
       animate={getStyles()}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: 'linear' }}
+      onClick={onClick ? (e) => { e.stopPropagation(); onClick(id); } : undefined}
       style={{
         transition: 'left 400ms linear, top 400ms linear, right 400ms linear, bottom 400ms linear, transform 400ms linear',
       }}
-      className="flex items-center justify-center pointer-events-none z-20"
+      className={`flex items-center justify-center z-20 ${
+        onClick ? 'pointer-events-auto cursor-pointer hover:scale-125 transition-transform' : 'pointer-events-none'
+      } ${isSelected ? 'ring-2 ring-[#F5A623] ring-offset-1 rounded-sm' : ''}`}
     >
       {renderShape({ colorIndex: vehicle.colorIndex })}
     </motion.div>

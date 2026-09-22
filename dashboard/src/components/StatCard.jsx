@@ -82,9 +82,26 @@ const StatCard = ({
     iconColor = '#DC2626';
   }
 
-  const numValue = Number(value);
+  let actualValue = value;
+  let finalPrefix = valuePrefix;
+  let finalUnit = unit;
+
+  if (actualValue && typeof actualValue === 'object') {
+    if (actualValue.status === 'unavailable') {
+      actualValue = 'Unavailable';
+      finalPrefix = '';
+      finalUnit = '';
+    } else {
+      actualValue = actualValue.value;
+    }
+  } else if (actualValue === 'Unavailable') {
+    finalPrefix = '';
+    finalUnit = '';
+  }
+
+  const numValue = Number(actualValue);
   const formattedValue = isNaN(numValue)
-    ? (value ?? '0')
+    ? (actualValue ?? '0')
     : Number.isInteger(numValue)
       ? numValue.toString()
       : numValue.toFixed(1);
@@ -120,11 +137,11 @@ const StatCard = ({
             color: titleLower.includes('wait') ? '#F5A623' : '#0A1F44'
           }}
         >
-          {valuePrefix}{formattedValue}
+          {finalPrefix}{formattedValue}
         </span>
-        {unit && (
+        {finalUnit && (
           <span className="text-xs font-bold text-[#64748B]">
-            {unit}
+            {finalUnit}
           </span>
         )}
       </div>

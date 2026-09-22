@@ -21,7 +21,7 @@ export const IRC_PCU_FACTORS = {
 // Typical Mumbai Arterial Road Characteristics (per approach)
 export const ROAD_SPECS = {
   LANES_PER_APPROACH: 3,
-  SATURATION_FLOW_PER_LANE: 1800, // PCU / hour of green
+  SATURATION_FLOW_PER_LANE: 1800, // CONFIGURABLE SIMULATION PARAMETER - ASSUMED THEORETICAL CAPACITY CEILING (PCU / hour of green)
   FREE_FLOW_SPEED_KMPH: 50,
   JAM_DENSITY_PCU_KM: 130,        // Max queue packing density per lane-km
   APPROACH_LENGTH_METERS: 350

@@ -172,9 +172,9 @@ export const TrafficProvider = ({ children }) => {
     totalVehiclesPassed: 18450,
     pcuFlowPerHour: 4820,
     avgWaitTimeReductionPercent: 38.6,
-    fuelSavedLiters: 482.4,
-    co2ReducedKg: 1114.3,
-    totalCostSavedRupees: 50652,
+    fuelSavedLiters: { status: 'unavailable', value: null },
+    co2ReducedKg: { status: 'unavailable', value: null },
+    totalCostSavedRupees: { status: 'unavailable', value: null },
     activeHotspots: 1,
     activeNodesCount: 4,
     edgeNodesOnline: 4
@@ -200,8 +200,8 @@ export const TrafficProvider = ({ children }) => {
     const interval = setInterval(() => {
       tickRef.current += 1;
 
-      // Jitter edge latency realistically between 12-16ms
-      setEdgeLatencyMs(Math.round(12 + Math.random() * 4));
+      // Jitter edge latency realistically between 12-16ms (Simulation Assumption)
+      setEdgeLatencyMs(14);
 
       // 1. Advance Junction Phase Timers & Dynamic PCU Changes
       setJunctions(prevJunctions => 
@@ -328,17 +328,14 @@ export const TrafficProvider = ({ children }) => {
       // 3. Increment environmental savings and metrics
       setSystemMetrics(prev => {
         const vehiclesIncrement = Math.round(1.5 * simulationSpeed);
-        const fuelIncrement = Number((0.04 * simulationSpeed).toFixed(3));
-        const co2Increment = Number((fuelIncrement * 2.31).toFixed(3));
-        const costIncrement = Math.round(fuelIncrement * 105);
 
         return {
           ...prev,
           totalVehiclesPassed: prev.totalVehiclesPassed + vehiclesIncrement,
           pcuFlowPerHour: Math.round(4800 + Math.sin(tickRef.current * 0.1) * 200),
-          fuelSavedLiters: Number((prev.fuelSavedLiters + fuelIncrement).toFixed(2)),
-          co2ReducedKg: Number((prev.co2ReducedKg + co2Increment).toFixed(2)),
-          totalCostSavedRupees: prev.totalCostSavedRupees + costIncrement
+          fuelSavedLiters: { status: 'unavailable', value: null },
+          co2ReducedKg: { status: 'unavailable', value: null },
+          totalCostSavedRupees: { status: 'unavailable', value: null }
         };
       });
 
@@ -348,13 +345,14 @@ export const TrafficProvider = ({ children }) => {
           const now = new Date();
           const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
           
+          // Derive honest metrics from the current simulated systemMetrics state rather than fabricating fake noise
           const newPoint = {
             time: timeStr,
-            flowRate: Math.round(380 + Math.random() * 80),
-            dynamicWait: Number((18 + Math.random() * 7).toFixed(1)),
-            fixedWait: Number((45 + Math.random() * 15).toFixed(1)),
-            pcuTotal: Math.round(410 + Math.random() * 60),
-            fuelRate: Number((22 + Math.random() * 6).toFixed(1))
+            flowRate: systemMetrics.throughput,
+            dynamicWait: systemMetrics.avgWaitTime,
+            fixedWait: 45.0, // Configured reference baseline
+            pcuTotal: junctions.reduce((sum, j) => sum + Object.values(j.queues).reduce((a, b) => a + b, 0), 0) * 1.5,
+            fuelRate: 22.0 // Configured reference baseline
           };
 
           return [...prev.slice(1), newPoint];

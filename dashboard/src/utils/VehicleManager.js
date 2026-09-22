@@ -20,9 +20,14 @@ function createPRNG(seed = 12345) {
 }
 
 export class VehicleManager {
-  constructor(seed = 12345, demandMultiplier = (TRAFFIC_CONSTANTS.DEMAND_POLICY?.DEFAULT_GENERATED_DEMAND_MULTIPLIER ?? 0.5)) {
+  constructor(
+    seed = 12345,
+    demandMultiplier = (TRAFFIC_CONSTANTS.DEMAND_POLICY?.DEFAULT_GENERATED_DEMAND_MULTIPLIER ?? 0.5),
+    freightDemandMultiplier = (TRAFFIC_CONSTANTS.DEMAND_POLICY?.DEFAULT_FREIGHT_DEMAND_MULTIPLIER ?? 1.0)
+  ) {
     this.seed = seed;
     this.demandMultiplier = demandMultiplier;
+    this.freightDemandMultiplier = freightDemandMultiplier;
     this.cars = { N: [], E: [], S: [], W: [] };
     this.backlog = { N: [], E: [], S: [], W: [] };
     this.carsPassed = 0;
@@ -84,9 +89,13 @@ export class VehicleManager {
     }
 
     const vType = event.vehicleType || 'car';
-    const speed = vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : vType === 'truck' ? 4.0 : 6.0;
+    const speeds = TRAFFIC_CONSTANTS.VEHICLE_SPEEDS || {};
+    const speed = speeds[vType] || (vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : (vType === 'freight_truck' || vType === 'truck') ? 4.0 : vType === 'delivery_van' ? 5.2 : 6.0);
     const vehId = event.eventId || `ext-${direction}-${this.carIdCounter++}`;
     const source = event.source || (event.eventId?.startsWith('pune') ? 'pune_historical' : 'recorded_video');
+    const isCommercial = event.isCommercial !== undefined ? event.isCommercial : (vType === 'delivery_van' || vType === 'freight_truck' || vType === 'truck');
+    const pcuWeights = TRAFFIC_CONSTANTS.PCU_WEIGHTS || {};
+    const pcuEquivalent = event.pcuEquivalent || pcuWeights[vType] || (isCommercial ? 2.5 : (vType === 'bike' ? 0.5 : 1.0));
 
     const newVeh = {
       id: vehId,
@@ -95,10 +104,22 @@ export class VehicleManager {
       position: 0,
       speed,
       type: vType,
-      waitTime: 0,
+      waitTime: event.totalWaitTime || 0,
       isStopped: false,
       inIntersection: false,
-      isExternal: true
+      curbDwellRemainingSec: 0,
+      isExternal: true,
+      isCommercial,
+      pcuEquivalent,
+      destinationHubId: event.destinationHubId || null,
+      cargoTonnage: event.cargoTonnage || 0,
+      deliveryStatus: event.deliveryStatus || 'NONE',
+      totalWaitTime: event.totalWaitTime || 0,
+      plannedExitApproach: event.plannedExitApproach || null,
+      corridorRoute: event.corridorRoute || null,
+      routeIndex: typeof event.routeIndex === 'number' ? event.routeIndex : 0,
+      source: event.source || 'simulation',
+      isSimulatedCommercial: event.isSimulatedCommercial || false
     };
 
     this._completedArrivals.push({
@@ -106,6 +127,8 @@ export class VehicleManager {
       direction,
       type: vType,
       source,
+      isCommercial,
+      pcuEquivalent,
       timeSec: typeof event.videoTimeSec === 'number'
         ? event.videoTimeSec
         : (typeof event.simTimeSec === 'number' ? event.simTimeSec : this.sessionDurationSeconds)
@@ -134,14 +157,21 @@ export class VehicleManager {
     return true;
   }
 
-  setSeed(seed = 12345, demandMultiplier = this.demandMultiplier) {
+  setSeed(seed = 12345, demandMultiplier = this.demandMultiplier, freightDemandMultiplier = this.freightDemandMultiplier) {
     this.seed = seed;
     this.demandMultiplier = demandMultiplier;
+    this.freightDemandMultiplier = freightDemandMultiplier;
+    this._initScheduleAndSimulation();
+  }
+
+  setFreightDemandMultiplier(freightDemandMultiplier = 1.0) {
+    this.freightDemandMultiplier = freightDemandMultiplier;
     this._initScheduleAndSimulation();
   }
 
   _initScheduleAndSimulation() {
-    this.arrivalSchedule = this._generateArrivalSchedule(this.seed, 1200, this.demandMultiplier);
+    this.prng = createPRNG(this.seed);
+    this.arrivalSchedule = this._generateArrivalSchedule(this.seed, 1200, this.demandMultiplier, this.freightDemandMultiplier);
     this.nextArrivalIndex = 0;
     this._initializeSimulationVehicles();
   }
@@ -178,11 +208,24 @@ export class VehicleManager {
    * Ensures identical arrival timestamps, directions, and vehicle types
    * regardless of physics sub-step sizes (e.g. 0.05s vs 0.1s).
    */
-  _generateArrivalSchedule(seed, maxDurationSec = 1200, demandMultiplier = this.demandMultiplier) {
+  _generateArrivalSchedule(
+    seed,
+    maxDurationSec = 1200,
+    demandMultiplier = this.demandMultiplier,
+    freightDemandMultiplier = this.freightDemandMultiplier
+  ) {
     const prng = createPRNG(seed);
     const schedule = [];
     const directions = ['N', 'S', 'E', 'W'];
     let idCounter = 1;
+
+    const speeds = TRAFFIC_CONSTANTS.VEHICLE_SPEEDS || {};
+    const pcuWeights = TRAFFIC_CONSTANTS.PCU_WEIGHTS || {};
+    const cargoTonnages = TRAFFIC_CONSTANTS.COMMERCIAL_DEFAULTS?.CARGO_TONNAGE || {};
+
+    const freightMult = typeof freightDemandMultiplier === 'number' && freightDemandMultiplier > 0
+      ? freightDemandMultiplier
+      : 1.0;
 
     directions.forEach(direction => {
       let t = prng() * 2.0;
@@ -194,15 +237,61 @@ export class VehicleManager {
         if (t >= maxDurationSec) break;
 
         const r = prng();
-        const vType = r < 0.50 ? 'car' : r < 0.72 ? 'bike' : r < 0.88 ? 'bus' : 'truck';
-        const speed = vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : vType === 'truck' ? 4.0 : 6.0;
+        // Base vehicle distribution: car (50%), bike (22%), bus (14%), commercial freight (14% * freightMult)
+        let vType;
+        const freightFraction = Math.max(0.05, Math.min(0.35, 0.14 * freightMult));
+        const passengerRatio = 1.0 - freightFraction;
+
+        if (r < 0.50 * passengerRatio / 0.86) {
+          vType = 'car';
+        } else if (r < 0.72 * passengerRatio / 0.86) {
+          vType = 'bike';
+        } else if (r < passengerRatio) {
+          vType = 'bus';
+        } else {
+          // Commercial freight vehicle (delivery_van vs freight_truck)
+          const freightSub = prng();
+          vType = freightSub < 0.60 ? 'delivery_van' : 'freight_truck';
+        }
+
+        const isCommercial = (vType === 'delivery_van' || vType === 'freight_truck' || vType === 'truck');
+        const pcuEquivalent = pcuWeights[vType] || (vType === 'delivery_van' ? 1.5 : (vType === 'freight_truck' || vType === 'truck' || vType === 'bus') ? 2.5 : (vType === 'bike' ? 0.5 : 1.0));
+        const speed = speeds[vType] || (vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : vType === 'freight_truck' ? 3.8 : vType === 'delivery_van' ? 5.2 : vType === 'truck' ? 4.0 : 6.0);
+        const cargoTonnage = isCommercial ? (cargoTonnages[vType] || (vType === 'delivery_van' ? 1.2 : 8.5)) : 0;
+        const destinationHubId = isCommercial ? (vType === 'delivery_van' ? 'HUB_DDR_01' : 'HUB_BKC_01') : null;
+        const deliveryStatus = isCommercial ? 'EN_ROUTE' : 'NONE';
+        const isSimulatedCommercial = isCommercial;
+
+        // Phase 10.9: Deterministic Route Assignment
+        let corridorRoute = null;
+        let routeIndex = 0;
+        let plannedExitApproach = null;
+
+        if (isCommercial) {
+          if (destinationHubId === 'HUB_DDR_01') {
+            corridorRoute = ['J1', 'J2'];
+          } else if (destinationHubId === 'HUB_BKC_01') {
+            corridorRoute = ['J1', 'J2', 'J3'];
+          }
+          plannedExitApproach = 'N'; // Initial departure direction for corridor progression
+        }
 
         schedule.push({
           id: `v-${direction}-${idCounter++}`,
           timeSec: parseFloat(t.toFixed(3)),
           direction,
           type: vType,
-          speed
+          speed,
+          isCommercial,
+          pcuEquivalent,
+          destinationHubId,
+          cargoTonnage,
+          deliveryStatus,
+          curbDwellRemainingSec: 0,
+          isSimulatedCommercial,
+          corridorRoute,
+          routeIndex,
+          plannedExitApproach
         });
       }
     });
@@ -253,23 +342,70 @@ export class VehicleManager {
 
   getQueuedPCUs() {
     const pcus = {};
-    const weights = TRAFFIC_CONSTANTS.PCU_WEIGHTS || { car: 1.0, bike: 0.5, bus: 2.5, truck: 2.5 };
+    const weights = TRAFFIC_CONSTANTS.PCU_WEIGHTS || {
+      car: 1.0,
+      bike: 0.5,
+      bus: 2.5,
+      truck: 2.5,
+      delivery_van: 1.5,
+      freight_truck: 2.5,
+      emergency: 1.0
+    };
     Object.keys(this.cars).forEach(dir => {
       let totalPcu = 0;
       this.cars[dir].forEach(c => {
         if (c.position <= STOP_LINE_POSITION && c.isStopped) {
-          const w = weights[c.type] || 1.0;
+          const w = c.pcuEquivalent || weights[c.type] || 1.0;
           totalPcu += w;
         }
       });
       (this.backlog[dir] || []).forEach(bVeh => {
-        const w = weights[bVeh.type] || 1.0;
+        const w = bVeh.pcuEquivalent || weights[bVeh.type] || 1.0;
         totalPcu += w;
       });
 
       pcus[dir] = parseFloat(totalPcu.toFixed(1));
     });
     return pcus;
+  }
+
+  /**
+   * Returns all active commercial freight vehicles currently on visible roads or in backlog.
+   */
+  getCommercialVehicles() {
+    const comm = [];
+    Object.keys(this.cars).forEach(dir => {
+      this.cars[dir].forEach(c => {
+        if (c.isCommercial) comm.push({ ...c, direction: dir });
+      });
+      (this.backlog[dir] || []).forEach(b => {
+        if (b.isCommercial) comm.push({ ...b, direction: dir, inBacklog: true });
+      });
+    });
+    return comm;
+  }
+
+  /**
+   * Returns queued PCU breakdown specifically attributed to commercial freight vehicles.
+   */
+  getCommercialPCUs() {
+    const commPCUs = {};
+    const weights = TRAFFIC_CONSTANTS.PCU_WEIGHTS || {};
+    Object.keys(this.cars).forEach(dir => {
+      let pcu = 0;
+      this.cars[dir].forEach(c => {
+        if (c.isCommercial && c.position <= STOP_LINE_POSITION && c.isStopped) {
+          pcu += (c.pcuEquivalent || weights[c.type] || 1.5);
+        }
+      });
+      (this.backlog[dir] || []).forEach(b => {
+        if (b.isCommercial) {
+          pcu += (b.pcuEquivalent || weights[b.type] || 1.5);
+        }
+      });
+      commPCUs[dir] = parseFloat(pcu.toFixed(1));
+    });
+    return commPCUs;
   }
 
   getOldestWaitTimes() {
@@ -359,6 +495,7 @@ export class VehicleManager {
         continue;
       }
 
+      const isComm = !!event.isCommercial;
       const newVeh = {
         id: event.id,
         position: 0,
@@ -366,14 +503,23 @@ export class VehicleManager {
         type: event.type,
         waitTime: 0,
         isStopped: false,
-        inIntersection: false
+        inIntersection: false,
+        isCommercial: isComm,
+        pcuEquivalent: event.pcuEquivalent || (TRAFFIC_CONSTANTS.PCU_WEIGHTS[event.type] || (isComm ? 1.5 : 1.0)),
+        destinationHubId: event.destinationHubId || null,
+        cargoTonnage: event.cargoTonnage || 0,
+        deliveryStatus: event.deliveryStatus || (isComm ? 'EN_ROUTE' : 'NONE'),
+        curbDwellRemainingSec: event.curbDwellRemainingSec || 0,
+        isSimulatedCommercial: !!event.isSimulatedCommercial
       };
 
       this._completedArrivals.push({
         id: event.id,
         direction: event.direction,
         type: event.type,
-        timeSec: event.timeSec
+        timeSec: event.timeSec,
+        isCommercial: isComm,
+        pcuEquivalent: newVeh.pcuEquivalent
       });
 
       const sortedLane = this.cars[direction];
@@ -445,10 +591,16 @@ export class VehicleManager {
               id: car.id,
               type: car.type || 'car',
               source: car.source || 'simulation',
-              direction,
+              direction: car.plannedExitApproach || direction,
               delay: wt,
               totalWaitTime: wt,
-              exitTime: Date.now()
+              exitTime: Date.now(),
+              isCommercial: !!car.isCommercial,
+              pcuEquivalent: car.pcuEquivalent || 1.0,
+              cargoTonnage: car.cargoTonnage || 0,
+              destinationHubId: car.destinationHubId || null,
+              deliveryStatus: car.deliveryStatus || (car.isCommercial ? 'EN_ROUTE' : 'NONE'),
+              isSimulatedCommercial: !!car.isSimulatedCommercial
             };
             this._completedDepartures.push(depObj);
             stepDepartedCars.push(depObj);
@@ -606,7 +758,8 @@ export class VehicleManager {
       // Pick a random approach, avoiding the currently green signal so preemption is clearly visible
       const nonGreenDirs = activeSignal ? validDirs.filter(d => d !== activeSignal) : validDirs;
       const candidates = nonGreenDirs.length > 0 ? nonGreenDirs : validDirs;
-      app = candidates[Math.floor(Math.random() * candidates.length)];
+      const randomFrac = this.prng ? this.prng() : Math.random();
+      app = candidates[Math.floor(randomFrac * candidates.length)];
     }
 
     if (this.emergencyVehicle && this.emergencyVehicle.position < 100) {

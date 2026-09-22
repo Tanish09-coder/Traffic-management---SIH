@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { VehicleManager } from '../utils/VehicleManager';
 import { SignalManager } from '../utils/SignalManager';
+import { JunctionSimulation } from '../utils/JunctionSimulation';
+import { LinkManager } from '../utils/LinkManager';
 import { SimulationClock } from '../utils/SimulationClock';
 import { analyticsManager } from '../utils/AnalyticsManager';
 import {
@@ -16,6 +18,8 @@ import { runComparisonPair } from '../utils/comparisonEngine';
 import { SignalOptimizer } from '../utils/SignalOptimizer';
 import { calculateEffectivePredictivePCU } from '../utils/PredictiveDemandFusion';
 import { generateBucketArrivals, calculateBucketPCU } from '../utils/HistoricalDemandScheduler';
+import { LogisticsHubManager } from '../utils/LogisticsHubManager';
+import { FreightGreenWaveCoordinator } from '../utils/FreightGreenWaveCoordinator';
 import { BACKEND_ORIGIN } from '../utils/backendUrl';
 
 // Historical Pune direction mapping is used only to demonstrate predictive-control integration. It does not imply the live simulation represents the same physical intersection or timestamp.
@@ -53,25 +57,43 @@ const DEFAULT_BELLEVUE_EVENTS = [
 const SimulationContext = createContext(null);
 
 export const SimulationProvider = ({ children }) => {
-  // Singletons retained across the lifetime of the application
-  const vehicleManagerRef = useRef(null);
-  const signalManagerRef = useRef(null);
+  const junctionsRef = useRef(null);
   const clockRef = useRef(null);
 
-  if (!vehicleManagerRef.current) {
-    vehicleManagerRef.current = new VehicleManager();
-    vehicleManagerRef.current.start();
-  }
-  if (!signalManagerRef.current) {
-    signalManagerRef.current = new SignalManager();
+  if (!junctionsRef.current) {
+    const config = { initialStrategy: 'adaptive' }; // Demand multipliers handled by state
+    junctionsRef.current = {
+      J1: new JunctionSimulation('J1', 12343, config),
+      J2: new JunctionSimulation('J2', 12344, config),
+      J3: new JunctionSimulation('J3', 12345, config), // J3 preserves legacy deterministic seed
+      J4: new JunctionSimulation('J4', 12346, config)
+    };
   }
   if (!clockRef.current) {
     clockRef.current = new SimulationClock(1.0);
   }
 
-  const vehicleManager = vehicleManagerRef.current;
-  const signalManager = signalManagerRef.current;
+  const logisticsHubManagerRef = useRef(null);
+  const freightCoordinatorRef = useRef(null);
+  const linkManagerRef = useRef(null);
+  const [freightDemandMultiplier, setFreightDemandMultiplierState] = useState(1.0);
+
+  if (!logisticsHubManagerRef.current) {
+    logisticsHubManagerRef.current = new LogisticsHubManager();
+  }
+  if (!freightCoordinatorRef.current) {
+    freightCoordinatorRef.current = new FreightGreenWaveCoordinator();
+  }
+  if (!linkManagerRef.current) {
+    linkManagerRef.current = new LinkManager();
+  }
+
+  const vehicleManager = junctionsRef.current.J3.vehicleManager;
+  const signalManager = junctionsRef.current.J3.signalManager;
   const clock = clockRef.current;
+  const logisticsHubManager = logisticsHubManagerRef.current;
+  const freightCoordinator = freightCoordinatorRef.current;
+  const linkManager = linkManagerRef.current;
 
   // Session configuration state
   const [useMock, setUseMock] = useState(true);
@@ -423,24 +445,12 @@ export const SimulationProvider = ({ children }) => {
       }
 
       subSteps.forEach(subDt => {
-        const stoppedQueues = vehicleManager.getStoppedQueues();
-        const queuedPCUs = vehicleManager.getQueuedPCUs();
-        const oldestWaitTimes = vehicleManager.getOldestWaitTimes();
-        const totalQueues = vehicleManager.getQueueLengths();
-
-        const isIntersectionOccupied = vehicleManager.isIntersectionOccupied();
-        const activeEmergency = vehicleManager.getActiveEmergencyVehicle();
-
-        // Check emergency clearance against active emergency vehicle entity
-        signalManager.checkEmergencyCleared(
-          activeEmergency,
-          totalQueues
-        );
-
-        // Predictive Demand Calculation (Control input only, vehicle queues are never mutated)
+        // Predictive Demand Calculation exclusively for J3
+        let demandOverrides = null;
         if (strategy === 'predictive') {
-          const demandOverrides = {};
+          demandOverrides = {};
           const diagnostics = {};
+          const queuedPCUs = vehicleManager.getQueuedPCUs();
 
           ['N', 'E', 'S', 'W'].forEach(dir => {
             const currentPCU = queuedPCUs[dir] || 0;
@@ -460,34 +470,172 @@ export const SimulationProvider = ({ children }) => {
               predictiveBoostPercent: fusion.predictiveBoostPercent
             };
           });
-
-          SignalOptimizer.setDemandOverrides(demandOverrides);
           currentPredictiveDemandRef.current = diagnostics;
-        } else {
-          SignalOptimizer.clearDemandOverrides();
         }
 
-        const hasActiveCrossing = typeof vehicleManager.hasActiveCrossingVehicles === 'function'
-          ? vehicleManager.hasActiveCrossingVehicles(signalManager.currentSignal)
-          : false;
+        // Tick J1, J2, J4 independently
+        const j1Result = junctionsRef.current.J1.tick(subDt, { strategy });
+        const j2Result = junctionsRef.current.J2.tick(subDt, { strategy });
+        const j4Result = junctionsRef.current.J4.tick(subDt, { strategy });
 
-        // Advance signal controller with clearance occupancy check
-        signalManager.updateSignal(totalQueues, stoppedQueues, queuedPCUs, oldestWaitTimes, subDt, isIntersectionOccupied, hasActiveCrossing);
+        // Tick J3 with overrides
+        const j3Result = junctionsRef.current.J3.tick(subDt, { strategy, demandOverrides });
 
-        // Advance vehicle positions with clearance physics
-        vehicleManager.updateVehicles(
-          signalManager.currentSignal,
-          signalManager.phase,
-          subDt
-        );
+        // Advance in-transit corridor links
+        linkManager.tick(subDt, currentSimTime);
 
-        signalManager.checkEmergencyCleared(vehicleManager.getActiveEmergencyVehicle(), totalQueues);
+        // Inject completed J1->J2 transits into J2 ('W' approach)
+        const completedJ1J2 = linkManager.pollCompletedTransits('J1-J2');
+        for (let i = 0; i < completedJ1J2.length; i++) {
+          const transitVeh = completedJ1J2[i];
+          junctionsRef.current.J2.vehicleManager.injectExternalArrival('W', {
+            eventId: transitVeh.id,
+            vehicleType: transitVeh.type,
+            pcuEquivalent: transitVeh.pcuEquivalent,
+            isCommercial: transitVeh.isCommercial,
+            destinationHubId: transitVeh.destinationHubId,
+            cargoTonnage: transitVeh.cargoTonnage,
+            deliveryStatus: transitVeh.deliveryStatus,
+            totalWaitTime: transitVeh.totalWaitTime,
+            corridorRoute: transitVeh.corridorRoute,
+            routeIndex: transitVeh.corridorRoute ? (transitVeh.routeIndex + 1) : 0,
+            source: transitVeh.source || 'simulation',
+            isSimulatedCommercial: transitVeh.isSimulatedCommercial,
+            simTimeSec: currentSimTime,
+            plannedExitApproach: 'N'
+          });
+        }
+
+        // Inject completed J2->J3 transits into J3 ('S' approach)
+        const completedJ2J3 = linkManager.pollCompletedTransits('J2-J3');
+        for (let i = 0; i < completedJ2J3.length; i++) {
+          const transitVeh = completedJ2J3[i];
+          junctionsRef.current.J3.vehicleManager.injectExternalArrival('S', {
+            eventId: transitVeh.id,
+            vehicleType: transitVeh.type,
+            pcuEquivalent: transitVeh.pcuEquivalent,
+            isCommercial: transitVeh.isCommercial,
+            destinationHubId: transitVeh.destinationHubId,
+            cargoTonnage: transitVeh.cargoTonnage,
+            deliveryStatus: transitVeh.deliveryStatus,
+            totalWaitTime: transitVeh.totalWaitTime,
+            corridorRoute: transitVeh.corridorRoute,
+            routeIndex: transitVeh.corridorRoute ? (transitVeh.routeIndex + 1) : 0,
+            source: transitVeh.source || 'simulation',
+            isSimulatedCommercial: transitVeh.isSimulatedCommercial,
+            simTimeSec: currentSimTime,
+            plannedExitApproach: 'N'
+          });
+        }
+
+        // Inject completed J3->J4 transits into J4 ('S' approach)
+        const completedJ3J4 = linkManager.pollCompletedTransits('J3-J4');
+        for (let i = 0; i < completedJ3J4.length; i++) {
+          const transitVeh = completedJ3J4[i];
+          junctionsRef.current.J4.vehicleManager.injectExternalArrival('S', {
+            eventId: transitVeh.id,
+            vehicleType: transitVeh.type,
+            pcuEquivalent: transitVeh.pcuEquivalent,
+            isCommercial: transitVeh.isCommercial,
+            destinationHubId: transitVeh.destinationHubId,
+            cargoTonnage: transitVeh.cargoTonnage,
+            deliveryStatus: transitVeh.deliveryStatus,
+            totalWaitTime: transitVeh.totalWaitTime,
+            corridorRoute: transitVeh.corridorRoute,
+            routeIndex: transitVeh.corridorRoute ? (transitVeh.routeIndex + 1) : 0,
+            source: transitVeh.source || 'simulation',
+            isSimulatedCommercial: transitVeh.isSimulatedCommercial,
+            simTimeSec: currentSimTime,
+            plannedExitApproach: 'N'
+          });
+        }
+
+        // Helper to process departures using the Phase 10.9 deterministic itinerary abstraction
+        const processDeparture = (dep, currentJunctionId, nextLinkId) => {
+          if (dep.corridorRoute && Array.isArray(dep.corridorRoute)) {
+            const currentRouteIndex = typeof dep.routeIndex === 'number' ? dep.routeIndex : 0;
+            // Check if vehicle has reached the end of its planned route
+            if (currentRouteIndex >= dep.corridorRoute.length - 1) {
+              // Route terminated at this destination junction
+              if (dep.destinationHubId) {
+                logisticsHubManager.processCommercialArrival(dep);
+              }
+            } else {
+              // Route continues, transfer to next link
+              linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
+            }
+          } else {
+            // Legacy / passenger vehicle backward-compatible routing (follows full corridor)
+            linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
+          }
+        };
+
+        // Capture newly departed vehicles from J1 ('N' exit)
+        const j1Departures = j1Result?.departedCars || [];
+        for (let i = 0; i < j1Departures.length; i++) {
+          const dep = j1Departures[i];
+          if (dep.direction === 'N') processDeparture(dep, 'J1', 'J1-J2');
+        }
+
+        // Capture newly departed vehicles from J2 ('N' exit)
+        const j2Departures = j2Result?.departedCars || [];
+        for (let i = 0; i < j2Departures.length; i++) {
+          const dep = j2Departures[i];
+          if (dep.direction === 'N') processDeparture(dep, 'J2', 'J2-J3');
+        }
+
+        // Capture newly departed vehicles from J3 ('N' exit)
+        const j3Departures = j3Result?.departedCars || [];
+        for (let i = 0; i < j3Departures.length; i++) {
+          const dep = j3Departures[i];
+          if (dep.direction === 'N') processDeparture(dep, 'J3', 'J3-J4');
+        }
+
+        // Advance logistics hub loading bays and curb dwell timers
+        logisticsHubManager.tick(subDt);
       });
 
       // Extract fresh states
       const vState = vehicleManager.getState();
       const sState = signalManager.getState(vState.queues, vState.cars);
       const freshMetrics = vehicleManager.getMetrics();
+
+      // Real-time Logistics & Freight Green-Wave Coordination
+      const flattenedActiveCars = Object.entries(vState.cars || {}).flatMap(([approach, vehicles]) =>
+        vehicles.map(vehicle => ({
+          ...vehicle,
+          lane: approach
+        }))
+      );
+
+      const activeFreightDecisions = [];
+      const oldestWaitTimes = vehicleManager.getOldestWaitTimes();
+
+      ['N', 'S', 'E', 'W'].forEach(app => {
+        const approachCommercialCars = (vState.cars?.[app] || []).filter(c => c.isCommercial);
+        if (approachCommercialCars.length > 0) {
+          // Identify leading commercial vehicle closest to stop line
+          const leadVeh = approachCommercialCars.reduce((lead, curr) => (curr.position > lead.position ? curr : lead), approachCommercialCars[0]);
+          const decisionReceipt = freightCoordinator.evaluateProgressionRecommendation({
+            vehicle: { ...leadVeh, lane: app },
+            approach: app,
+            signalState: {
+              currentSignal: sState.current_signal,
+              phase: sState.phase,
+              activeGreenDuration: sState.active_green_duration,
+              signalTimer: sState.timer
+            },
+            corridorContext: {
+              downstreamSaturation: 0.38,
+              maxPassengerWaitSec: Math.max(0, ...Object.entries(oldestWaitTimes).filter(([dir]) => dir !== app).map(([, time]) => time))
+            },
+            isEmergencyActive: sState.emergency_active || vState.emergencyActive
+          });
+          activeFreightDecisions.push(decisionReceipt);
+        }
+      });
+
+      // (Mid-junction hub scanning was removed; commercial vehicles are now intercepted at departure per Phase 10.6)
 
       const mergedState = {
         ...vState,
@@ -529,7 +677,21 @@ export const SimulationProvider = ({ children }) => {
         predictiveForecasts: predictiveForecastsRef.current,
         predictiveStatus,
         predictiveDemoDate: PREDICTION_DEMO_DATE,
-        predictiveTimestamp
+        predictiveTimestamp,
+        logisticsTelemetry: logisticsHubManager.getTelemetry(),
+        freightGreenWaveDecisions: activeFreightDecisions,
+        freightTelemetry: freightCoordinator.getTelemetry(),
+        freightDemandMultiplier,
+        corridor: {
+          junctions: {
+            J1: junctionsRef.current.J1.getState(),
+            J2: junctionsRef.current.J2.getState(),
+            J3: junctionsRef.current.J3.getState(),
+            J4: junctionsRef.current.J4.getState()
+          },
+          links: linkManager.getState().links,
+          linkTelemetry: linkManager.getState()
+        }
       };
 
 
@@ -787,15 +949,86 @@ export const SimulationProvider = ({ children }) => {
     });
     const newDemand = stagedDemand;
     setGeneratedDemandState(newDemand);
+    logisticsHubManager.reset();
+    freightCoordinatorRef.current = new FreightGreenWaveCoordinator();
+    linkManager.reset();
     if (useMock) {
       ['N', 'S', 'E', 'W'].forEach(d => vehicleManager.setApproachSource(d, 'simulation'));
-      vehicleManager.reset(12345, newDemand);
-      signalManager.reset();
-      signalManager.setWeather(weatherMode);
+      
+      const newConfig = {
+        initialStrategy: stagedDemand === 0 ? 'fixed' : 'adaptive',
+        demandMultiplier: newDemand,
+        freightDemandMultiplier
+      };
+
+      [junctionsRef.current.J1, junctionsRef.current.J2, junctionsRef.current.J3, junctionsRef.current.J4].forEach(j => {
+        j.config = newConfig;
+        j.reset();
+        j.signalManager.setWeather(weatherMode);
+      });
     } else {
       resetBackendSimulation().catch(err => console.warn('Backend reset error:', err));
     }
-  }, [useMock, vehicleManager, signalManager, clock, weatherMode, stagedDemand, fetchForecastForTime]);
+  }, [useMock, vehicleManager, signalManager, clock, weatherMode, stagedDemand, fetchForecastForTime, logisticsHubManager, freightDemandMultiplier]);
+
+  const setFreightDemandMultiplier = useCallback((multiplier) => {
+    const val = typeof multiplier === 'number' && multiplier > 0 ? multiplier : 1.0;
+    setFreightDemandMultiplierState(val);
+    if (junctionsRef.current.J3) {
+      junctionsRef.current.J3.vehicleManager.setFreightDemandMultiplier(val);
+    }
+  }, []);
+
+  const handleReset = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const newConfig = {
+        initialStrategy: stagedDemand === 0 ? 'fixed' : 'adaptive',
+        demandMultiplier: stagedDemand,
+        freightDemandMultiplier
+      };
+
+      // Reset all junctions and synchronize weather
+      [junctionsRef.current.J1, junctionsRef.current.J2, junctionsRef.current.J3, junctionsRef.current.J4].forEach(j => {
+        j.config = newConfig;
+        j.reset();
+        j.signalManager.setWeather(weatherMode);
+      });
+      linkManager.reset();
+    } catch (err) {
+      setError(`Reset error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [stagedDemand, freightDemandMultiplier, weatherMode]);
+
+  const triggerLogisticsScenario = useCallback((scenarioName) => {
+    if (scenarioName === 'peak_freight') {
+      setFreightDemandMultiplier(1.8);
+      setStrategy('adaptive');
+    } else if (scenarioName === 'hub_congestion') {
+      setFreightDemandMultiplier(1.5);
+      const hub = logisticsHubManager.getHub('HUB_BKC_01');
+      if (hub) {
+        hub.bays.forEach((b, idx) => {
+          b.status = 'DWELLING';
+          b.occupiedByVehicleId = `FT-DEMO-${idx + 1}`;
+          b.vehicleType = 'freight_truck';
+          b.cargoTonnage = 8.5;
+          b.dwellRemainingSec = 50;
+        });
+      }
+    } else if (scenarioName === 'spillback_throttling') {
+      setFreightDemandMultiplier(1.2);
+    } else if (scenarioName === 'emergency_conflict') {
+      triggerEmergencyVehicle('N', 'ambulance');
+    } else {
+      setFreightDemandMultiplier(1.0);
+      setStrategy('adaptive');
+    }
+  }, [setFreightDemandMultiplier, logisticsHubManager, setStrategy]);
 
   const switchZone = useCallback((newZone) => {
     if (!newZone) return;
@@ -960,7 +1193,12 @@ export const SimulationProvider = ({ children }) => {
     startVideoDrivenSimulation,
     stopVideoDrivenSimulation,
     manualOverride: handleManualOverride,
-    triggerEmergencyVehicle
+    triggerEmergencyVehicle,
+    freightDemandMultiplier,
+    setFreightDemandMultiplier,
+    triggerLogisticsScenario,
+    logisticsHubManager,
+    freightCoordinator
   };
 
 

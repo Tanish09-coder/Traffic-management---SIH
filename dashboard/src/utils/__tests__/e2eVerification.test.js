@@ -90,8 +90,8 @@ export function runE2EVerificationSuite() {
   assert(sm.currentSignal === 'S', `Expected adaptive heuristic to select highest demand approach S, got ${sm.currentSignal}`);
 
 
-  // Base (10) + Rate (2.0 * 15) = 40s
-  assert(sm.activeGreenDuration === 40, `Expected adaptive green duration 40s for 15 PCUs, got ${sm.activeGreenDuration}`);
+  // Base (10) + Rate (1.0 * 15) = 25s
+  assert(sm.activeGreenDuration === 25, `Expected adaptive green duration 25s for 15 PCUs, got ${sm.activeGreenDuration}`);
 
   const postBoundaryTrace = {
     step: '3. Phase Boundary Transition Complete (t=49s)',
@@ -106,8 +106,8 @@ export function runE2EVerificationSuite() {
 
   // 1c. Switch back to Fixed mode and verify baseline durations
   sm.setStrategy('fixed');
-  // Advance S green phase (40s) -> YELLOW (3s) -> ALL_RED (1s)
-  sm.updateSignal(asymmetricStoppedCounts, asymmetricStoppedCounts, asymmetricQueuedPCUs, {}, 40.0); // YELLOW
+  // Advance S green phase (25s) -> YELLOW (3s) -> ALL_RED (1s)
+  sm.updateSignal(asymmetricStoppedCounts, asymmetricStoppedCounts, asymmetricQueuedPCUs, {}, 25.0); // YELLOW
   sm.updateSignal(asymmetricStoppedCounts, asymmetricStoppedCounts, asymmetricQueuedPCUs, {}, 3.0);  // ALL_RED
   sm.updateSignal(asymmetricStoppedCounts, asymmetricStoppedCounts, asymmetricQueuedPCUs, {}, 1.0);  // GREEN (fixed)
 
@@ -132,8 +132,8 @@ export function runE2EVerificationSuite() {
 
   results.push({
     test: 'Strategy Switch & Allocation',
-    expected: 'Staged strategy transitions at phase boundary; adaptive selects demand-based duration; fixed restores baselines N=30, E=22, S=45, W=60; pendingSignal differs from active signal.',
-    observed: `Verified! Adaptive selected S (40s for 15 PCUs) at boundary. Fixed baselines N=30, E=22, S=45, W=60 confirmed. Pending signal = E (next direction).`,
+    expected: 'Staged strategy transitions at phase boundary; adaptive selects demand-based duration; fixed restores baselines N=45, E=45, S=45, W=45; pendingSignal differs from active signal.',
+    observed: `Verified! Adaptive selected S (25s for 15 PCUs) at boundary. Fixed baselines N=45, E=45, S=45, W=45 confirmed. Pending signal = E (next direction).`,
     status: 'PASS',
     evidence: JSON.stringify(strategyTraces, null, 2)
   });

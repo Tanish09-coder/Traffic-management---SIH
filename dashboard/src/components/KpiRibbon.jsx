@@ -44,10 +44,10 @@ export const KpiRibbon = ({ layout = 'horizontal' }) => {
     {
       id: 'carbon-avoided',
       title: lang === 'HI' ? 'बचाया गया निष्क्रिय कार्बन' : 'IDLE CARBON AVOIDED',
-      value: `${systemMetrics.co2ReducedKg.toFixed(1)} kg`,
-      trend: lang === 'HI'
+      value: systemMetrics.co2ReducedKg?.status === 'unavailable' ? 'Unavailable' : `${systemMetrics.co2ReducedKg.toFixed(1)} kg`,
+      trend: systemMetrics.fuelSavedLiters?.status === 'unavailable' ? 'Unavailable' : (lang === 'HI'
         ? `${systemMetrics.fuelSavedLiters.toFixed(1)} L ईंधन (₹${systemMetrics.totalCostSavedRupees.toLocaleString()})`
-        : `${systemMetrics.fuelSavedLiters.toFixed(1)} L Fuel (₹${systemMetrics.totalCostSavedRupees.toLocaleString()})`,
+        : `${systemMetrics.fuelSavedLiters.toFixed(1)} L Fuel (₹${systemMetrics.totalCostSavedRupees.toLocaleString()})`),
       status: 'optimal',
       badge: 'SAVED'
     }

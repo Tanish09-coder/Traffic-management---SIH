@@ -14,7 +14,7 @@ export const CORRIDORS = [
     id: 'corridor-bkc-arterial',
     name: 'BKC - Western Express Arterial Corridor',
     nameHi: 'बीकेसी - वेस्टर्न एक्सप्रेस मुख्य कॉरिडोर',
-    description: 'Vital 11.2 km transit artery connecting South Mumbai through Dadar to BKC and Western Express Highway.',
+    description: 'Vital 13.4 km transit artery connecting South Mumbai through Dadar to BKC and Western Express Highway.',
     junctionIds: ['J1', 'J2', 'J3', 'J4'],
     center: { lat: 19.055, lng: 72.848 },
     zoom: 13,
@@ -268,10 +268,6 @@ export function computeCorridorCoordination(junctions = [], corridor = CORRIDORS
 
       if (outgoingPcu > 15 || isHeavyOrSlow) {
         const arrivalEtaSeconds = Math.max(15, travelTimeSec - ((sourceJunction.phaseTimer || 10) % 60));
-        
-        let confidenceScore = 0.92;
-        if (travelTimeSec > 300) confidenceScore = 0.82;
-        if (sourceJunction.cameraStatus !== 'online') confidenceScore = 0.65;
 
         const prediction = {
           fromJunctionId: link.from,
@@ -283,7 +279,6 @@ export function computeCorridorCoordination(junctions = [], corridor = CORRIDORS
           etaSeconds: arrivalEtaSeconds,
           speedKmph: currentSpeed,
           distanceKm: link.distanceKm,
-          confidence: confidenceScore,
           severity: isHeavyOrSlow ? 'HIGH' : (isModerate ? 'MEDIUM' : 'LOW')
         };
 
