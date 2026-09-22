@@ -22,7 +22,7 @@ export default function CorridorProgressionView({ corridorData, activeVehicles =
               {lang === 'HI' ? 'कॉरिडोर माल ढुलाई प्रगति' : 'Modeled Corridor Progression (H1 → J1 → J2 → J3 → J4 → H2)'}
             </h3>
             <p className="text-[11px] text-slate-500">
-              {corridor.name} (11.2 km Arterial Freight Corridor)
+              {corridor.name} (13.4 km Arterial Freight Corridor)
             </p>
           </div>
         </div>

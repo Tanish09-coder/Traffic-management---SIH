@@ -56,7 +56,7 @@ export const CommandHeader = ({ currentPage, setCurrentPage, onOpenJudgeDrawer }
             </div>
             <div className="flex items-center space-x-2">
               <span className="font-bold text-zinc-100 font-mono tracking-tight">
-                {lang === 'HI' ? 'नगर निगम यातायात नियंत्रण // नोड 25050' : 'MUNICIPAL TRAFFIC CONTROL // NODE 25050'}
+                {lang === 'HI' ? 'नगर निगम यातायात नियंत्रण // मार्ग-दृष्टि' : 'MUNICIPAL TRAFFIC CONTROL // MARG-DRISHTI CORRIDOR'}
               </span>
               <span className="text-zinc-600 hidden md:inline">|</span>
               <span className="text-[10px] font-mono text-zinc-400 hidden lg:inline uppercase">

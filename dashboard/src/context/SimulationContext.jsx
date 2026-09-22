@@ -497,6 +497,8 @@ export const SimulationProvider = ({ children }) => {
             cargoTonnage: transitVeh.cargoTonnage,
             deliveryStatus: transitVeh.deliveryStatus,
             totalWaitTime: transitVeh.totalWaitTime,
+            corridorRoute: transitVeh.corridorRoute,
+            routeIndex: transitVeh.corridorRoute ? (transitVeh.routeIndex + 1) : 0,
             source: transitVeh.source || 'simulation',
             isSimulatedCommercial: transitVeh.isSimulatedCommercial,
             simTimeSec: currentSimTime,
@@ -517,6 +519,8 @@ export const SimulationProvider = ({ children }) => {
             cargoTonnage: transitVeh.cargoTonnage,
             deliveryStatus: transitVeh.deliveryStatus,
             totalWaitTime: transitVeh.totalWaitTime,
+            corridorRoute: transitVeh.corridorRoute,
+            routeIndex: transitVeh.corridorRoute ? (transitVeh.routeIndex + 1) : 0,
             source: transitVeh.source || 'simulation',
             isSimulatedCommercial: transitVeh.isSimulatedCommercial,
             simTimeSec: currentSimTime,
@@ -537,45 +541,54 @@ export const SimulationProvider = ({ children }) => {
             cargoTonnage: transitVeh.cargoTonnage,
             deliveryStatus: transitVeh.deliveryStatus,
             totalWaitTime: transitVeh.totalWaitTime,
+            corridorRoute: transitVeh.corridorRoute,
+            routeIndex: transitVeh.corridorRoute ? (transitVeh.routeIndex + 1) : 0,
             source: transitVeh.source || 'simulation',
             isSimulatedCommercial: transitVeh.isSimulatedCommercial,
-            simTimeSec: currentSimTime
+            simTimeSec: currentSimTime,
+            plannedExitApproach: 'N'
           });
         }
 
-        // Capture newly departed vehicles from J1 ('N' exit) into J1-J2 link
+        // Helper to process departures using the Phase 10.9 deterministic itinerary abstraction
+        const processDeparture = (dep, currentJunctionId, nextLinkId) => {
+          if (dep.corridorRoute && Array.isArray(dep.corridorRoute)) {
+            const currentRouteIndex = typeof dep.routeIndex === 'number' ? dep.routeIndex : 0;
+            // Check if vehicle has reached the end of its planned route
+            if (currentRouteIndex >= dep.corridorRoute.length - 1) {
+              // Route terminated at this destination junction
+              if (dep.destinationHubId) {
+                logisticsHubManager.processCommercialArrival(dep);
+              }
+            } else {
+              // Route continues, transfer to next link
+              linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
+            }
+          } else {
+            // Legacy / passenger vehicle backward-compatible routing (follows full corridor)
+            linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
+          }
+        };
+
+        // Capture newly departed vehicles from J1 ('N' exit)
         const j1Departures = j1Result?.departedCars || [];
         for (let i = 0; i < j1Departures.length; i++) {
           const dep = j1Departures[i];
-          if (dep.direction === 'N') {
-            linkManager.receiveDeparture('J1-J2', dep, currentSimTime);
-          }
+          if (dep.direction === 'N') processDeparture(dep, 'J1', 'J1-J2');
         }
 
-        // Capture newly departed vehicles from J2 ('N' exit) into J2-J3 link OR Dadar Hub
+        // Capture newly departed vehicles from J2 ('N' exit)
         const j2Departures = j2Result?.departedCars || [];
         for (let i = 0; i < j2Departures.length; i++) {
           const dep = j2Departures[i];
-          if (dep.direction === 'N') {
-            if (dep.destinationHubId === 'HUB_DDR_01') {
-              logisticsHubManager.processCommercialArrival(dep);
-            } else {
-              linkManager.receiveDeparture('J2-J3', dep, currentSimTime);
-            }
-          }
+          if (dep.direction === 'N') processDeparture(dep, 'J2', 'J2-J3');
         }
 
-        // Capture newly departed vehicles from J3 ('N' exit) into J3-J4 link OR BKC Hub
+        // Capture newly departed vehicles from J3 ('N' exit)
         const j3Departures = j3Result?.departedCars || [];
         for (let i = 0; i < j3Departures.length; i++) {
           const dep = j3Departures[i];
-          if (dep.direction === 'N') {
-            if (dep.destinationHubId === 'HUB_BKC_01') {
-              logisticsHubManager.processCommercialArrival(dep);
-            } else {
-              linkManager.receiveDeparture('J3-J4', dep, currentSimTime);
-            }
-          }
+          if (dep.direction === 'N') processDeparture(dep, 'J3', 'J3-J4');
         }
 
         // Advance logistics hub loading bays and curb dwell timers

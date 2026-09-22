@@ -200,8 +200,8 @@ export const TrafficProvider = ({ children }) => {
     const interval = setInterval(() => {
       tickRef.current += 1;
 
-      // Jitter edge latency realistically between 12-16ms
-      setEdgeLatencyMs(Math.round(12 + Math.random() * 4));
+      // Jitter edge latency realistically between 12-16ms (Simulation Assumption)
+      setEdgeLatencyMs(14);
 
       // 1. Advance Junction Phase Timers & Dynamic PCU Changes
       setJunctions(prevJunctions => 
@@ -345,13 +345,14 @@ export const TrafficProvider = ({ children }) => {
           const now = new Date();
           const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
           
+          // Derive honest metrics from the current simulated systemMetrics state rather than fabricating fake noise
           const newPoint = {
             time: timeStr,
-            flowRate: Math.round(380 + Math.random() * 80),
-            dynamicWait: Number((18 + Math.random() * 7).toFixed(1)),
-            fixedWait: Number((45 + Math.random() * 15).toFixed(1)),
-            pcuTotal: Math.round(410 + Math.random() * 60),
-            fuelRate: Number((22 + Math.random() * 6).toFixed(1))
+            flowRate: systemMetrics.throughput,
+            dynamicWait: systemMetrics.avgWaitTime,
+            fixedWait: 45.0, // Configured reference baseline
+            pcuTotal: junctions.reduce((sum, j) => sum + Object.values(j.queues).reduce((a, b) => a + b, 0), 0) * 1.5,
+            fuelRate: 22.0 // Configured reference baseline
           };
 
           return [...prev.slice(1), newPoint];

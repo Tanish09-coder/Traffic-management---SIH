@@ -107,15 +107,19 @@ export class VehicleManager {
       waitTime: event.totalWaitTime || 0,
       isStopped: false,
       inIntersection: false,
+      curbDwellRemainingSec: 0,
       isExternal: true,
       isCommercial,
       pcuEquivalent,
       destinationHubId: event.destinationHubId || null,
       cargoTonnage: event.cargoTonnage || 0,
-      deliveryStatus: event.deliveryStatus || (isCommercial ? 'EN_ROUTE' : 'NONE'),
-      curbDwellRemainingSec: 0,
-      isSimulatedCommercial: event.isSimulatedCommercial || false,
-      plannedExitApproach: event.plannedExitApproach || null
+      deliveryStatus: event.deliveryStatus || 'NONE',
+      totalWaitTime: event.totalWaitTime || 0,
+      plannedExitApproach: event.plannedExitApproach || null,
+      corridorRoute: event.corridorRoute || null,
+      routeIndex: typeof event.routeIndex === 'number' ? event.routeIndex : 0,
+      source: event.source || 'simulation',
+      isSimulatedCommercial: event.isSimulatedCommercial || false
     };
 
     this._completedArrivals.push({
@@ -258,6 +262,20 @@ export class VehicleManager {
         const deliveryStatus = isCommercial ? 'EN_ROUTE' : 'NONE';
         const isSimulatedCommercial = isCommercial;
 
+        // Phase 10.9: Deterministic Route Assignment
+        let corridorRoute = null;
+        let routeIndex = 0;
+        let plannedExitApproach = null;
+
+        if (isCommercial) {
+          if (destinationHubId === 'HUB_DDR_01') {
+            corridorRoute = ['J1', 'J2'];
+          } else if (destinationHubId === 'HUB_BKC_01') {
+            corridorRoute = ['J1', 'J2', 'J3'];
+          }
+          plannedExitApproach = 'N'; // Initial departure direction for corridor progression
+        }
+
         schedule.push({
           id: `v-${direction}-${idCounter++}`,
           timeSec: parseFloat(t.toFixed(3)),
@@ -270,7 +288,10 @@ export class VehicleManager {
           cargoTonnage,
           deliveryStatus,
           curbDwellRemainingSec: 0,
-          isSimulatedCommercial
+          isSimulatedCommercial,
+          corridorRoute,
+          routeIndex,
+          plannedExitApproach
         });
       }
     });

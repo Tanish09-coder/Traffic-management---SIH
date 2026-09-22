@@ -205,7 +205,7 @@ const LiveIntersection = () => {
                     {lang === 'HI' ? (
                       <>आप दिशा <strong>{selectedOverrideDirection}</strong> के लिए मुंबई AI यातायात प्रबंधन प्रणाली को ओवरराइड करने जा रहे हैं।</>
                     ) : (
-                      <>You are about to override the Mumbai AI traffic management system for direction <strong>{selectedOverrideDirection}</strong>.</>
+                      <>You are about to override the Mumbai adaptive traffic management system for direction <strong>{selectedOverrideDirection}</strong>.</>
                     )}
                   </p>
                 </div>
