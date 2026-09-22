@@ -8,6 +8,7 @@ import TrafficLight from '../components/TrafficLight';
 import PedestrianLight from '../components/PedestrianLight';
 import ParkEnvironment from '../components/ParkEnvironment';
 import AIDecisionPanel from '../components/AIDecisionPanel';
+import UrbanResourcePressurePanel from '../components/UrbanResourcePressurePanel';
 import StatCard from '../components/StatCard';
 import ChartPanel from '../components/ChartPanel';
 import WeatherEffects from '../components/WeatherEffects';
@@ -244,7 +245,10 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* 2. SIGNAL OPTIMIZATION & DEMAND CONTROL PANEL */}
+      {/* 2. URBAN RESOURCE PRESSURE & RESPONSE ENGINE PANEL */}
+      <UrbanResourcePressurePanel />
+
+      {/* 3. SIGNAL OPTIMIZATION & DEMAND CONTROL PANEL */}
       <AIDecisionPanel showAllocationDetails={false} />
 
       {/* 3. MAIN SECTION: Left (70%) Live Intersection & Right (30%) Analytics */}

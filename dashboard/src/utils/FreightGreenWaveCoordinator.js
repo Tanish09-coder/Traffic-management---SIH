@@ -126,12 +126,14 @@ export class FreightGreenWaveCoordinator {
         vehicleId: vehicle?.id || 'unknown',
         vehicleType: vehicle?.type || 'unknown',
         approach,
+        decision: 'DEFER',
         recommendedAction: 'NO_CHANGE',
         isEligible: false,
         reason: eligibility.reason,
         guardrailTriggered: null,
         greenAdjustmentSec: 0,
         downstreamSaturation: corridorContext.downstreamSaturation || 0,
+        isExecuted: false,
         timestamp: Date.now()
       };
     }
@@ -166,13 +168,15 @@ export class FreightGreenWaveCoordinator {
         vehicleType: vehicle.type,
         approach,
         etaSeconds: etaSec,
+        decision: 'BLOCKED',
         recommendedAction: 'DEFER',
         isEligible: true,
         guardrailTriggered: 'EMERGENCY_OVERRIDE',
         greenAdjustmentSec: 0,
-        reason: `Emergency preemption active. Freight progression deferred to protect priority emergency corridor.`,
+        reason: 'Blocked because emergency vehicle preemption is active on corridor.',
         expectedFreightDelayReduction: 0,
         downstreamSaturation,
+        isExecuted: false,
         timestamp: Date.now()
       };
     }
@@ -186,13 +190,15 @@ export class FreightGreenWaveCoordinator {
         vehicleType: vehicle.type,
         approach,
         etaSeconds: etaSec,
+        decision: 'DEFER',
         recommendedAction: 'DEFER',
         isEligible: true,
         guardrailTriggered: 'DOWNSTREAM_BACKPRESSURE',
         greenAdjustmentSec: 0,
-        reason: `Downstream approach saturation (${Math.round(downstreamSaturation * 100)}%) exceeds throttle threshold (${Math.round(throttleThreshold * 100)}%). Progression suppressed to prevent corridor spillback.`,
+        reason: `Downstream approach saturation (${Math.round(downstreamSaturation * 100)}%) exceeds throttle threshold (${Math.round(throttleThreshold * 100)}%). Deferred progression to prevent corridor spillback.`,
         expectedFreightDelayReduction: 0,
         downstreamSaturation,
+        isExecuted: false,
         timestamp: Date.now()
       };
     }
@@ -206,13 +212,15 @@ export class FreightGreenWaveCoordinator {
         vehicleType: vehicle.type,
         approach,
         etaSeconds: etaSec,
+        decision: 'DEFER',
         recommendedAction: 'DEFER',
         isEligible: true,
         guardrailTriggered: 'PASSENGER_STARVATION',
         greenAdjustmentSec: 0,
-        reason: `Conflicting passenger traffic waiting ${Math.round(maxPassengerWaitSec)}s exceeds starvation ceiling (${starvationLimit}s). Freight extension suppressed to protect passenger flow.`,
+        reason: `Deferred because passenger waiting time (${Math.round(maxPassengerWaitSec)}s) exceeded the safety threshold (${starvationLimit}s). Freight extension suppressed to protect passenger flow.`,
         expectedFreightDelayReduction: 0,
         downstreamSaturation,
+        isExecuted: false,
         timestamp: Date.now()
       };
     }
@@ -229,6 +237,7 @@ export class FreightGreenWaveCoordinator {
           approach,
           etaSeconds: etaSec,
           remainingGreenSec: Number(remainingGreenSec.toFixed(1)),
+          decision: 'GRANT',
           recommendedAction: 'NO_CHANGE',
           isEligible: true,
           guardrailTriggered: null,
@@ -236,6 +245,7 @@ export class FreightGreenWaveCoordinator {
           reason: `Freight vehicle (ETA ${etaSec}s) will arrive within existing green window (${remainingGreenSec.toFixed(1)}s remaining). No timing intervention needed.`,
           expectedFreightDelayReduction: 0,
           downstreamSaturation,
+          isExecuted: false,
           timestamp: Date.now()
         };
       } else if (etaSec <= remainingGreenSec + 15) {
@@ -252,6 +262,7 @@ export class FreightGreenWaveCoordinator {
             approach,
             etaSeconds: etaSec,
             remainingGreenSec: Number(remainingGreenSec.toFixed(1)),
+            decision: 'GRANT',
             recommendedAction: 'EXTEND_GREEN',
             isEligible: true,
             guardrailTriggered: null,
@@ -259,6 +270,26 @@ export class FreightGreenWaveCoordinator {
             reason: `Proactive green extension (+${neededExtension}s) allocated for ${vehicle.type} (ETA ${etaSec}s). Downstream saturation is safe (${Math.round(downstreamSaturation * 100)}%).`,
             expectedFreightDelayReduction: Math.round(neededExtension * 1.5),
             downstreamSaturation,
+            isExecuted: false,
+            timestamp: Date.now()
+          };
+        } else {
+          this.telemetry.greenWaveDeferred++;
+          return {
+            vehicleId: vehicle.id,
+            vehicleType: vehicle.type,
+            approach,
+            etaSeconds: etaSec,
+            remainingGreenSec: Number(remainingGreenSec.toFixed(1)),
+            decision: 'DEFER',
+            recommendedAction: 'DEFER',
+            isEligible: true,
+            guardrailTriggered: 'MAX_GREEN_LIMIT',
+            greenAdjustmentSec: 0,
+            reason: `Deferred because maximum continuous green limit (${maxContinuous}s) would be exceeded.`,
+            expectedFreightDelayReduction: 0,
+            downstreamSaturation,
+            isExecuted: false,
             timestamp: Date.now()
           };
         }
@@ -274,6 +305,7 @@ export class FreightGreenWaveCoordinator {
           vehicleType: vehicle.type,
           approach,
           etaSeconds: etaSec,
+          decision: 'GRANT',
           recommendedAction: 'EARLY_GREEN',
           isEligible: true,
           guardrailTriggered: null,
@@ -281,6 +313,7 @@ export class FreightGreenWaveCoordinator {
           reason: `Freight vehicle arriving at red approach in ${etaSec}s. Proactively queueing early phase switch to ${approach} approach.`,
           expectedFreightDelayReduction: 12,
           downstreamSaturation,
+          isExecuted: false,
           timestamp: Date.now()
         };
       }
@@ -293,6 +326,7 @@ export class FreightGreenWaveCoordinator {
       vehicleType: vehicle.type,
       approach,
       etaSeconds: etaSec,
+      decision: 'DEFER',
       recommendedAction: 'HOLD_CURRENT_PHASE',
       isEligible: true,
       guardrailTriggered: null,
@@ -300,6 +334,7 @@ export class FreightGreenWaveCoordinator {
       reason: `Freight progression tracked (ETA ${etaSec}s). Conditions nominal; standard adaptive timing cycle maintained.`,
       expectedFreightDelayReduction: 0,
       downstreamSaturation,
+      isExecuted: false,
       timestamp: Date.now()
     };
   }

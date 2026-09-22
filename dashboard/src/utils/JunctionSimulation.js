@@ -1,5 +1,5 @@
-import { VehicleManager } from './VehicleManager';
-import { SignalManager } from './SignalManager';
+import { VehicleManager } from './VehicleManager.js';
+import { SignalManager } from './SignalManager.js';
 
 /**
  * JunctionSimulation encapsulates the state and logic for a single intersection,
@@ -14,7 +14,8 @@ export class JunctionSimulation {
     this.vehicleManager = new VehicleManager(
       seed,
       config.demandMultiplier !== undefined ? config.demandMultiplier : 1.0,
-      config.freightDemandMultiplier !== undefined ? config.freightDemandMultiplier : 1.0
+      config.freightDemandMultiplier !== undefined ? config.freightDemandMultiplier : 1.0,
+      id
     );
     this.vehicleManager.start();
 
@@ -61,6 +62,7 @@ export class JunctionSimulation {
       subDt
     );
 
+    this.lastDepartedCars = updateResult?.departedCars || [];
     return updateResult || { departedCars: [] };
   }
 
@@ -78,11 +80,13 @@ export class JunctionSimulation {
       signal: sState.current_signal,
       signal_timer: sState.signal_timer,
       signal_phase: sState.signal_phase,
-      throughput: this.vehicleManager.calculateThroughput()
+      throughput: this.vehicleManager.calculateThroughput(),
+      departedCars: this.lastDepartedCars || []
     };
   }
 
   reset() {
+    this.lastDepartedCars = [];
     this.vehicleManager.reset(this.seed);
     this.vehicleManager.start();
     this.signalManager = new SignalManager(this.config.initialStrategy || 'adaptive');

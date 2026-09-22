@@ -6,6 +6,7 @@ import CityCorridorMap from '../components/CityCorridorMap';
 import CorridorFlowStrip from '../components/CorridorFlowStrip';
 import CorridorJunctionCard from '../components/CorridorJunctionCard';
 import CorridorSidebar from '../components/CorridorSidebar';
+import UrbanResourcePressurePanel from '../components/UrbanResourcePressurePanel';
 import { MapPin, Zap, Radio, Activity, ShieldCheck, RefreshCw, AlertTriangle, Layers, TrendingUp } from 'lucide-react';
 
 export default function CityCorridorPage({ onNavigate }) {
@@ -111,6 +112,9 @@ export default function CityCorridorPage({ onNavigate }) {
         coordinationActive={coordinationActive}
         lang={lang}
       />
+
+      {/* Urban Resource Pressure & Response Engine */}
+      <UrbanResourcePressurePanel />
 
       {/* 4. Bottom Section: Detailed Per-Junction Cards Grid */}
       <div>

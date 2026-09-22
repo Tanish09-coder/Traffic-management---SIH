@@ -6,14 +6,22 @@ export default function LogisticsHubPanel({ hubs = [], telemetry }) {
   const { lang } = useLanguage();
   const [selectedHubId, setSelectedHubId] = useState('HUB_BKC_01');
 
-  const activeHub = hubs.find(h => h.hubId === selectedHubId) || hubs[0] || {
-    hubId: 'HUB_BKC_01',
-    name: 'BKC Freight & Delivery Hub',
-    totalBays: 4,
-    bays: [],
-    curbQueue: [],
-    laneBlocked: false
-  };
+  // Consume live hub state; only use fallback for explicit empty/error state
+  const activeHub = hubs.find(h => h.hubId === selectedHubId) || hubs[0] || null;
+
+  if (!activeHub) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs text-center text-slate-400">
+        <Warehouse className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+          {lang === 'HI' ? 'हब डेटा अनुपलब्ध' : 'Logistics Hub State Unavailable'}
+        </h4>
+        <p className="text-[11px] text-slate-400 mt-1">
+          Awaiting live LogisticsHubManager telemetry stream...
+        </p>
+      </div>
+    );
+  }
 
   const occupiedBaysCount = (activeHub.bays || []).filter(b => b.status === 'OCCUPIED' || b.status === 'DWELLING').length;
   const totalBays = activeHub.totalBays || (activeHub.bays || []).length || 3;
@@ -49,7 +57,7 @@ export default function LogisticsHubPanel({ hubs = [], telemetry }) {
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              {h.hubId === 'HUB_BKC_01' ? 'BKC Hub' : 'Dadar Depot'}
+              {h.hubId === 'HUB_BKC_01' ? 'BKC Hub' : h.hubId === 'HUB_DDR_01' ? 'Dadar Depot' : h.name}
             </button>
           ))}
         </div>
@@ -74,14 +82,14 @@ export default function LogisticsHubPanel({ hubs = [], telemetry }) {
         <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
           <div className="text-[10px] text-slate-500 font-bold uppercase">Curb Saturation</div>
           <div className="text-sm font-black text-purple-700 mt-0.5">
-            {Math.min(100, Math.round(((activeHub.curbQueue || []).length / 3) * 100))}%
+            {activeHub.curbSaturation !== undefined ? activeHub.curbSaturation : Math.min(100, Math.round(((activeHub.curbQueue || []).length / Math.max(1, totalBays)) * 100))}%
           </div>
         </div>
 
         <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
           <div className="text-[10px] text-slate-500 font-bold uppercase">Served Freight</div>
           <div className="text-sm font-black text-emerald-700 mt-0.5">
-            {activeHub.completedCount || 0} <span className="text-[10px] text-slate-500">total</span>
+            {activeHub.completedCount || 0} <span className="text-[10px] text-slate-500">total ({activeHub.totalFreightServed || 0}t)</span>
           </div>
         </div>
       </div>
@@ -134,8 +142,8 @@ export default function LogisticsHubPanel({ hubs = [], telemetry }) {
                 {isDwelling ? (
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Vehicle: <strong className="text-slate-900 font-mono">{bay.occupiedByVehicleId || 'FT-102'}</strong></span>
-                      <span className="text-slate-500 font-mono">{bay.cargoTonnage || 8.5}t</span>
+                      <span>Vehicle: <strong className="text-slate-900 font-mono">{bay.vehicleOccupying || bay.occupiedByVehicleId || '—'}</strong></span>
+                      <span className="text-slate-500 font-mono">{bay.cargoTonnage ? `${bay.cargoTonnage}t` : '—'}</span>
                     </div>
                     {/* Dwell Progress Bar */}
                     <div className="w-full bg-amber-200/60 rounded-full h-1.5 mt-1 overflow-hidden">

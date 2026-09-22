@@ -342,9 +342,10 @@ export function runLinkManagerTestSuite() {
     for (let t = 0; t < 300; t++) {
       j2.tick(1.0, t);
       const deps = j2.getState().departedCars;
-      if (deps && deps.length > 0) {
+      const found = deps?.find(d => d.id === 'movement-test-1');
+      if (found) {
         departed = true;
-        departureObj = deps[0];
+        departureObj = found;
         break;
       }
     }
@@ -365,9 +366,10 @@ export function runLinkManagerTestSuite() {
     for (let t = 0; t < 300; t++) {
       j2.tick(1.0, t);
       const deps = j2.getState().departedCars;
-      if (deps && deps.length > 0) {
+      const found = deps?.find(d => d.id === 'movement-test-2');
+      if (found) {
         departed2 = true;
-        departureObj2 = deps[0];
+        departureObj2 = found;
         break;
       }
     }

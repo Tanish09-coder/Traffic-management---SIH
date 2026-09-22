@@ -20,6 +20,9 @@ import { calculateEffectivePredictivePCU } from '../utils/PredictiveDemandFusion
 import { generateBucketArrivals, calculateBucketPCU } from '../utils/HistoricalDemandScheduler';
 import { LogisticsHubManager } from '../utils/LogisticsHubManager';
 import { FreightGreenWaveCoordinator } from '../utils/FreightGreenWaveCoordinator';
+import { FreightSlotManager } from '../utils/FreightSlotManager';
+import { UrbanResourcePressureEngine } from '../utils/UrbanResourcePressureEngine';
+import { DEFAULT_LINK_CONFIGS } from '../utils/LinkManager';
 import { BACKEND_ORIGIN } from '../utils/backendUrl';
 
 // Historical Pune direction mapping is used only to demonstrate predictive-control integration. It does not imply the live simulation represents the same physical intersection or timestamp.
@@ -76,6 +79,8 @@ export const SimulationProvider = ({ children }) => {
   const logisticsHubManagerRef = useRef(null);
   const freightCoordinatorRef = useRef(null);
   const linkManagerRef = useRef(null);
+  const freightSlotManagerRef = useRef(null);
+  const urbanPressureEngineRef = useRef(null);
   const [freightDemandMultiplier, setFreightDemandMultiplierState] = useState(1.0);
 
   if (!logisticsHubManagerRef.current) {
@@ -87,6 +92,15 @@ export const SimulationProvider = ({ children }) => {
   if (!linkManagerRef.current) {
     linkManagerRef.current = new LinkManager();
   }
+  if (!freightSlotManagerRef.current) {
+    freightSlotManagerRef.current = new FreightSlotManager({
+      logisticsHubManager: logisticsHubManagerRef.current,
+      linkConfigs: DEFAULT_LINK_CONFIGS
+    });
+  }
+  if (!urbanPressureEngineRef.current) {
+    urbanPressureEngineRef.current = new UrbanResourcePressureEngine();
+  }
 
   const vehicleManager = junctionsRef.current.J3.vehicleManager;
   const signalManager = junctionsRef.current.J3.signalManager;
@@ -94,6 +108,8 @@ export const SimulationProvider = ({ children }) => {
   const logisticsHubManager = logisticsHubManagerRef.current;
   const freightCoordinator = freightCoordinatorRef.current;
   const linkManager = linkManagerRef.current;
+  const freightSlotManager = freightSlotManagerRef.current;
+  const urbanPressureEngine = urbanPressureEngineRef.current;
 
   // Session configuration state
   const [useMock, setUseMock] = useState(true);
@@ -248,6 +264,132 @@ export const SimulationProvider = ({ children }) => {
     };
   }, []);
 
+  const getCorridorFreightAggregation = useCallback(() => {
+    const freightMap = new Map();
+    if (junctionsRef.current) {
+      const allJunctions = [
+        junctionsRef.current.J1,
+        junctionsRef.current.J2,
+        junctionsRef.current.J3,
+        junctionsRef.current.J4
+      ];
+      allJunctions.forEach(j => {
+        if (!j || !j.vehicleManager) return;
+        const jCars = j.vehicleManager.cars || {};
+        Object.entries(jCars).forEach(([lane, laneCars]) => {
+          (laneCars || []).forEach(c => {
+            if (c.isCommercial && !freightMap.has(c.id)) {
+              freightMap.set(c.id, { ...c, lane, junctionId: j.id, location: j.id });
+            }
+          });
+        });
+        const jBacklog = j.vehicleManager.backlog || {};
+        Object.entries(jBacklog).forEach(([lane, laneCars]) => {
+          (laneCars || []).forEach(c => {
+            if (c.isCommercial && !freightMap.has(c.id)) {
+              freightMap.set(c.id, { ...c, lane, junctionId: j.id, location: `${j.id}-backlog` });
+            }
+          });
+        });
+      });
+    }
+
+    if (linkManagerRef.current) {
+      Object.entries(linkManagerRef.current.inTransit || {}).forEach(([linkId, list]) => {
+        (list || []).forEach(v => {
+          if (v.isCommercial && !freightMap.has(v.id)) {
+            freightMap.set(v.id, { ...v, lane: v.direction || 'N', location: linkId });
+          }
+        });
+      });
+      Object.entries(linkManagerRef.current.completedTransits || {}).forEach(([linkId, list]) => {
+        (list || []).forEach(v => {
+          if (v.isCommercial && !freightMap.has(v.id)) {
+            freightMap.set(v.id, { ...v, lane: v.direction || 'N', location: `${linkId}-transit` });
+          }
+        });
+      });
+    }
+
+    if (logisticsHubManagerRef.current) {
+      Object.values(logisticsHubManagerRef.current.hubs || {}).forEach(hub => {
+        (hub.bays || []).forEach(bay => {
+          if ((bay.status === 'OCCUPIED' || bay.status === 'DWELLING') && bay.occupiedByVehicleId) {
+            if (!freightMap.has(bay.occupiedByVehicleId)) {
+              freightMap.set(bay.occupiedByVehicleId, {
+                id: bay.occupiedByVehicleId,
+                type: bay.vehicleType || 'delivery_van',
+                cargoTonnage: bay.cargoTonnage || 0,
+                pcuEquivalent: bay.vehicleType === 'freight_truck' ? 2.5 : 1.5,
+                deliveryStatus: bay.status === 'DWELLING' ? 'DWELLING' : 'AT_HUB',
+                destinationHubId: hub.hubId,
+                lane: hub.approach,
+                location: `${hub.hubId}-bay-${bay.bayIndex}`
+              });
+            }
+          }
+        });
+        (hub.curbQueue || []).forEach(q => {
+          if (!freightMap.has(q.id)) {
+            freightMap.set(q.id, {
+              id: q.id,
+              type: q.type,
+              cargoTonnage: q.cargoTonnage || 0,
+              pcuEquivalent: q.type === 'freight_truck' ? 2.5 : 1.5,
+              deliveryStatus: 'AT_HUB',
+              destinationHubId: hub.hubId,
+              lane: hub.approach,
+              location: `${hub.hubId}-curb`
+            });
+          }
+        });
+      });
+    }
+
+    if (freightSlotManagerRef.current) {
+      const stagedList = freightSlotManagerRef.current.getStagedVehicles();
+      stagedList.forEach(staged => {
+        if (!freightMap.has(staged.vehicleId)) {
+          freightMap.set(staged.vehicleId, {
+            id: staged.vehicleId,
+            type: staged.vehicleType || 'delivery_van',
+            cargoTonnage: staged.cargoTonnage || 0,
+            pcuEquivalent: staged.vehicleType === 'freight_truck' ? 2.5 : 1.5,
+            deliveryStatus: staged.status === 'SLOT_PENDING' ? 'SLOT_ASSIGNED' : 'STAGED',
+            destinationHubId: staged.destinationHubId,
+            lane: staged.originJunctionId || 'J1',
+            location: `Staging-${staged.originJunctionId}`,
+            originJunctionId: staged.originJunctionId,
+            corridorRoute: staged.corridorRoute,
+            routeIndex: staged.routeIndex,
+            assignedSlotStartSec: staged.assignedSlotStartSec,
+            assignedSlotEndSec: staged.assignedSlotEndSec,
+            decision: staged.decision,
+            reason: staged.reason,
+            isCommercial: true
+          });
+        }
+      });
+    }
+
+    const allCommercialVehicles = Array.from(freightMap.values());
+    const activeFreightCount = allCommercialVehicles.length;
+    const vansCount = allCommercialVehicles.filter(v => v.type === 'delivery_van').length;
+    const trucksCount = allCommercialVehicles.filter(v => v.type === 'freight_truck' || v.type === 'truck').length;
+    const totalCargoTonnage = Number(allCommercialVehicles.reduce((sum, v) => sum + (v.cargoTonnage || (v.type === 'freight_truck' ? 8.5 : 1.2)), 0).toFixed(1));
+    const totalFreightPcu = Number(allCommercialVehicles.reduce((sum, v) => sum + (v.pcuEquivalent || (v.type === 'freight_truck' ? 2.5 : 1.5)), 0).toFixed(1));
+
+    return {
+      allCommercialVehicles,
+      activeFreightCount,
+      vansCount,
+      trucksCount,
+      totalCargoTonnage,
+      totalFreightPcu,
+      completedDeliveries: logisticsHubManagerRef.current ? logisticsHubManagerRef.current.getCompletedDeliveries() : []
+    };
+  }, []);
+
   // Consolidated session state & metrics
   const [state, setState] = useState(() => {
     const vState = vehicleManager.getState();
@@ -270,7 +412,37 @@ export const SimulationProvider = ({ children }) => {
       strategy: sState.strategy,
       staged_strategy: sState.staged_strategy,
       decision: sState.decision,
-      dataSource: 'simulation'
+      dataSource: 'simulation',
+      logisticsHubs: logisticsHubManager.getAllHubStates(),
+      logisticsTelemetry: logisticsHubManager.getTelemetry(),
+      completedDeliveries: logisticsHubManager.getCompletedDeliveries(),
+      freightGreenWaveDecisions: [],
+      freightTelemetry: freightCoordinator.getTelemetry(),
+      freightDemandMultiplier: 1.0,
+      freightSlotState: freightSlotManager.getState(),
+      corridorFreight: {
+        allCommercialVehicles: [],
+        activeFreightCount: 0,
+        vansCount: 0,
+        trucksCount: 0,
+        totalCargoTonnage: 0,
+        totalFreightPcu: 0,
+        completedDeliveries: []
+      },
+      urbanResourcePressure: urbanPressureEngine.evaluate({
+        simTime: 0,
+        junctions: {
+          J1: junctionsRef.current.J1,
+          J2: junctionsRef.current.J2,
+          J3: junctionsRef.current.J3,
+          J4: junctionsRef.current.J4
+        },
+        linkManager,
+        logisticsHubManager,
+        freightSlotManager,
+        isEmergencyActive: false,
+        strategy: 'adaptive'
+      })
     };
   });
 
@@ -550,49 +722,118 @@ export const SimulationProvider = ({ children }) => {
           });
         }
 
-        // Helper to process departures using the Phase 10.9 deterministic itinerary abstraction
+        // Helper to process departures using smart arrival slot & upstream holding
         const processDeparture = (dep, currentJunctionId, nextLinkId) => {
+          // Destination Hub Check: If vehicle has reached the junction associated with its destination hub
+          const destHub = dep.destinationHubId ? logisticsHubManager.getHub(dep.destinationHubId) : null;
+          if (destHub && destHub.associatedJunction === currentJunctionId) {
+            dep.deliveryStatus = 'ARRIVING';
+            logisticsHubManager.processCommercialArrival(dep, currentSimTime);
+            return;
+          }
+
           if (dep.corridorRoute && Array.isArray(dep.corridorRoute)) {
             const currentRouteIndex = typeof dep.routeIndex === 'number' ? dep.routeIndex : 0;
             // Check if vehicle has reached the end of its planned route
             if (currentRouteIndex >= dep.corridorRoute.length - 1) {
-              // Route terminated at this destination junction
               if (dep.destinationHubId) {
-                logisticsHubManager.processCommercialArrival(dep);
+                dep.deliveryStatus = 'ARRIVING';
+                logisticsHubManager.processCommercialArrival(dep, currentSimTime);
               }
-            } else {
-              // Route continues, transfer to next link
-              linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
+              return;
             }
-          } else {
-            // Legacy / passenger vehicle backward-compatible routing (follows full corridor)
-            linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
           }
+
+          // Commercial vehicle upstream holding & arrival slot evaluation at J1 and J2
+          if (dep.isCommercial && ['J1', 'J2'].includes(currentJunctionId)) {
+            const isEmergencyActive = !!(
+              junctionsRef.current.J1.vehicleManager.emergencyActive ||
+              junctionsRef.current.J2.vehicleManager.emergencyActive ||
+              junctionsRef.current.J3.vehicleManager.emergencyActive ||
+              junctionsRef.current.J4.vehicleManager.emergencyActive ||
+              junctionsRef.current.J1.signalManager.emergency_active ||
+              junctionsRef.current.J2.signalManager.emergency_active ||
+              junctionsRef.current.J3.signalManager.emergency_active ||
+              junctionsRef.current.J4.signalManager.emergency_active
+            );
+
+            const slotEval = freightSlotManager.evaluateDeparture(
+              dep,
+              currentJunctionId,
+              nextLinkId,
+              currentSimTime,
+              {
+                isEmergencyActive,
+                logisticsHubManager
+              }
+            );
+
+            if (slotEval.shouldReleaseNow) {
+              dep.deliveryStatus = slotEval.decision === 'SLOT_ASSIGNED' ? 'SLOT_ASSIGNED' : 'EN_ROUTE';
+              linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
+            } else {
+              dep.deliveryStatus = slotEval.decision === 'SLOT_ASSIGNED' ? 'SLOT_ASSIGNED' : 'STAGED';
+            }
+            return;
+          }
+
+          // Normal passenger or through transfer to LinkManager
+          linkManager.receiveDeparture(nextLinkId, dep, currentSimTime);
         };
 
-        // Capture newly departed vehicles from J1 ('N' exit)
+        // Capture newly departed vehicles from J1
         const j1Departures = j1Result?.departedCars || [];
         for (let i = 0; i < j1Departures.length; i++) {
           const dep = j1Departures[i];
-          if (dep.direction === 'N') processDeparture(dep, 'J1', 'J1-J2');
+          if (dep.isCommercial || dep.direction === 'N') {
+            processDeparture(dep, 'J1', 'J1-J2');
+          }
         }
 
-        // Capture newly departed vehicles from J2 ('N' exit)
+        // Capture newly departed vehicles from J2
         const j2Departures = j2Result?.departedCars || [];
         for (let i = 0; i < j2Departures.length; i++) {
           const dep = j2Departures[i];
-          if (dep.direction === 'N') processDeparture(dep, 'J2', 'J2-J3');
+          if (dep.isCommercial || dep.direction === 'N') {
+            processDeparture(dep, 'J2', 'J2-J3');
+          }
         }
 
-        // Capture newly departed vehicles from J3 ('N' exit)
+        // Capture newly departed vehicles from J3
         const j3Departures = j3Result?.departedCars || [];
         for (let i = 0; i < j3Departures.length; i++) {
           const dep = j3Departures[i];
-          if (dep.direction === 'N') processDeparture(dep, 'J3', 'J3-J4');
+          if (dep.isCommercial || dep.direction === 'N') {
+            processDeparture(dep, 'J3', 'J3-J4');
+          }
+        }
+
+        // Advance Freight Slot Manager & release eligible staged vehicles automatically
+        const isEmergencyCorridor = !!(
+          junctionsRef.current.J1.vehicleManager.emergencyActive ||
+          junctionsRef.current.J2.vehicleManager.emergencyActive ||
+          junctionsRef.current.J3.vehicleManager.emergencyActive ||
+          junctionsRef.current.J4.vehicleManager.emergencyActive ||
+          junctionsRef.current.J1.signalManager.emergency_active ||
+          junctionsRef.current.J2.signalManager.emergency_active ||
+          junctionsRef.current.J3.signalManager.emergency_active ||
+          junctionsRef.current.J4.signalManager.emergency_active
+        );
+        const releasedFromStaging = freightSlotManager.tick(subDt, currentSimTime, {
+          isEmergencyActive: isEmergencyCorridor,
+          logisticsHubManager
+        });
+
+        for (let r = 0; r < releasedFromStaging.length; r++) {
+          const relRecord = releasedFromStaging[r];
+          if (relRecord.vehicle) {
+            relRecord.vehicle.deliveryStatus = 'EN_ROUTE';
+            linkManager.receiveDeparture(relRecord.nextLinkId, relRecord.vehicle, currentSimTime);
+          }
         }
 
         // Advance logistics hub loading bays and curb dwell timers
-        logisticsHubManager.tick(subDt);
+        logisticsHubManager.tick(subDt, currentSimTime);
       });
 
       // Extract fresh states
@@ -637,6 +878,8 @@ export const SimulationProvider = ({ children }) => {
 
       // (Mid-junction hub scanning was removed; commercial vehicles are now intercepted at departure per Phase 10.6)
 
+      const corridorFreight = getCorridorFreightAggregation();
+
       const mergedState = {
         ...vState,
         signal: sState.current_signal,
@@ -678,10 +921,34 @@ export const SimulationProvider = ({ children }) => {
         predictiveStatus,
         predictiveDemoDate: PREDICTION_DEMO_DATE,
         predictiveTimestamp,
+        logisticsHubs: logisticsHubManager.getAllHubStates(),
         logisticsTelemetry: logisticsHubManager.getTelemetry(),
+        completedDeliveries: logisticsHubManager.getCompletedDeliveries(),
         freightGreenWaveDecisions: activeFreightDecisions,
         freightTelemetry: freightCoordinator.getTelemetry(),
         freightDemandMultiplier,
+        freightSlotState: freightSlotManager.getState(),
+        corridorFreight,
+        urbanResourcePressure: urbanPressureEngine.evaluate({
+          simTime: currentSimTime,
+          junctions: {
+            J1: junctionsRef.current.J1,
+            J2: junctionsRef.current.J2,
+            J3: junctionsRef.current.J3,
+            J4: junctionsRef.current.J4
+          },
+          linkManager,
+          logisticsHubManager,
+          freightSlotManager,
+          isEmergencyActive: Boolean(
+            junctionsRef.current.J1.vehicleManager.emergencyActive ||
+            junctionsRef.current.J2.vehicleManager.emergencyActive ||
+            junctionsRef.current.J3.vehicleManager.emergencyActive ||
+            junctionsRef.current.J4.vehicleManager.emergencyActive ||
+            sState.emergency_active
+          ),
+          strategy
+        }),
         corridor: {
           junctions: {
             J1: junctionsRef.current.J1.getState(),
@@ -950,11 +1217,13 @@ export const SimulationProvider = ({ children }) => {
     const newDemand = stagedDemand;
     setGeneratedDemandState(newDemand);
     logisticsHubManager.reset();
+    freightSlotManager.reset();
+    urbanPressureEngine.reset();
     freightCoordinatorRef.current = new FreightGreenWaveCoordinator();
     linkManager.reset();
     if (useMock) {
       ['N', 'S', 'E', 'W'].forEach(d => vehicleManager.setApproachSource(d, 'simulation'));
-      
+
       const newConfig = {
         initialStrategy: stagedDemand === 0 ? 'fixed' : 'adaptive',
         demandMultiplier: newDemand,
@@ -966,6 +1235,58 @@ export const SimulationProvider = ({ children }) => {
         j.reset();
         j.signalManager.setWeather(weatherMode);
       });
+
+      const vState = junctionsRef.current.J3.vehicleManager.getState();
+      const sState = junctionsRef.current.J3.signalManager.getState(vState.queues, vState.cars);
+      setState(prevState => ({
+        ...prevState,
+        ...vState,
+        signal: sState.current_signal,
+        pending_signal: sState.pending_signal,
+        phase: sState.phase,
+        signal_timer: sState.timer,
+        signal_duration: sState.duration,
+        logisticsHubs: logisticsHubManager.getAllHubStates(),
+        logisticsTelemetry: logisticsHubManager.getTelemetry(),
+        completedDeliveries: [],
+        freightGreenWaveDecisions: [],
+        freightTelemetry: freightCoordinatorRef.current.getTelemetry(),
+        freightSlotState: freightSlotManager.getState(),
+        corridorFreight: {
+          allCommercialVehicles: [],
+          activeFreightCount: 0,
+          vansCount: 0,
+          trucksCount: 0,
+          totalCargoTonnage: 0,
+          totalFreightPcu: 0,
+          completedDeliveries: []
+        },
+        urbanResourcePressure: urbanPressureEngine.evaluate({
+          simTime: 0,
+          junctions: {
+            J1: junctionsRef.current.J1,
+            J2: junctionsRef.current.J2,
+            J3: junctionsRef.current.J3,
+            J4: junctionsRef.current.J4
+          },
+          linkManager,
+          logisticsHubManager,
+          freightSlotManager,
+          isEmergencyActive: false,
+          strategy: stagedDemand === 0 ? 'fixed' : 'adaptive'
+        }),
+        corridor: {
+          junctions: {
+            J1: junctionsRef.current.J1.getState(),
+            J2: junctionsRef.current.J2.getState(),
+            J3: junctionsRef.current.J3.getState(),
+            J4: junctionsRef.current.J4.getState()
+          },
+          links: linkManager.getState().links,
+          linkTelemetry: linkManager.getState()
+        }
+      }));
+      setMetrics(junctionsRef.current.J3.vehicleManager.getMetrics());
     } else {
       resetBackendSimulation().catch(err => console.warn('Backend reset error:', err));
     }
@@ -974,8 +1295,12 @@ export const SimulationProvider = ({ children }) => {
   const setFreightDemandMultiplier = useCallback((multiplier) => {
     const val = typeof multiplier === 'number' && multiplier > 0 ? multiplier : 1.0;
     setFreightDemandMultiplierState(val);
-    if (junctionsRef.current.J3) {
-      junctionsRef.current.J3.vehicleManager.setFreightDemandMultiplier(val);
+    if (junctionsRef.current) {
+      [junctionsRef.current.J1, junctionsRef.current.J2, junctionsRef.current.J3, junctionsRef.current.J4].forEach(j => {
+        if (j && j.vehicleManager) {
+          j.vehicleManager.setFreightDemandMultiplier(val);
+        }
+      });
     }
   }, []);
 
@@ -983,7 +1308,7 @@ export const SimulationProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const newConfig = {
         initialStrategy: stagedDemand === 0 ? 'fixed' : 'adaptive',
         demandMultiplier: stagedDemand,
@@ -997,12 +1322,51 @@ export const SimulationProvider = ({ children }) => {
         j.signalManager.setWeather(weatherMode);
       });
       linkManager.reset();
+      logisticsHubManager.reset();
+      freightCoordinatorRef.current = new FreightGreenWaveCoordinator();
+
+      const vState = junctionsRef.current.J3.vehicleManager.getState();
+      const sState = junctionsRef.current.J3.signalManager.getState(vState.queues, vState.cars);
+      setState(prevState => ({
+        ...prevState,
+        ...vState,
+        signal: sState.current_signal,
+        pending_signal: sState.pending_signal,
+        phase: sState.phase,
+        signal_timer: sState.timer,
+        signal_duration: sState.duration,
+        logisticsHubs: logisticsHubManager.getAllHubStates(),
+        logisticsTelemetry: logisticsHubManager.getTelemetry(),
+        completedDeliveries: [],
+        freightGreenWaveDecisions: [],
+        freightTelemetry: freightCoordinatorRef.current.getTelemetry(),
+        corridorFreight: {
+          allCommercialVehicles: [],
+          activeFreightCount: 0,
+          vansCount: 0,
+          trucksCount: 0,
+          totalCargoTonnage: 0,
+          totalFreightPcu: 0,
+          completedDeliveries: []
+        },
+        corridor: {
+          junctions: {
+            J1: junctionsRef.current.J1.getState(),
+            J2: junctionsRef.current.J2.getState(),
+            J3: junctionsRef.current.J3.getState(),
+            J4: junctionsRef.current.J4.getState()
+          },
+          links: linkManager.getState().links,
+          linkTelemetry: linkManager.getState()
+        }
+      }));
+      setMetrics(junctionsRef.current.J3.vehicleManager.getMetrics());
     } catch (err) {
       setError(`Reset error: ${err.message}`);
     } finally {
       setLoading(false);
     }
-  }, [stagedDemand, freightDemandMultiplier, weatherMode]);
+  }, [stagedDemand, freightDemandMultiplier, weatherMode, logisticsHubManager]);
 
   const triggerLogisticsScenario = useCallback((scenarioName) => {
     if (scenarioName === 'peak_freight') {
@@ -1017,8 +1381,16 @@ export const SimulationProvider = ({ children }) => {
           b.occupiedByVehicleId = `FT-DEMO-${idx + 1}`;
           b.vehicleType = 'freight_truck';
           b.cargoTonnage = 8.5;
-          b.dwellRemainingSec = 50;
+          b.dwellRemainingSec = 60;
         });
+        // Create sufficient queue pressure to trigger HOLD_AT_ORIGIN
+        hub.curbQueue = [
+          { id: 'FT-SCENARIO-Q1', type: 'freight_truck', cargoTonnage: 9.0, queuedAtSec: clockRef.current?.simTime || 0, destinationHubId: 'HUB_BKC_01' },
+          { id: 'FT-SCENARIO-Q2', type: 'delivery_van', cargoTonnage: 1.5, queuedAtSec: clockRef.current?.simTime || 0, destinationHubId: 'HUB_BKC_01' },
+          { id: 'FT-SCENARIO-Q3', type: 'freight_truck', cargoTonnage: 8.0, queuedAtSec: clockRef.current?.simTime || 0, destinationHubId: 'HUB_BKC_01' },
+          { id: 'FT-SCENARIO-Q4', type: 'delivery_van', cargoTonnage: 1.2, queuedAtSec: clockRef.current?.simTime || 0, destinationHubId: 'HUB_BKC_01' }
+        ];
+        logisticsHubManager._updateLaneBlockage(hub);
       }
     } else if (scenarioName === 'spillback_throttling') {
       setFreightDemandMultiplier(1.2);
@@ -1198,7 +1570,10 @@ export const SimulationProvider = ({ children }) => {
     setFreightDemandMultiplier,
     triggerLogisticsScenario,
     logisticsHubManager,
-    freightCoordinator
+    freightCoordinator,
+    freightSlotManager,
+    urbanResourcePressure: state?.urbanResourcePressure || urbanPressureEngine.lastState,
+    urbanPressureEngine
   };
 
 

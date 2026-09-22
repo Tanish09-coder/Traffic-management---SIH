@@ -23,11 +23,13 @@ export class VehicleManager {
   constructor(
     seed = 12345,
     demandMultiplier = (TRAFFIC_CONSTANTS.DEMAND_POLICY?.DEFAULT_GENERATED_DEMAND_MULTIPLIER ?? 0.5),
-    freightDemandMultiplier = (TRAFFIC_CONSTANTS.DEMAND_POLICY?.DEFAULT_FREIGHT_DEMAND_MULTIPLIER ?? 1.0)
+    freightDemandMultiplier = (TRAFFIC_CONSTANTS.DEMAND_POLICY?.DEFAULT_FREIGHT_DEMAND_MULTIPLIER ?? 1.0),
+    junctionId = 'J3'
   ) {
     this.seed = seed;
     this.demandMultiplier = demandMultiplier;
     this.freightDemandMultiplier = freightDemandMultiplier;
+    this.junctionId = junctionId;
     this.cars = { N: [], E: [], S: [], W: [] };
     this.backlog = { N: [], E: [], S: [], W: [] };
     this.carsPassed = 0;
@@ -113,12 +115,11 @@ export class VehicleManager {
       pcuEquivalent,
       destinationHubId: event.destinationHubId || null,
       cargoTonnage: event.cargoTonnage || 0,
-      deliveryStatus: event.deliveryStatus || 'NONE',
+      deliveryStatus: event.deliveryStatus || (isCommercial ? (((this.junctionId === 'J2' && event.destinationHubId === 'HUB_DDR_01') || (this.junctionId === 'J3' && event.destinationHubId === 'HUB_BKC_01')) ? 'ARRIVING' : 'EN_ROUTE') : 'NONE'),
       totalWaitTime: event.totalWaitTime || 0,
       plannedExitApproach: event.plannedExitApproach || null,
       corridorRoute: event.corridorRoute || null,
       routeIndex: typeof event.routeIndex === 'number' ? event.routeIndex : 0,
-      source: event.source || 'simulation',
       isSimulatedCommercial: event.isSimulatedCommercial || false
     };
 
@@ -258,23 +259,50 @@ export class VehicleManager {
         const pcuEquivalent = pcuWeights[vType] || (vType === 'delivery_van' ? 1.5 : (vType === 'freight_truck' || vType === 'truck' || vType === 'bus') ? 2.5 : (vType === 'bike' ? 0.5 : 1.0));
         const speed = speeds[vType] || (vType === 'bike' ? 7.5 : vType === 'bus' ? 4.5 : vType === 'freight_truck' ? 3.8 : vType === 'delivery_van' ? 5.2 : vType === 'truck' ? 4.0 : 6.0);
         const cargoTonnage = isCommercial ? (cargoTonnages[vType] || (vType === 'delivery_van' ? 1.2 : 8.5)) : 0;
-        const destinationHubId = isCommercial ? (vType === 'delivery_van' ? 'HUB_DDR_01' : 'HUB_BKC_01') : null;
-        const deliveryStatus = isCommercial ? 'EN_ROUTE' : 'NONE';
-        const isSimulatedCommercial = isCommercial;
-
-        // Phase 10.9: Deterministic Route Assignment
+        let destinationHubId = null;
         let corridorRoute = null;
         let routeIndex = 0;
         let plannedExitApproach = null;
 
         if (isCommercial) {
-          if (destinationHubId === 'HUB_DDR_01') {
-            corridorRoute = ['J1', 'J2'];
-          } else if (destinationHubId === 'HUB_BKC_01') {
-            corridorRoute = ['J1', 'J2', 'J3'];
+          const origin = this.junctionId || 'J3';
+          if (origin === 'J1') {
+            if (vType === 'delivery_van') {
+              destinationHubId = 'HUB_DDR_01';
+              corridorRoute = ['J1', 'J2'];
+              routeIndex = 0;
+            } else {
+              destinationHubId = 'HUB_BKC_01';
+              corridorRoute = ['J1', 'J2', 'J3'];
+              routeIndex = 0;
+            }
+            plannedExitApproach = 'N';
+          } else if (origin === 'J2') {
+            if (vType === 'delivery_van') {
+              destinationHubId = 'HUB_DDR_01';
+              corridorRoute = ['J2'];
+              routeIndex = 0;
+              plannedExitApproach = 'N';
+            } else {
+              destinationHubId = 'HUB_BKC_01';
+              corridorRoute = ['J2', 'J3'];
+              routeIndex = 0;
+              plannedExitApproach = 'N';
+            }
+          } else if (origin === 'J3') {
+            destinationHubId = 'HUB_BKC_01';
+            corridorRoute = ['J3'];
+            routeIndex = 0;
+            plannedExitApproach = 'N';
+          } else {
+            destinationHubId = null;
+            corridorRoute = null;
+            routeIndex = 0;
+            plannedExitApproach = 'N';
           }
-          plannedExitApproach = 'N'; // Initial departure direction for corridor progression
         }
+        const deliveryStatus = isCommercial ? 'EN_ROUTE' : 'NONE';
+        const isSimulatedCommercial = isCommercial;
 
         schedule.push({
           id: `v-${direction}-${idCounter++}`,
@@ -510,7 +538,11 @@ export class VehicleManager {
         cargoTonnage: event.cargoTonnage || 0,
         deliveryStatus: event.deliveryStatus || (isComm ? 'EN_ROUTE' : 'NONE'),
         curbDwellRemainingSec: event.curbDwellRemainingSec || 0,
-        isSimulatedCommercial: !!event.isSimulatedCommercial
+        isSimulatedCommercial: !!event.isSimulatedCommercial,
+        corridorRoute: event.corridorRoute || null,
+        routeIndex: typeof event.routeIndex === 'number' ? event.routeIndex : 0,
+        plannedExitApproach: event.plannedExitApproach || null,
+        timeSec: event.timeSec
       };
 
       this._completedArrivals.push({
@@ -548,6 +580,14 @@ export class VehicleManager {
           car.inIntersection = true;
         } else {
           car.inIntersection = false;
+        }
+
+        if (car.isCommercial && car.destinationHubId) {
+          const isAtDest = (this.junctionId === 'J2' && car.destinationHubId === 'HUB_DDR_01') ||
+            (this.junctionId === 'J3' && car.destinationHubId === 'HUB_BKC_01');
+          if (isAtDest && car.deliveryStatus === 'EN_ROUTE') {
+            car.deliveryStatus = 'ARRIVING';
+          }
         }
 
         const isCommittedPastStopLine = car.position > STOP_LINE_POSITION;
@@ -600,7 +640,10 @@ export class VehicleManager {
               cargoTonnage: car.cargoTonnage || 0,
               destinationHubId: car.destinationHubId || null,
               deliveryStatus: car.deliveryStatus || (car.isCommercial ? 'EN_ROUTE' : 'NONE'),
-              isSimulatedCommercial: !!car.isSimulatedCommercial
+              isSimulatedCommercial: !!car.isSimulatedCommercial,
+              corridorRoute: car.corridorRoute || null,
+              routeIndex: typeof car.routeIndex === 'number' ? car.routeIndex : 0,
+              plannedExitApproach: car.plannedExitApproach || null
             };
             this._completedDepartures.push(depObj);
             stepDepartedCars.push(depObj);

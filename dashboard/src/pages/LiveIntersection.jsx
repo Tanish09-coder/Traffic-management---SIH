@@ -289,8 +289,8 @@ const LiveIntersection = () => {
               {/* Target Achievement Indicator */}
               <div className="mt-2.5 flex items-center space-x-3">
                 <div className={`px-2.5 py-0.5 rounded-md text-xs font-bold border flex items-center gap-1.5 ${targetAchieved
-                    ? 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]'
-                    : 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
+                  ? 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]'
+                  : 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
                   }`}>
                   <Target size={14} />
                   <span>{targetAchieved ? (lang === 'HI' ? 'लक्ष्य प्राप्त' : 'Target Achieved') : (lang === 'HI' ? 'लक्ष्य: 20-30s औसत विलंब' : 'Target: 20-30s Avg Delay')}</span>
@@ -502,8 +502,8 @@ const LiveIntersection = () => {
                   disabled={overrideActive || state?.emergencyActive}
                   style={{ backgroundColor: bg }}
                   className={`p-4 rounded-xl transition-all duration-200 text-left flex flex-col justify-between border disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${isSelected
-                      ? 'ring-2 ring-[#F5A623] border-[#F5A623] shadow-md'
-                      : 'border-[#E2E8F0] hover:shadow-xs'
+                    ? 'ring-2 ring-[#F5A623] border-[#F5A623] shadow-md'
+                    : 'border-[#E2E8F0] hover:shadow-xs'
                     }`}
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -559,10 +559,10 @@ const LiveIntersection = () => {
 
               return (
                 <div key={direction} className={`p-4 rounded-xl border transition-all ${isActive
-                    ? 'border-[#BBF7D0] bg-[#F0FDF4]'
-                    : isHighest
-                      ? 'border-[#FDE68A] bg-[#FFFBEB]'
-                      : 'border-[#E2E8F0] bg-[#F8FAFC]'
+                  ? 'border-[#BBF7D0] bg-[#F0FDF4]'
+                  : isHighest
+                    ? 'border-[#FDE68A] bg-[#FFFBEB]'
+                    : 'border-[#E2E8F0] bg-[#F8FAFC]'
                   }`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -599,8 +599,8 @@ const LiveIntersection = () => {
               {lang === 'HI' ? 'लाइव यातायात प्रवाह' : 'Live Traffic Flow'}
             </h2>
             <div className={`text-xs px-3.5 py-1.5 rounded-lg font-bold border shadow-xs ${overrideActive
-                ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
-                : 'bg-[#0A1F44] text-[#F5A623] border-[#1E4D8C]'
+              ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
+              : 'bg-[#0A1F44] text-[#F5A623] border-[#1E4D8C]'
               }`}>
               {overrideActive ? (lang === 'HI' ? 'मैनुअल नियंत्रण' : 'Manual Control') : (lang === 'HI' ? 'स्मार्ट सिग्नल' : 'Smart Signal')}: {state?.signal} ({state?.phase || 'GREEN'}) | {state?.clearance_status ? state.clearance_status : `${lang === 'HI' ? 'शेष' : (state?.phase_label || 'Remaining')}: ${state?.phase_remaining_sec ?? 0}s`}
             </div>
@@ -790,9 +790,9 @@ const LiveIntersection = () => {
               <div
                 key={lane}
                 className={`absolute text-xs font-bold text-white bg-[#0A1F44] px-2.5 py-1 rounded-md shadow-xs z-30 border border-[#1E4D8C] ${lane === 'N' ? 'top-2 left-1/2 transform -translate-x-1/2' :
-                    lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
-                      lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
-                        'left-2 top-1/2 transform -translate-y-1/2'
+                  lane === 'S' ? 'bottom-2 left-1/2 transform -translate-x-1/2' :
+                    lane === 'E' ? 'right-2 top-1/2 transform -translate-y-1/2' :
+                      'left-2 top-1/2 transform -translate-y-1/2'
                   }`}
               >
                 {lane}: {count}
@@ -873,19 +873,19 @@ const LiveIntersection = () => {
                 <div
                   key={dir}
                   className={`p-4 rounded-xl border transition-all duration-300 ${state?.emergencyActive
-                      ? 'border-[#FECACA] bg-[#FEF2F2]'
-                      : isWalk
-                        ? 'border-[#BBF7D0] bg-[#F0FDF4] shadow-xs'
-                        : 'border-[#E2E8F0] bg-[#F8FAFC]'
+                    ? 'border-[#FECACA] bg-[#FEF2F2]'
+                    : isWalk
+                      ? 'border-[#BBF7D0] bg-[#F0FDF4] shadow-xs'
+                      : 'border-[#E2E8F0] bg-[#F8FAFC]'
                     }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-xs text-[#0A1F44]">{name}</span>
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${state?.emergencyActive
-                        ? 'bg-[#DC2626] text-white animate-pulse'
-                        : isWalk
-                          ? 'bg-[#16A34A] text-white shadow-xs'
-                          : 'bg-[#E2E8F0] text-[#475569]'
+                      ? 'bg-[#DC2626] text-white animate-pulse'
+                      : isWalk
+                        ? 'bg-[#16A34A] text-white shadow-xs'
+                        : 'bg-[#E2E8F0] text-[#475569]'
                       }`}>
                       {state?.emergencyActive ? <><Hand size={14} className="inline" /> {lang === 'HI' ? 'खाली करें' : 'CLEAR'}</> : isWalk ? <><PersonStanding size={14} className="inline" /> {lang === 'HI' ? 'चलें (WALK)' : 'WALK'}</> : <><Hand size={14} className="inline" /> {lang === 'HI' ? 'रुकें (WAIT)' : 'WAIT'}</>}
                     </span>
@@ -976,8 +976,8 @@ const LiveIntersection = () => {
                 onClick={() => triggerEmergencyVehicle && triggerEmergencyVehicle()}
                 disabled={state?.emergencyActive}
                 className={`px-4 py-2 text-xs font-bold text-white rounded-lg transition shadow-xs cursor-pointer ${state?.emergencyActive
-                    ? 'bg-red-700 animate-pulse cursor-default'
-                    : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
+                  ? 'bg-red-700 animate-pulse cursor-default'
+                  : 'bg-[#DC2626] hover:bg-red-700 active:scale-95'
                   }`}
                 title={lang === 'HI' ? 'आपातकालीन वाहन डिस्पैच करें (यादृच्छिक पहुंच)' : 'Dispatch emergency vehicle (Random approach)'}
               >

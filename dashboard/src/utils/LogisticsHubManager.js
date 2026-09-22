@@ -11,13 +11,15 @@ import { TRAFFIC_CONSTANTS } from './constants.js';
  * 4. Dwell countdown via simulation delta time (dt).
  * 5. Curb overflow queue management and promotion.
  * 6. Lane-blockage state reporting.
- * 7. Logistics telemetry reporting.
+ * 7. Logistics telemetry and persistent delivery records reporting.
  */
 export class LogisticsHubManager {
   constructor(customHubs = null, defaultDwellSec = null) {
     this.hubs = {};
     this.totalCompletedVehicles = 0;
+    this.totalFreightServed = 0;
     this.dwellTimeHistory = [];
+    this.completedDeliveries = [];
     this.initHubs(customHubs, defaultDwellSec);
   }
 
@@ -43,10 +45,13 @@ export class LogisticsHubManager {
           bayIndex: i,
           status: 'AVAILABLE', // 'AVAILABLE' | 'OCCUPIED' | 'DWELLING'
           occupiedByVehicleId: null,
+          vehicleOccupying: null,
           vehicleType: null,
           cargoTonnage: 0,
           dwellRemainingSec: 0,
-          totalDwellSec: dwellTimeSec
+          totalDwellSec: dwellTimeSec,
+          vehicleRef: null,
+          arrivalTimeSec: 0
         });
       }
 
@@ -61,7 +66,8 @@ export class LogisticsHubManager {
         bays,
         curbQueue: [], // FIFO queue of waiting commercial vehicle items
         laneBlocked: false,
-        completedCount: 0
+        completedCount: 0,
+        totalFreightServed: 0
       };
     });
   }
@@ -69,7 +75,9 @@ export class LogisticsHubManager {
   reset() {
     this.initHubs();
     this.totalCompletedVehicles = 0;
+    this.totalFreightServed = 0;
     this.dwellTimeHistory = [];
+    this.completedDeliveries = [];
   }
 
   getHub(hubId) {
@@ -89,9 +97,10 @@ export class LogisticsHubManager {
    * Assigns an available loading bay or places vehicle into FIFO curb queue.
    *
    * @param {Object} vehicle - Commercial vehicle from VehicleManager
+   * @param {number} currentSimTime - Current simulation clock time in seconds
    * @returns {Object} Result receipt { status, bayIndex, reason }
    */
-  processCommercialArrival(vehicle) {
+  processCommercialArrival(vehicle, currentSimTime = 0) {
     if (!vehicle || !vehicle.isCommercial) {
       return { status: 'REJECTED', bayIndex: null, reason: 'Non-commercial vehicle' };
     }
@@ -114,15 +123,22 @@ export class LogisticsHubManager {
       return { status: 'CURB_QUEUE', bayIndex: null, reason: 'Already in curb queue' };
     }
 
+    const arrivalTime = typeof currentSimTime === 'number' && currentSimTime > 0
+      ? currentSimTime
+      : (typeof vehicle.timeSec === 'number' ? vehicle.timeSec : 0);
+
     // Find first available bay
     const freeBay = hub.bays.find(b => b.status === 'AVAILABLE');
     if (freeBay) {
       freeBay.status = 'OCCUPIED';
       freeBay.occupiedByVehicleId = vehicle.id;
+      freeBay.vehicleOccupying = vehicle.id;
       freeBay.vehicleType = vehicle.type;
       freeBay.cargoTonnage = vehicle.cargoTonnage || 0;
       freeBay.dwellRemainingSec = hub.dwellTimeSeconds;
       freeBay.totalDwellSec = hub.dwellTimeSeconds;
+      freeBay.vehicleRef = vehicle;
+      freeBay.arrivalTimeSec = arrivalTime;
 
       vehicle.deliveryStatus = 'AT_HUB';
       vehicle.curbDwellRemainingSec = hub.dwellTimeSeconds;
@@ -142,7 +158,7 @@ export class LogisticsHubManager {
         id: vehicle.id,
         type: vehicle.type,
         cargoTonnage: vehicle.cargoTonnage || 0,
-        queuedAtSec: vehicle.waitTime || vehicle.totalWaitTime || 0,
+        queuedAtSec: arrivalTime,
         destinationHubId: hub.hubId,
         refVehicle: vehicle
       });
@@ -163,9 +179,10 @@ export class LogisticsHubManager {
    * Decrements dwell timers using exact simulation delta time (dt).
    *
    * @param {number} dt - Simulation delta time in seconds
+   * @param {number} currentSimTime - Current simulation clock in seconds
    * @returns {Object} { completedVehicles }
    */
-  tick(dt = 1.0) {
+  tick(dt = 1.0, currentSimTime = 0) {
     const deltaSec = typeof dt === 'number' && dt > 0 ? dt : 1.0;
     const completedThisTick = [];
 
@@ -174,36 +191,89 @@ export class LogisticsHubManager {
       hub.bays.forEach(bay => {
         if (bay.status === 'OCCUPIED' || bay.status === 'DWELLING') {
           bay.status = 'DWELLING';
+          if (bay.vehicleRef) {
+            bay.vehicleRef.deliveryStatus = 'DWELLING';
+          }
           bay.dwellRemainingSec = Math.max(0, bay.dwellRemainingSec - deltaSec);
+          if (bay.vehicleRef) {
+            bay.vehicleRef.curbDwellRemainingSec = bay.dwellRemainingSec;
+          }
 
           if (bay.dwellRemainingSec <= 0) {
             // Dwell complete -> release bay
             bay.status = 'AVAILABLE';
             const departingVehId = bay.occupiedByVehicleId;
-            bay.occupiedByVehicleId = null;
-            bay.vehicleType = null;
-            bay.cargoTonnage = 0;
+            const departingType = bay.vehicleType;
+            const departingCargo = bay.cargoTonnage || 0;
+            const arrivalTime = bay.arrivalTimeSec || 0;
+            const completionTime = typeof currentSimTime === 'number' && currentSimTime > 0
+              ? currentSimTime
+              : Number((arrivalTime + bay.totalDwellSec).toFixed(1));
 
+            if (bay.vehicleRef) {
+              bay.vehicleRef.deliveryStatus = 'COMPLETED';
+              bay.vehicleRef.curbDwellRemainingSec = 0;
+            }
+
+            // Exactly-once increment for completed count and freight served
             hub.completedCount++;
+            hub.totalFreightServed = Number((hub.totalFreightServed + departingCargo).toFixed(1));
             this.totalCompletedVehicles++;
+            this.totalFreightServed = Number((this.totalFreightServed + departingCargo).toFixed(1));
+
             this.dwellTimeHistory.push(bay.totalDwellSec);
             if (this.dwellTimeHistory.length > 500) this.dwellTimeHistory.shift();
 
+            // Create persistent completed delivery record
+            const deliveryRecord = {
+              vehicleId: departingVehId,
+              vehicleType: departingType,
+              cargo: departingCargo,
+              cargoTonnage: departingCargo,
+              hub: hub.name,
+              hubId: hub.hubId,
+              arrivalTime,
+              completionTime,
+              deliveryStatus: 'COMPLETED',
+              dwellDurationSec: bay.totalDwellSec
+            };
+            this.completedDeliveries.push(deliveryRecord);
+            if (this.completedDeliveries.length > 500) this.completedDeliveries.shift();
+
             completedThisTick.push({
               vehicleId: departingVehId,
+              vehicleType: departingType,
               hubId: hub.hubId,
-              dwellDurationSec: bay.totalDwellSec
+              hubName: hub.name,
+              cargoTonnage: departingCargo,
+              arrivalTime,
+              completionTime,
+              dwellDurationSec: bay.totalDwellSec,
+              deliveryStatus: 'COMPLETED'
             });
+
+            // Reset bay state
+            bay.occupiedByVehicleId = null;
+            bay.vehicleOccupying = null;
+            bay.vehicleType = null;
+            bay.cargoTonnage = 0;
+            bay.vehicleRef = null;
+            bay.arrivalTimeSec = 0;
 
             // 2. Promote next vehicle from FIFO curb queue if waiting
             if (hub.curbQueue.length > 0) {
               const nextQueued = hub.curbQueue.shift();
               bay.status = 'OCCUPIED';
               bay.occupiedByVehicleId = nextQueued.id;
+              bay.vehicleOccupying = nextQueued.id;
               bay.vehicleType = nextQueued.type;
-              bay.cargoTonnage = nextQueued.cargoTonnage;
+              bay.cargoTonnage = nextQueued.cargoTonnage || 0;
               bay.dwellRemainingSec = hub.dwellTimeSeconds;
               bay.totalDwellSec = hub.dwellTimeSeconds;
+              bay.vehicleRef = nextQueued.refVehicle || null;
+              bay.arrivalTimeSec = typeof currentSimTime === 'number' && currentSimTime > 0
+                ? currentSimTime
+                : (nextQueued.queuedAtSec || 0);
 
               if (nextQueued.refVehicle) {
                 nextQueued.refVehicle.deliveryStatus = 'AT_HUB';
@@ -236,36 +306,60 @@ export class LogisticsHubManager {
     const occupiedBays = hub.bays.filter(b => b.status === 'OCCUPIED' || b.status === 'DWELLING').length;
     const availableBays = hub.totalBays - occupiedBays;
     const queueLength = hub.curbQueue.length;
+    const curbSaturation = Math.min(100, Math.round((queueLength / Math.max(1, hub.totalBays)) * 100));
 
     return {
       hubId: hub.hubId,
       name: hub.name,
+      hubName: hub.name,
       associatedJunction: hub.associatedJunction,
       approach: hub.approach,
       totalBays: hub.totalBays,
       occupiedBays,
       availableBays,
+      curbSaturation,
+      totalFreightServed: hub.totalFreightServed || 0,
+      completedCount: hub.completedCount,
       queueLength,
       queuedCommercialVehicles: queueLength,
       laneBlocked: hub.laneBlocked,
       nominalLaneCount: hub.nominalLaneCount,
       effectiveLaneCount: hub.laneBlocked ? Math.max(1, hub.nominalLaneCount - 1) : hub.nominalLaneCount,
       dwellTimeSeconds: hub.dwellTimeSeconds,
-      completedCount: hub.completedCount,
       bays: hub.bays.map(b => ({
         bayIndex: b.bayIndex,
         status: b.status,
         occupiedByVehicleId: b.occupiedByVehicleId,
+        vehicleOccupying: b.occupiedByVehicleId,
         vehicleType: b.vehicleType,
+        cargoTonnage: b.cargoTonnage,
         dwellRemainingSec: Number(b.dwellRemainingSec.toFixed(1)),
-        totalDwellSec: b.totalDwellSec
+        totalDwellSec: b.totalDwellSec,
+        deliveryStatus: b.status === 'AVAILABLE' ? 'NONE' : (b.vehicleRef?.deliveryStatus || (b.status === 'DWELLING' ? 'DWELLING' : 'AT_HUB'))
       })),
       curbQueue: hub.curbQueue.map(q => ({
         id: q.id,
         type: q.type,
-        cargoTonnage: q.cargoTonnage
+        cargoTonnage: q.cargoTonnage,
+        queuedAtSec: q.queuedAtSec,
+        destinationHubId: q.destinationHubId,
+        deliveryStatus: q.refVehicle?.deliveryStatus || 'AT_HUB'
       }))
     };
+  }
+
+  /**
+   * Retrieves serializable snapshots for all configured hubs.
+   */
+  getAllHubStates() {
+    return Object.keys(this.hubs).map(id => this.getHubState(id));
+  }
+
+  /**
+   * Returns list of persistent completed delivery records.
+   */
+  getCompletedDeliveries() {
+    return [...this.completedDeliveries];
   }
 
   /**
@@ -298,6 +392,7 @@ export class LogisticsHubManager {
       laneBlockedHubCount: laneBlockedCount,
       commercialVehiclesAtHub: occupiedBays,
       commercialVehiclesCompleted: this.totalCompletedVehicles,
+      totalFreightServed: Number(this.totalFreightServed.toFixed(1)),
       averageDwellTime: avgDwell
     };
   }

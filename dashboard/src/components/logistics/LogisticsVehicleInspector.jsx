@@ -2,7 +2,7 @@ import React from 'react';
 import { Truck, Package, Clock, Activity, ShieldCheck, AlertCircle, Compass, Gauge, Scale, CheckCircle2, XCircle } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
-export default function LogisticsVehicleInspector({ selectedVehicle, activeFreightDecision, allCommercialVehicles = [], onSelectVehicle }) {
+export default function LogisticsVehicleInspector({ selectedVehicle, activeFreightDecision, allCommercialVehicles = [], completedDeliveries = [], onSelectVehicle }) {
   const { lang } = useLanguage();
 
   if (!selectedVehicle) {
@@ -52,6 +52,40 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
             ))}
           </div>
         )}
+
+        {completedDeliveries.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>{lang === 'HI' ? 'हाल ही में पूरी हुई डिलीवरी' : 'Recently Completed Deliveries'}</span>
+              <span className="text-emerald-600 font-extrabold text-[10px]">{completedDeliveries.length} completed</span>
+            </div>
+            {completedDeliveries.slice(-5).reverse().map(d => (
+              <button
+                key={d.vehicleId || d.id}
+                onClick={() => onSelectVehicle && onSelectVehicle({
+                  id: d.vehicleId,
+                  type: d.vehicleType,
+                  isCommercial: true,
+                  cargoTonnage: d.cargoTonnage,
+                  destinationHubId: d.hubId,
+                  deliveryStatus: 'COMPLETED',
+                  completionTime: d.completionTime,
+                  lane: d.hub || 'HUB'
+                })}
+                className="w-full text-left flex items-center justify-between p-2 rounded-lg bg-emerald-50/50 hover:bg-emerald-50 border border-emerald-100 hover:border-emerald-200 transition text-xs cursor-pointer"
+              >
+                <div className="flex items-center space-x-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                  <span className="font-bold text-slate-800">{d.vehicleId}</span>
+                  <span className="text-[10px] text-slate-500">({d.hubId})</span>
+                </div>
+                <span className="font-mono text-[10px] font-extrabold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                  COMPLETED ({d.completionTime}s)
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -64,6 +98,20 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
   const etaSec = selectedVehicle.speed > 0
     ? Math.max(0, Number(((stopLinePos - (selectedVehicle.position || 0)) / selectedVehicle.speed).toFixed(1)))
     : 0;
+
+  const statusBadgeColor = selectedVehicle.deliveryStatus === 'COMPLETED'
+    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+    : selectedVehicle.deliveryStatus === 'DWELLING'
+    ? 'text-blue-700 bg-blue-50 border-blue-200'
+    : selectedVehicle.deliveryStatus === 'AT_HUB'
+    ? 'text-purple-700 bg-purple-50 border-purple-200'
+    : selectedVehicle.deliveryStatus === 'ARRIVING'
+    ? 'text-amber-700 bg-amber-50 border-amber-200'
+    : selectedVehicle.deliveryStatus === 'STAGED'
+    ? 'text-amber-800 bg-amber-100 border-amber-300'
+    : selectedVehicle.deliveryStatus === 'SLOT_ASSIGNED'
+    ? 'text-blue-800 bg-blue-100 border-blue-300'
+    : 'text-sky-700 bg-sky-50 border-sky-200';
 
   const decisionBadgeColor = activeFreightDecision?.recommendedAction === 'EXTEND_GREEN'
     ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
@@ -149,10 +197,16 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
         </div>
         <div className="flex items-center justify-between">
           <span className="text-slate-500 font-medium">Delivery Status:</span>
-          <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+          <span className={`font-bold px-2 py-0.5 rounded border ${statusBadgeColor}`}>
             {selectedVehicle.deliveryStatus || 'EN_ROUTE'}
           </span>
         </div>
+        {selectedVehicle.completionTime !== undefined && (
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500 font-medium">Completion Time:</span>
+            <span className="font-bold text-slate-800">{selectedVehicle.completionTime}s</span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-slate-500 font-medium">Green-Wave Priority:</span>
           <span className="flex items-center space-x-1 text-slate-800 font-bold">

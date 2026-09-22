@@ -23,6 +23,7 @@ import LogisticsIntersectionVisualizer from '../components/logistics/LogisticsIn
 import LogisticsVehicleInspector from '../components/logistics/LogisticsVehicleInspector';
 import FreightGreenWavePanel from '../components/logistics/FreightGreenWavePanel';
 import LogisticsHubPanel from '../components/logistics/LogisticsHubPanel';
+import FreightSlotManagerPanel from '../components/logistics/FreightSlotManagerPanel';
 import CorridorProgressionView from '../components/logistics/CorridorProgressionView';
 import { computeCorridorCoordination, CORRIDORS } from '../utils/CorridorCoordinator';
 
@@ -71,33 +72,63 @@ export default function LogisticsSimulationPage({ onNavigate }) {
     [state?.cars]
   );
 
-  const commercialVehicles = useMemo(() => {
+  const localCommercialVehicles = useMemo(() => {
     return flattenedCars.filter(c => c.isCommercial);
   }, [flattenedCars]);
 
-  const deliveryVansCount = commercialVehicles.filter(c => c.type === 'delivery_van').length;
-  const freightTrucksCount = commercialVehicles.filter(c => c.type === 'freight_truck' || c.type === 'truck').length;
+  const corridorFreight = state?.corridorFreight;
+  const allCommercialVehicles = useMemo(() => {
+    if (corridorFreight?.allCommercialVehicles && corridorFreight.allCommercialVehicles.length > 0) {
+      return corridorFreight.allCommercialVehicles;
+    }
+    return localCommercialVehicles;
+  }, [corridorFreight?.allCommercialVehicles, localCommercialVehicles]);
+
+  const activeFreightCount = corridorFreight?.activeFreightCount ?? allCommercialVehicles.length;
+  const deliveryVansCount = corridorFreight?.vansCount ?? allCommercialVehicles.filter(c => c.type === 'delivery_van').length;
+  const freightTrucksCount = corridorFreight?.trucksCount ?? allCommercialVehicles.filter(c => c.type === 'freight_truck' || c.type === 'truck').length;
 
   const totalCargoTonnage = useMemo(() => {
+    if (typeof corridorFreight?.totalCargoTonnage === 'number') {
+      return corridorFreight.totalCargoTonnage;
+    }
     return Number(
-      commercialVehicles.reduce((sum, v) => sum + (v.cargoTonnage || (v.type === 'freight_truck' ? 8.5 : 1.2)), 0).toFixed(1)
+      allCommercialVehicles.reduce((sum, v) => sum + (v.cargoTonnage || (v.type === 'freight_truck' ? 8.5 : 1.2)), 0).toFixed(1)
     );
-  }, [commercialVehicles]);
+  }, [corridorFreight?.totalCargoTonnage, allCommercialVehicles]);
 
   const totalFreightPcu = useMemo(() => {
+    if (typeof corridorFreight?.totalFreightPcu === 'number') {
+      return corridorFreight.totalFreightPcu;
+    }
     return Number(
-      commercialVehicles.reduce((sum, v) => sum + (v.pcuEquivalent || (v.type === 'freight_truck' ? 2.5 : 1.5)), 0).toFixed(1)
+      allCommercialVehicles.reduce((sum, v) => sum + (v.pcuEquivalent || (v.type === 'freight_truck' ? 2.5 : 1.5)), 0).toFixed(1)
     );
-  }, [commercialVehicles]);
+  }, [corridorFreight?.totalFreightPcu, allCommercialVehicles]);
 
   // Selected vehicle object
   const selectedVehicle = useMemo(() => {
     if (selectedVehicleId) {
+      const foundInCommercial = allCommercialVehicles.find(c => c.id === selectedVehicleId);
+      if (foundInCommercial) return foundInCommercial;
+      const foundInCompleted = (state?.completedDeliveries || []).find(c => c.vehicleId === selectedVehicleId || c.id === selectedVehicleId);
+      if (foundInCompleted) {
+        return {
+          id: foundInCompleted.vehicleId,
+          type: foundInCompleted.vehicleType,
+          isCommercial: true,
+          cargoTonnage: foundInCompleted.cargoTonnage,
+          destinationHubId: foundInCompleted.hubId,
+          deliveryStatus: 'COMPLETED',
+          completionTime: foundInCompleted.completionTime,
+          lane: foundInCompleted.hub || 'HUB'
+        };
+      }
       const found = flattenedCars.find(c => c.id === selectedVehicleId);
       if (found) return found;
     }
-    return commercialVehicles[0] || null;
-  }, [flattenedCars, selectedVehicleId, commercialVehicles]);
+    return allCommercialVehicles[0] || localCommercialVehicles[0] || null;
+  }, [allCommercialVehicles, localCommercialVehicles, flattenedCars, selectedVehicleId, state?.completedDeliveries]);
 
   // Active freight green wave decision for selected or leading approach
   const activeFreightDecisions = state?.freightGreenWaveDecisions || [];
@@ -318,7 +349,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
             </div>
           </div>
           <div className="text-xl font-black text-slate-900 mt-1">
-            {commercialVehicles.length}
+            {activeFreightCount}
             <span className="text-[11px] font-medium text-slate-500 ml-1">
               ({deliveryVansCount} vans / {freightTrucksCount} trucks)
             </span>
@@ -353,9 +384,9 @@ export default function LogisticsSimulationPage({ onNavigate }) {
             </div>
           </div>
           <div className="text-xl font-black text-slate-900 mt-1">
-            {hubs.reduce((acc, h) => acc + (h.bays || []).filter(b => b.status === 'DWELLING' || b.status === 'OCCUPIED').length, 0)}
+            {hubs.reduce((acc, h) => acc + (typeof h.occupiedBays === 'number' ? h.occupiedBays : (h.bays || []).filter(b => b.status === 'DWELLING' || b.status === 'OCCUPIED').length), 0)}
             <span className="text-[11px] font-medium text-slate-500 ml-1">
-              / {hubs.reduce((acc, h) => acc + (h.totalBays || 3), 0)} active
+              / {hubs.reduce((acc, h) => acc + (h.totalBays || (h.bays ? h.bays.length : 3)), 0)} active
             </span>
           </div>
           <div className="text-[9px] font-extrabold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded uppercase mt-2 inline-block">
@@ -435,6 +466,14 @@ export default function LogisticsSimulationPage({ onNavigate }) {
             telemetry={state?.logisticsTelemetry}
           />
 
+          <FreightSlotManagerPanel
+            slotState={state?.freightSlotState}
+            selectedVehicle={selectedVehicle}
+            hubs={hubs}
+            activeScenario={activeScenario}
+            onSelectVehicle={(veh) => setSelectedVehicleId(veh ? veh.id : null)}
+          />
+
           <FreightGreenWavePanel
             activeDecision={activeDecision}
             telemetry={freightTelemetry}
@@ -444,7 +483,8 @@ export default function LogisticsSimulationPage({ onNavigate }) {
           <LogisticsVehicleInspector
             selectedVehicle={selectedVehicle}
             activeFreightDecision={activeDecision}
-            allCommercialVehicles={commercialVehicles}
+            allCommercialVehicles={allCommercialVehicles}
+            completedDeliveries={state?.completedDeliveries || []}
             onSelectVehicle={(veh) => setSelectedVehicleId(veh ? veh.id : null)}
           />
         </div>

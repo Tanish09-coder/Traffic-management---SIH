@@ -69,39 +69,33 @@ export default function FreightGreenWavePanel({ activeDecision, telemetry, strat
     if (isFixed) {
       return (
         <span className="bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-1 rounded-md font-black text-xs">
-          IGNORED (FIXED BASELINE)
+          BLOCKED (FIXED BASELINE)
         </span>
       );
     }
-    switch (recommendedAction) {
-      case 'EXTEND_GREEN':
-        return (
-          <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>EXTEND_GREEN (+{greenAdjustmentSec}s)</span>
-          </span>
-        );
-      case 'EARLY_GREEN':
-        return (
-          <span className="bg-blue-100 text-blue-800 border border-blue-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
-            <Clock className="w-3.5 h-3.5" />
-            <span>EARLY_GREEN</span>
-          </span>
-        );
-      case 'DEFER':
-        return (
-          <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span>DEFER ({guardrailTriggered || 'GUARDRAIL'})</span>
-          </span>
-        );
-      default:
-        return (
-          <span className="bg-slate-100 text-slate-800 border border-slate-300 px-2.5 py-1 rounded-md font-black text-xs">
-            NO_CHANGE (ETA ON TIME)
-          </span>
-        );
+    const dec = activeDecision.decision || (recommendedAction === 'DEFER' ? 'DEFER' : (recommendedAction === 'EXTEND_GREEN' || recommendedAction === 'EARLY_GREEN' ? 'GRANT' : 'DEFER'));
+    if (dec === 'BLOCKED' || guardrailTriggered === 'EMERGENCY_OVERRIDE') {
+      return (
+        <span className="bg-red-100 text-red-800 border border-red-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
+          <XCircle className="w-3.5 h-3.5" />
+          <span>BLOCKED</span>
+        </span>
+      );
     }
+    if (dec === 'GRANT') {
+      return (
+        <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>GRANT {greenAdjustmentSec > 0 ? `(+${greenAdjustmentSec}s)` : ''}</span>
+        </span>
+      );
+    }
+    return (
+      <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
+        <AlertTriangle className="w-3.5 h-3.5" />
+        <span>DEFER ({guardrailTriggered || 'STANDARD CYCLE'})</span>
+      </span>
+    );
   };
 
   const downstreamPct = Math.round((downstreamSaturation || 0.38) * 100);
@@ -169,17 +163,22 @@ export default function FreightGreenWavePanel({ activeDecision, telemetry, strat
 
         <div className="flex items-center justify-between text-xs">
           <span className="text-slate-600 font-medium">Emergency Corridor Dominance:</span>
-          <span className="font-bold text-emerald-700 flex items-center space-x-1">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Clear (No Emergency Active)</span>
+          <span className={`font-bold flex items-center space-x-1 ${guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? 'text-red-700' : 'text-emerald-700'}`}>
+            {guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? <XCircle className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+            <span>{guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? 'Blocked (Emergency Active)' : 'Clear (No Emergency Active)'}</span>
           </span>
         </div>
       </div>
 
       {/* Explainable Decision Reason Box */}
       <div className="bg-blue-50/60 border border-blue-200 rounded-lg p-3">
-        <div className="text-[10px] font-extrabold uppercase text-blue-900 tracking-wider mb-0.5">
-          {lang === 'HI' ? 'निर्णय का कारण (Explainability Receipt)' : 'Operational Decision Receipt'}
+        <div className="flex items-center justify-between mb-0.5">
+          <div className="text-[10px] font-extrabold uppercase text-blue-900 tracking-wider">
+            {lang === 'HI' ? 'निर्णय का कारण (Explainability Receipt)' : 'Operational Decision Receipt'}
+          </div>
+          <span className="text-[9px] font-bold text-slate-500 uppercase bg-white/80 px-1.5 py-0.5 rounded border border-blue-100">
+            Advisory Recommendation
+          </span>
         </div>
         <p className="text-xs text-blue-950 font-medium leading-relaxed">
           {isFixed
