@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck, LayoutDashboard, TrafficCone, Video, LineChart, Landmark, MapPin, RefreshCw } from 'lucide-react';
+import { Shield, Bell, ChevronDown, Activity, Globe, Eye, Download, CheckCircle2, ChevronRight, Clock, UserCheck, LayoutDashboard, TrafficCone, Video, LineChart, Landmark, MapPin, RefreshCw, Truck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useSimulation } from '../context/SimulationContext';
 
@@ -59,6 +59,7 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
 
   const navItems = [
     { id: 'dashboard', label: lang === 'HI' ? 'डैशबोर्ड' : 'Dashboard', icon: LayoutDashboard },
+    { id: 'logistics-simulation', label: lang === 'HI' ? 'लॉजिस्टिक्स व माल ढुलाई' : 'Logistics & Freight', icon: Truck },
     { id: 'city-corridor', label: lang === 'HI' ? 'शहर कॉरिडोर' : 'City Corridor', icon: MapPin },
     { id: 'traffic-intelligence', label: lang === 'HI' ? 'कैमरा एआई ग्रिड' : 'Camera AI Grid', icon: Video },
     { id: 'analytics', label: lang === 'HI' ? 'शहर एनालिटिक्स व कार्बन' : 'City Analytics & Carbon', icon: LineChart },

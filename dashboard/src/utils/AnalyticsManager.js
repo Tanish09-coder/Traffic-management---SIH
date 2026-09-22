@@ -39,6 +39,8 @@ export class AnalyticsManager {
       bike: 0,
       bus: 0,
       truck: 0,
+      delivery_van: 0,
+      freight_truck: 0,
       ambulance: 0,
       firetruck: 0,
       police: 0
@@ -84,7 +86,7 @@ export class AnalyticsManager {
   _resolveType(car) {
     if (!car) return 'car';
     const type = (car.type || '').toLowerCase();
-    if (['ambulance', 'firetruck', 'police', 'bus', 'bike', 'truck', 'car'].includes(type)) {
+    if (['ambulance', 'firetruck', 'police', 'bus', 'bike', 'truck', 'delivery_van', 'freight_truck', 'car'].includes(type)) {
       return type;
     }
     if (type === 'emergency') {
@@ -98,7 +100,8 @@ export class AnalyticsManager {
     }
     const mod = Math.abs(hash) % 10;
     if (mod === 0 || mod === 5) return 'bus';
-    if (mod === 3 || mod === 7) return 'truck';
+    if (mod === 3) return 'delivery_van';
+    if (mod === 7) return 'freight_truck';
     if (mod === 1 || mod === 2 || mod === 6) return 'bike';
     return 'car';
   }

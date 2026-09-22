@@ -100,8 +100,9 @@ export class SignalManager {
    * Note: Emergency active mode allows YELLOW and ALL_RED clearance phases to advance,
    * reaching GREEN for the emergency approach before holding green priority.
    */
-  updateSignal(queues = {}, stoppedCounts = {}, queuedPCUs = {}, oldestWaitTimes = {}, dt = 1.0, isIntersectionOccupied = false, hasActiveCrossingVehicles = false) {
+  updateSignal(queues = {}, stoppedCounts = {}, queuedPCUs = {}, oldestWaitTimes = {}, dt = 1.0, isIntersectionOccupied = false, hasActiveCrossingVehicles = false, demandOverrides = null) {
     const deltaSec = typeof dt === 'number' && dt > 0 ? dt : 1.0;
+    const maxContinuousGreen = TRAFFIC_CONSTANTS.SIGNAL_POLICY?.MAX_CONTINUOUS_GREEN || 60;
 
     // Accumulate wait time for non-green / stopped approaches
     Object.keys(this.waitingSeconds).forEach(dir => {
@@ -126,10 +127,8 @@ export class SignalManager {
         return;
       }
 
-      // Continuous green limit check: yield signal if approach exceeds max continuous green bound (60s)
-      const maxContinuousGreen = TRAFFIC_CONSTANTS.SIGNAL_POLICY?.MAX_CONTINUOUS_GREEN || 60;
       if (this.continuousGreenTimeSec >= maxContinuousGreen) {
-        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, true);
+        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, true, demandOverrides);
         return;
       }
 
@@ -139,13 +138,12 @@ export class SignalManager {
       const otherApproachesHaveDemand = Object.entries(stoppedCounts || {}).some(([d, cnt]) => d !== this.currentSignal && cnt > 0);
 
       if (this.strategy === 'adaptive' && this.signalTimer >= minGreen && currentStopped === 0 && !hasActiveCrossingVehicles && otherApproachesHaveDemand) {
-        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, true);
+        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, true, demandOverrides);
         return;
       }
 
-      // Complete full allocated active green duration
       if (this.signalTimer >= this.activeGreenDuration) {
-        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, false);
+        this.initiateClearanceSwitch(queues, stoppedCounts, queuedPCUs, oldestWaitTimes, false, demandOverrides);
       }
     } else if (this.phase === 'YELLOW') {
       if (this.phaseTimer >= this.effectiveYellowDuration) {
@@ -183,7 +181,7 @@ export class SignalManager {
     }
   }
 
-  initiateClearanceSwitch(queues = {}, stoppedCounts = {}, queuedPCUs = {}, oldestWaitTimes = {}, forceOptimal = false) {
+  initiateClearanceSwitch(queues = {}, stoppedCounts = {}, queuedPCUs = {}, oldestWaitTimes = {}, forceOptimal = false, demandOverrides = null) {
     this.strategy = this.stagedStrategy;
 
     const decision = SignalOptimizer.evaluateNextSignal({
@@ -195,7 +193,8 @@ export class SignalManager {
       strategy: this.strategy,
       signalSequence: this.signalSequence,
       forceOptimal,
-      policy: TRAFFIC_CONSTANTS.SIGNAL_POLICY
+      policy: TRAFFIC_CONSTANTS.SIGNAL_POLICY,
+      demandOverrides
     });
 
     this.pendingSignal = decision.nextSignal;
@@ -237,11 +236,11 @@ export class SignalManager {
     this.phaseTimer = 0;
   }
 
-  switchSignal(queues = {}, forceOptimal = false) {
-    this.initiateClearanceSwitch(queues, queues, queues, {}, forceOptimal);
+  switchSignal(queues = {}, forceOptimal = false, demandOverrides = null) {
+    this.initiateClearanceSwitch(queues, queues, queues, {}, forceOptimal, demandOverrides);
   }
 
-  determineNextSignal(queues = {}, forceOptimal = false) {
+  determineNextSignal(queues = {}, forceOptimal = false, demandOverrides = null) {
     const decision = SignalOptimizer.evaluateNextSignal({
       currentSignal: this.currentSignal,
       queuedPCUs: queues,
@@ -251,7 +250,8 @@ export class SignalManager {
       strategy: this.strategy,
       signalSequence: this.signalSequence,
       forceOptimal,
-      policy: TRAFFIC_CONSTANTS.SIGNAL_POLICY
+      policy: TRAFFIC_CONSTANTS.SIGNAL_POLICY,
+      demandOverrides
     });
     return decision.nextSignal;
   }

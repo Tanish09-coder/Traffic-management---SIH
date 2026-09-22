@@ -135,15 +135,15 @@ const Analytics = ({ onNavigate }) => {
         signalPhaseSwitches: session.signalSwitchCount || 0
       },
       environmentalAndEconomicImpact: {
-        fuelSavedLiters: Number((session.sustainability?.fuelSavedLiters || (session.vehiclesProcessed * 0.15)).toFixed(2)),
-        carbonEmissionsAbatedKgCO2: Number((session.sustainability?.carbonSavedKg || (session.vehiclesProcessed * 0.35)).toFixed(2)),
-        economicSavingsINR: Number((session.sustainability?.costSavedINR || (session.vehiclesProcessed * 15)).toFixed(2))
+        fuelSavedLiters: session.sustainability?.fuelSavedLiters?.status === 'unavailable' ? 'Unavailable' : Number((session.sustainability?.fuelSavedLiters?.value ?? session.sustainability?.fuelSavedLiters ?? 0).toFixed(2)),
+        carbonEmissionsAbatedKgCO2: session.sustainability?.co2ReducedKg?.status === 'unavailable' ? 'Unavailable' : Number((session.sustainability?.co2ReducedKg?.value ?? session.sustainability?.co2ReducedKg ?? 0).toFixed(2)),
+        economicSavingsINR: session.sustainability?.economicSavingsRupees?.status === 'unavailable' ? 'Unavailable' : Number((session.sustainability?.economicSavingsRupees?.value ?? session.sustainability?.economicSavingsRupees ?? 0).toFixed(2))
       },
       approachQueueDistribution: session.laneData || [],
       vehicleClassificationBreakdown: session.vehicleTypeData || [],
       auditCertification: {
         complianceStandard: "GIGW 3.0 & NCAP Smart Mobility Standard",
-        controlMode: "AI-Powered Adaptive Q-Learning & Computer Vision Grid",
+        controlMode: "Adaptive Heuristic Signal Control & Computer Vision Simulation",
         authority: "National Informatics Centre (NIC) & MoRTH Traffic Command Center"
       }
     };
@@ -358,8 +358,8 @@ const Analytics = ({ onNavigate }) => {
             <h3 className="text-base font-bold text-[#0A1F44]">{lang === 'HI' ? 'व्युत्पन्न पर्यावरणीय एवं यात्री लाभ ऑडिट' : 'Derived Environmental & Commuter Impact'}</h3>
             <p className="text-sm text-slate-500">
               {lang === 'HI'
-                ? `सटीक गणना ${session.vehiclesProcessed} गुज़रे वाहनों और मापी गई विलंब कमी पर आधारित (बेसलाइन: ${session.sustainability?.baselineDelay ? `${session.sustainability.baselineDelay}s` : '45.0s'})`
-                : `Calculated strictly from ${session.vehiclesProcessed} passed cars & measured delay reduction (Baseline: ${session.sustainability?.baselineDelay ? `${session.sustainability.baselineDelay}s` : '45.0s'})`}
+                ? `${session.vehiclesProcessed} गुज़रे वाहन${session.vehiclesProcessed === 1 ? '' : 'ों'} पर आधारित। (बेसलाइन: ${session.sustainability?.baselineDelay?.status === 'unavailable' ? 'अनुपलब्ध' : session.sustainability?.baselineDelay ? `${session.sustainability.baselineDelay}s` : '45.0s'})`
+                : `Based on ${session.vehiclesProcessed} discharged vehicle${session.vehiclesProcessed === 1 ? '' : 's'}. (Baseline: ${session.sustainability?.baselineDelay?.status === 'unavailable' ? 'Unavailable' : session.sustainability?.baselineDelay ? `${session.sustainability.baselineDelay}s` : '45.0s'})`}
             </p>
           </div>
           <span className="text-xs bg-[#0A1F44] text-[#F5A623] border border-[#1E4D8C] font-bold px-2.5 py-0.5 rounded-full">
@@ -368,16 +368,16 @@ const Analytics = ({ onNavigate }) => {
         </div>
 
         {session.sustainability.hasData ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
               <div className="flex items-center justify-between text-[#0F2C59] text-sm font-bold">
                 <span>{lang === 'HI' ? 'ईंधन की बचत' : 'Fuel Conserved'}</span>
                 <Fuel size={16} className="text-[#0F2C59]" />
               </div>
               <div className="text-3xl font-black text-[#0A1F44]">
-                {session.sustainability.fuelSavedLiters} L
+                {session.sustainability.fuelSavedLiters?.status === 'unavailable' ? 'Unavailable' : session.sustainability.fuelSavedLiters + ' L'}
               </div>
-              <p className="text-[10px] text-slate-500">{lang === 'HI' ? 'दर: 0.00028 L/सेकंड विलंब कमी' : 'Rate: 0.00028 L/sec delay reduction'}</p>
             </div>
 
             <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
@@ -386,22 +386,34 @@ const Analytics = ({ onNavigate }) => {
                 <Leaf size={16} className="text-[#0F2C59]" />
               </div>
               <div className="text-3xl font-black text-[#0A1F44]">
-                {session.sustainability.co2ReducedKg} kg
+                {session.sustainability.co2ReducedKg?.status === 'unavailable' ? 'Unavailable' : session.sustainability.co2ReducedKg + ' kg'}
               </div>
-              <p className="text-[10px] text-slate-500">{lang === 'HI' ? 'कारक: 2.31 kg CO₂ प्रति लीटर' : 'Factor: 2.31 kg CO₂ per liter'}</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#FFFBEB] border border-[#F5A623]/30 space-y-1">
-              <div className="flex items-center justify-between text-[#B8860B] text-sm font-bold">
-                <span>{lang === 'HI' ? 'आर्थिक मूल्य बचत' : 'Economic Value'}</span>
-                <IndianRupee size={16} className="text-[#B8860B]" />
-              </div>
-              <div className="text-3xl font-black text-[#B8860B]">
-                ₹{session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}
+            <div className="p-4 rounded-xl bg-[#FFFBEB] border border-[#F5A623]/30 space-y-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between text-[#B8860B] text-sm font-bold">
+                  <span>{lang === 'HI' ? 'आर्थिक मूल्य बचत' : 'Economic Value'}</span>
+                  <IndianRupee size={16} className="text-[#B8860B]" />
+                </div>
+                <div className="text-3xl font-black text-[#B8860B] mt-1">
+                  {session.sustainability.economicSavingsRupees?.status === 'unavailable' ? 'Unavailable' : `₹${session.sustainability.economicSavingsRupees.toLocaleString('en-IN')}`}
+                </div>
               </div>
               <p className="text-[10px] text-amber-800/80">{lang === 'HI' ? 'खुदरा ईंधन + यात्री समय का मूल्य' : 'Retail fuel + commuter time value'}</p>
             </div>
           </div>
+          
+          <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-500 space-y-1">
+            <p className="font-semibold text-slate-700">{lang === 'HI' ? 'ऑडिट नोट:' : 'Audit Note:'}</p>
+            <ul className="list-disc pl-4 space-y-0.5">
+              <li>{lang === 'HI' ? 'बेसलाइन विलंब एक कॉन्फ़िगर किए गए संदर्भ (45.0s) के रूप में अनुकरण किया गया है।' : 'Baseline delay is simulated as a configured reference parameter (45.0s).'}</li>
+              <li>{lang === 'HI' ? 'ईंधन और CO₂ बचत अनुमानित मैक्रोस्कोपिक स्थिरांक का उपयोग करते हैं।' : 'Fuel and CO₂ savings use configured macroscopic assumptions (0.00028 L/s, 2.31 kg/L).'}</li>
+              <li>{lang === 'HI' ? 'आर्थिक मूल्य अनुमानित यात्री और ईंधन लागत का उपयोग करते हैं।' : 'Economic values use assumed commuter and fuel costs (₹200/hr, ₹105/L).'}</li>
+              <li>{lang === 'HI' ? 'ये कॉन्फ़िगर करने योग्य सिमुलेशन पैरामीटर हैं, वास्तविक दुनिया के मापन नहीं।' : 'These are CONFIGURABLE SIMULATION PARAMETERS and not real-world measurements.'}</li>
+            </ul>
+          </div>
+          </>
         ) : (
           <div className="py-8 text-center text-sm text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
             <AlertCircle size={24} className="mx-auto mb-1.5 text-slate-300" />
@@ -508,11 +520,11 @@ const Analytics = ({ onNavigate }) => {
             <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-[#0A1F44]">{lang === 'HI' ? 'यातायात थ्रूपुट (वाहन / मिनट)' : 'Traffic Throughput (Cars / Min)'}</h3>
-                  <p className="text-sm text-slate-500">{lang === 'HI' ? 'वास्तविक गुज़रे वाहनों से व्युत्पन्न वास्तविक प्रसंस्करण गति' : 'Real processing velocity derived from actual passed vehicles'}</p>
+                  <h3 className="text-base font-bold text-[#0A1F44]">{lang === 'HI' ? 'सिम्युलेटेड थ्रूपुट (वाहन / मिनट)' : 'Live Simulation Throughput (Vehicles / Min)'}</h3>
+                  <p className="text-sm text-slate-500">{lang === 'HI' ? 'सिम्युलेटेड वाहन डिस्चार्ज घटनाओं से प्राप्त' : 'Derived from simulated vehicle discharge events'}</p>
                 </div>
-                <span className="text-xs bg-[#FFFBEB] text-[#B8860B] border border-[#F5A623]/30 font-bold px-2.5 py-0.5 rounded-full">
-                  {lang === 'HI' ? 'दर का रुझान' : 'RATE TREND'}
+                <span className="text-xs bg-[#FFFBEB] text-[#B8860B] border border-[#F5A623]/30 font-bold px-2.5 py-0.5 rounded-full uppercase">
+                  {lang === 'HI' ? 'लाइव सिमुलेशन / व्युत्पन्न' : 'LIVE SIMULATION / DERIVED'}
                 </span>
               </div>
 
@@ -532,7 +544,7 @@ const Analytics = ({ onNavigate }) => {
                       <Line
                         type="monotone"
                         dataKey="throughput"
-                        name={lang === 'HI' ? 'थ्रूपुट (वाहन/मिनट)' : 'Throughput (cars/min)'}
+                        name={lang === 'HI' ? 'थ्रूपुट (वाहन/मिनट)' : 'Throughput (veh/min)'}
                         stroke="#F5A623"
                         strokeWidth={2.5}
                         dot={{ fill: '#F5A623', r: 2 }}

@@ -4,81 +4,104 @@ import { TRAFFIC_CONSTANTS } from './constants.js';
  * Centralized, authoritative calculation for Environmental & Commuter Economic Impact.
  *
  * Direct mathematical formulas:
- * 1. delayReductionPerVehicle = max(0, baselineDelay - currentMeasuredDelay)
- * 2. totalDelayReduction = passedCars * delayReductionPerVehicle
- * 3. fuelConserved = passedCars * delayReductionPerVehicle * 0.00028
- * 4. co2Avoided = fuelConserved * 2.31
- * 5. fuelSavings = fuelConserved * fuelPricePerLiter (105 INR/L)
- * 6. commuterTimeSaved = totalDelayReduction (seconds)
- * 7. commuterTimeValue = (commuterTimeSaved / 3600) * commuterValuePerHour (200 INR/hr)
- * 8. economicValue = fuelSavings + commuterTimeValue
+ * 1. delayReductionPerVehicle = (baselineDelay - currentMeasuredDelay) (if comparable)
+ * 2. Fuel, CO2, and Economic metrics currently return 'Unavailable' as there is no 
+ *    verified physical microscopic consumption model or sourceable pricing implemented.
  *
  * @param {number} passedCars - Authoritative count of passed vehicles in current session
  * @param {number|null} currentMeasuredDelay - Measured average delay in seconds (e.g. 30.0s)
- * @param {number} baselineDelay - Baseline fixed signal delay (default 45.0s)
- * @returns {Object} Calculated impact metrics with both full precision and clean UI formatting
+ * @param {number|null} baselineDelay - Genuinely comparable baseline measured delay. Do not pass manufactured values.
+ * @returns {Object} Calculated impact metrics or explicit unavailable state
  */
 export function calculateEnvironmentalImpact(
   passedCars = 0,
   currentMeasuredDelay = null,
-  baselineDelay = TRAFFIC_CONSTANTS.TRADITIONAL_WAIT_TIME
+  baselineDelay = null
 ) {
   const cars = typeof passedCars === 'number' && !isNaN(passedCars) ? Math.max(0, passedCars) : 0;
-  const nominalBaseline = typeof baselineDelay === 'number' && !isNaN(baselineDelay) ? baselineDelay : 45.0;
+  
+  const hasComparableBaseline = typeof baselineDelay === 'number' && !isNaN(baselineDelay) && 
+                                typeof currentMeasuredDelay === 'number' && !isNaN(currentMeasuredDelay);
 
-  // Determine current measured delay
-  let delay = 30.0;
-  if (typeof currentMeasuredDelay === 'number' && !isNaN(currentMeasuredDelay) && currentMeasuredDelay > 0) {
-    delay = currentMeasuredDelay;
+  // If a genuine comparison exists, we calculate delay reduction. Otherwise, it is unavailable.
+  // We explicitly DO NOT manufacture a baseline.
+  let delayReductionPerVehicle = null;
+  let totalDelayReduction = null;
+  let commuterTimeSaved = null;
+
+  if (hasComparableBaseline) {
+    delayReductionPerVehicle = Math.max(0, Number((baselineDelay - currentMeasuredDelay).toFixed(1)));
+    totalDelayReduction = Number((cars * delayReductionPerVehicle).toFixed(1));
+    commuterTimeSaved = totalDelayReduction;
   }
 
-  // Under traditional fixed-time controllers, delay scales with congestion.
-  // When congestion increases (delay > 45s), fixed-time signals perform significantly worse (by ~30-40% cycle spillover).
-  // Thus baseline fixed signal delay is at least nominalBaseline (45.0s) and scales with traffic demand.
-  const effectiveBaseline = Math.max(
-    nominalBaseline,
-    Number((delay * 1.35).toFixed(1))
-  );
+  let fuelSavedLiters = {
+    status: 'unavailable',
+    value: null,
+    reason: 'Validated fuel-consumption model/data unavailable'
+  };
 
-  // Delay reduction per vehicle in seconds (guaranteed realistic adaptive savings)
-  const delayReductionPerVehicle = Math.max(3.5, Number((effectiveBaseline - delay).toFixed(1)));
-  const totalDelayReduction = cars * delayReductionPerVehicle;
+  let co2ReducedKg = {
+    status: 'unavailable',
+    value: null,
+    reason: 'Verified emission factor methodology unavailable'
+  };
 
-  // Fuel: passedCars × delayReductionPerVehicle × 0.00028 L/sec
-  const rawFuelConserved = cars * delayReductionPerVehicle * TRAFFIC_CONSTANTS.FUEL_CONSUMPTION_RATE;
+  let economicSavingsRupees = {
+    status: 'unavailable',
+    value: null,
+    reason: 'Verified economic road-user-cost model and current fuel price unavailable'
+  };
 
-  // CO2: fuelConserved × 2.31 kg CO2 / L
-  const rawCo2Avoided = rawFuelConserved * TRAFFIC_CONSTANTS.CO2_FACTOR;
+  if (hasComparableBaseline && totalDelayReduction !== null && totalDelayReduction > 0) {
+    const fuelLiters = totalDelayReduction * TRAFFIC_CONSTANTS.FUEL_CONSUMPTION_RATE;
+    const co2Kg = fuelLiters * TRAFFIC_CONSTANTS.CO2_FACTOR;
+    
+    // Convert commuter time saved from seconds to hours
+    const commuterTimeHours = commuterTimeSaved / 3600;
+    
+    const fuelSavingsINR = fuelLiters * TRAFFIC_CONSTANTS.FUEL_COST;
+    const commuterTimeSavingsINR = commuterTimeHours * TRAFFIC_CONSTANTS.COMMUTER_TIME_VALUE_PER_HOUR;
+    const totalEconomicSavings = fuelSavingsINR + commuterTimeSavingsINR;
 
-  // Economic Value: Fuel savings + Commuter time savings
-  const fuelSavings = rawFuelConserved * TRAFFIC_CONSTANTS.FUEL_COST;
-  const commuterTimeSaved = totalDelayReduction; // seconds
-  const commuterTimeValue = (commuterTimeSaved / 3600) * TRAFFIC_CONSTANTS.COMMUTER_TIME_VALUE_PER_HOUR;
-  const economicValue = fuelSavings + commuterTimeValue;
+    fuelSavedLiters = Number(fuelLiters.toFixed(2));
+    co2ReducedKg = Number(co2Kg.toFixed(2));
+    economicSavingsRupees = Number(totalEconomicSavings.toFixed(0));
+  }
+
+  const unavailableComparison = {
+    status: 'unavailable',
+    value: null,
+    reason: 'Comparable baseline simulation run unavailable'
+  };
 
   return {
     passedCars: cars,
-    baselineDelay: effectiveBaseline,
-    currentDelay: Number(delay.toFixed(1)),
-    delayReductionPerVehicle: Number(delayReductionPerVehicle.toFixed(1)),
-    totalDelayReduction: Number(totalDelayReduction.toFixed(1)),
+    baselineDelay: hasComparableBaseline ? Number(baselineDelay.toFixed(1)) : unavailableComparison,
+    currentDelay: typeof currentMeasuredDelay === 'number' ? Number(currentMeasuredDelay.toFixed(1)) : null,
+    
+    // Delay comparisons
+    delayReductionPerVehicle: hasComparableBaseline ? Number(delayReductionPerVehicle.toFixed(1)) : unavailableComparison,
+    totalDelayReduction: hasComparableBaseline ? Number(totalDelayReduction.toFixed(1)) : unavailableComparison,
     
     // Fuel Conserved
-    fuelConserved: Number(rawFuelConserved.toFixed(2)),
-    fuelSavedLiters: Number(rawFuelConserved.toFixed(2)),
-    rawFuelConserved,
+    fuelConserved: fuelSavedLiters,
+    fuelSavedLiters: fuelSavedLiters,
+    rawFuelConserved: fuelSavedLiters,
 
     // CO2 Avoided
-    co2Avoided: Number(rawCo2Avoided.toFixed(2)),
-    co2ReducedKg: Number(rawCo2Avoided.toFixed(2)),
-    rawCo2Avoided,
+    co2Avoided: co2ReducedKg,
+    carbonSavedKg: co2ReducedKg, // backward compatibility
+    co2ReducedKg: co2ReducedKg,
+    rawCo2Avoided: co2ReducedKg,
 
     // Economic Impact
-    fuelSavings: Number(fuelSavings.toFixed(2)),
-    commuterTimeSaved: Number(commuterTimeSaved.toFixed(1)),
-    commuterTimeValue: Number(commuterTimeValue.toFixed(2)),
-    economicValue: Math.round(economicValue),
-    economicSavingsRupees: Math.round(economicValue),
+    fuelSavings: economicSavingsRupees,
+    commuterTimeSaved: hasComparableBaseline ? Number(commuterTimeSaved.toFixed(1)) : unavailableComparison,
+    commuterTimeValue: economicSavingsRupees,
+    economicValue: economicSavingsRupees,
+    costSavedINR: economicSavingsRupees, // backward compatibility
+    economicSavingsRupees: economicSavingsRupees,
 
     hasData: cars > 0
   };

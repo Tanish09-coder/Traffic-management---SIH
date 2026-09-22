@@ -261,7 +261,7 @@ const About = () => {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F5A623] mt-1.5 shrink-0" />
-                      <span><strong>Q-Learning / SUMO:</strong> {lang === 'HI' ? 'अनुकूली रीइन्फोर्समेंट लर्निंग व फॉलबैक मॉडल' : 'Adaptive RL agent & micro-simulation bridge'}</span>
+                      <span><strong>Signal Optimizer:</strong> {lang === 'HI' ? 'नियतात्मक बीजगणितीय देरी-न्यूनीकरण हेयुरिस्टिक' : 'Deterministic algebraic delay-minimization heuristic'}</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F5A623] mt-1.5 shrink-0" />

@@ -290,11 +290,8 @@ export const AnalyticsPanel = () => {
             {lang === 'HI' ? 'बचाया गया निष्क्रिय ईंधन' : 'IDLE FUEL CONSERVED'}
           </span>
           <div className="text-2xl font-black text-[#16A34A] tabular-nums">
-            {systemMetrics.fuelSavedLiters.toFixed(1)} {lang === 'HI' ? 'लीटर' : 'Liters'}
+            {systemMetrics.fuelSavedLiters?.status === 'unavailable' ? 'Unavailable' : `${systemMetrics.fuelSavedLiters.toFixed(1)} ${lang === 'HI' ? 'लीटर' : 'Liters'}`}
           </div>
-          <span className="text-[10px] text-[#94A3B8]">
-            {lang === 'HI' ? 'दर: 0.00028 L/sec विलंब कमी' : 'Rate: 0.00028 L/sec delay reduction'}
-          </span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
@@ -302,11 +299,8 @@ export const AnalyticsPanel = () => {
             {lang === 'HI' ? 'रोका गया CO₂ उत्सर्जन' : 'CO₂ EMISSIONS AVOIDED'}
           </span>
           <div className="text-2xl font-black text-[#0F2C59] tabular-nums">
-            {systemMetrics.co2ReducedKg.toFixed(1)} kg CO₂
+            {systemMetrics.co2ReducedKg?.status === 'unavailable' ? 'Unavailable' : `${systemMetrics.co2ReducedKg.toFixed(1)} kg CO₂`}
           </div>
-          <span className="text-[10px] text-[#94A3B8]">
-            {lang === 'HI' ? 'गुणांक: 2.31 kg CO₂ / L पेट्रोल' : 'Factor: 2.31 kg CO₂ / L gasoline'}
-          </span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
@@ -314,11 +308,8 @@ export const AnalyticsPanel = () => {
             {lang === 'HI' ? 'यात्री आर्थिक मूल्य बचत' : 'COMMUTER ECONOMIC VALUE'}
           </span>
           <div className="text-2xl font-black text-[#F5A623] tabular-nums">
-            ₹{systemMetrics.totalCostSavedRupees.toLocaleString('en-IN')}
+            {systemMetrics.totalCostSavedRupees?.status === 'unavailable' ? 'Unavailable' : `₹${systemMetrics.totalCostSavedRupees.toLocaleString('en-IN')}`}
           </div>
-          <span className="text-[10px] text-[#94A3B8]">
-            {lang === 'HI' ? 'ईंधन + भारतीय समय मूल्य' : 'Retail fuel + Indian time value'}
-          </span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">

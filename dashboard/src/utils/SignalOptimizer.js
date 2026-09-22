@@ -74,7 +74,7 @@ export class SignalOptimizer {
     signalSequence = ['N', 'E', 'S', 'W'],
     forceOptimal = false,
     policy = TRAFFIC_CONSTANTS.SIGNAL_POLICY,
-    demandOverrides = null
+    demandOverrides = undefined
   }) {
     if (strategy === 'fixed') {
       const currentIndex = signalSequence.indexOf(currentSignal);
@@ -97,9 +97,19 @@ export class SignalOptimizer {
     }
 
     // Resolve effective demand overrides (used when strategy is 'predictive')
-    const activeOverrides = strategy === 'predictive'
-      ? (demandOverrides || SignalOptimizer.activeDemandOverrides)
-      : (demandOverrides || null);
+    // undefined = legacy caller, use static fallback
+    // null = explicit explicit lack of override, use local queues
+    // object = specific local override
+    let activeOverrides = null;
+    if (strategy === 'predictive') {
+      if (demandOverrides !== undefined) {
+        activeOverrides = demandOverrides;
+      } else {
+        activeOverrides = SignalOptimizer.activeDemandOverrides;
+      }
+    } else {
+      activeOverrides = demandOverrides !== undefined ? demandOverrides : null;
+    }
     const effectiveDemand = activeOverrides || queuedPCUs;
 
     // --- Adaptive / Predictive Strategy Evaluation (Configurable Heuristic) ---

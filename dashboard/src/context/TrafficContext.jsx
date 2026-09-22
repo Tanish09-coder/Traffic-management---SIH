@@ -172,9 +172,9 @@ export const TrafficProvider = ({ children }) => {
     totalVehiclesPassed: 18450,
     pcuFlowPerHour: 4820,
     avgWaitTimeReductionPercent: 38.6,
-    fuelSavedLiters: 482.4,
-    co2ReducedKg: 1114.3,
-    totalCostSavedRupees: 50652,
+    fuelSavedLiters: { status: 'unavailable', value: null },
+    co2ReducedKg: { status: 'unavailable', value: null },
+    totalCostSavedRupees: { status: 'unavailable', value: null },
     activeHotspots: 1,
     activeNodesCount: 4,
     edgeNodesOnline: 4
@@ -328,17 +328,14 @@ export const TrafficProvider = ({ children }) => {
       // 3. Increment environmental savings and metrics
       setSystemMetrics(prev => {
         const vehiclesIncrement = Math.round(1.5 * simulationSpeed);
-        const fuelIncrement = Number((0.04 * simulationSpeed).toFixed(3));
-        const co2Increment = Number((fuelIncrement * 2.31).toFixed(3));
-        const costIncrement = Math.round(fuelIncrement * 105);
 
         return {
           ...prev,
           totalVehiclesPassed: prev.totalVehiclesPassed + vehiclesIncrement,
           pcuFlowPerHour: Math.round(4800 + Math.sin(tickRef.current * 0.1) * 200),
-          fuelSavedLiters: Number((prev.fuelSavedLiters + fuelIncrement).toFixed(2)),
-          co2ReducedKg: Number((prev.co2ReducedKg + co2Increment).toFixed(2)),
-          totalCostSavedRupees: prev.totalCostSavedRupees + costIncrement
+          fuelSavedLiters: { status: 'unavailable', value: null },
+          co2ReducedKg: { status: 'unavailable', value: null },
+          totalCostSavedRupees: { status: 'unavailable', value: null }
         };
       });
 

@@ -66,12 +66,8 @@ const LiveIntersection = () => {
 
       const carsPerHour = effectiveCarsPerMin * 60;
 
-      // Mumbai-specific fuel consumption: 0.00028 L/s idling rate
-      const actualFuelSaved = (state?.fuel_saved_per_hour && state.fuel_saved_per_hour > 0)
-        ? state.fuel_saved_per_hour
-        : (metrics?.fuel_saved_per_hour_liters && metrics.fuel_saved_per_hour_liters > 0)
-          ? metrics.fuel_saved_per_hour_liters
-          : Math.max(2.4, avgWaitReduction * carsPerHour * 0.00028);
+      // Fuel consumption model is unsupported in Phase 5.
+      const actualFuelSaved = 'Unavailable';
 
       // Time saved in minutes per hour
       const timeSaved = (state?.time_saved_per_hour && state.time_saved_per_hour > 0)
@@ -80,13 +76,13 @@ const LiveIntersection = () => {
           ? metrics.time_saved_per_hour_minutes
           : Math.max(18, (avgWaitReduction * carsPerHour) / 60);
 
-      // CO2 reduction: 2.31 kg CO2 per liter of petrol saved
-      const co2Reduced = Math.max(5.5, actualFuelSaved * 2.31);
+      // CO2 reduction: 2.31 kg CO2 per liter of petrol saved [UNSUPPORTED]
+      const co2Reduced = 'Unavailable';
 
-      // Economic savings per hour
-      const fuelCostSaved = actualFuelSaved * 105; // ₹105 per liter
-      const timeCostSaved = (timeSaved / 60) * 200; // ₹200 per hour commuter time value
-      const totalSavings = fuelCostSaved + timeCostSaved;
+      // Economic savings per hour [UNSUPPORTED]
+      const fuelCostSaved = 'Unavailable'; // ₹105 per liter [UNSUPPORTED]
+      const timeCostSaved = 'Unavailable'; // ₹200 per hour commuter time value [UNSUPPORTED]
+      const totalSavings = 'Unavailable';
 
       // Wait time improvement in seconds
       const waitTimeImprovement = avgWaitReduction;
@@ -407,8 +403,7 @@ const LiveIntersection = () => {
             unit="L"
             icon={Fuel}
             color="green"
-            trend={lang === 'HI' ? `₹${(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} बचत` : `₹${(mumbaiStats.fuelSavedLiters * 105).toFixed(0)} saved`}
-            trendSubtext={lang === 'HI' ? 'प्रति घंटा' : 'per hour'}
+            trend={lang === 'HI' ? 'अस्थायी रूप से अनुपलब्ध' : 'Temporarily Unavailable'}
           />
           <StatCard
             title={lang === 'HI' ? 'समय बचत' : 'Time Saved'}
