@@ -7,7 +7,6 @@ import {
   ChevronUp,
   Info,
   CheckCircle2,
-  Clock,
   Layers,
   ArrowRight,
   ShieldAlert,
@@ -84,7 +83,6 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
     null;
 
   const [showHowCalculated, setShowHowCalculated] = useState(false);
-  const [showAllEvents, setShowAllEvents] = useState(false);
 
   if (!pressureData || pressureData.overallLevel === 'UNAVAILABLE') {
     return (
@@ -150,8 +148,6 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
     }
   ];
 
-  const visibleEvents = showAllEvents ? recentEvents : recentEvents.slice(0, 3);
-
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden transition-all duration-300">
       {/* Header bar */}
@@ -164,20 +160,17 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <h3 className="font-black text-[#0A1F44] text-base tracking-tight">
+                  <h3 className="font-bold text-[#0A1F44] text-base tracking-tight">
                     {lang === 'HI' ? 'शहरी संसाधन दबाव और प्रतिक्रिया प्रणाली' : 'Urban Resource Pressure'}
                   </h3>
-                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    DERIVED
-                  </span>
                   {isEmergency && (
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-purple-600 text-white animate-pulse shadow-xs flex items-center space-x-1">
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-purple-600 text-white animate-pulse shadow-xs flex items-center space-x-1">
                       <Siren size={11} className="inline mr-1" />
                       EMERGENCY OVERRIDE
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-[#475569] mt-0.5">
                   {lang === 'HI'
                     ? 'सड़कों, चौराहों, कर्ब स्पेस और माल ढुलाई बुनियादी ढांचे पर समग्र लाइव दबाव सूचकांक'
                     : 'Live pressure across roads, intersections, curb space and freight infrastructure'}
@@ -189,11 +182,11 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
           {/* Overall Pressure Score Badge */}
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <div className="text-xs font-bold text-[#475569] uppercase tracking-wider">
                 {lang === 'HI' ? 'दबाव सूचकांक' : 'OVERALL PRESSURE'}
               </div>
-              <div className="flex items-center space-x-1.5 justify-end">
-                <span className={`text-2xl font-black ${levelConf.textColor}`}>
+              <div className="flex items-center space-x-1.5 justify-end mt-1">
+                <span className={`text-3xl font-black ${levelConf.textColor}`}>
                   {overallPressureIndex}
                 </span>
                 <span className="text-xs font-semibold text-slate-400">/100</span>
@@ -209,7 +202,7 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
       </div>
 
       <div className="p-4 sm:p-5 space-y-5">
-        {/* Four Compact Horizontal Pressure Bars */}
+        {/* Four Category Pressure Cards (Matching Dashboard sizing & styling) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {categoryItems.map(item => {
             const catLevel = LEVEL_CONFIG[item.data.level] || LEVEL_CONFIG.STABLE;
@@ -217,32 +210,29 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
             return (
               <div
                 key={item.id}
-                className="p-3 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-slate-50 transition-colors"
+                className="p-4 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] shadow-xs hover:border-[#94A3B8] transition-all"
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center space-x-2">
-                    <ItemIcon size={14} className="text-slate-500" />
-                    <span className="text-xs font-bold text-[#0A1F44]">{item.title}</span>
-                    <span className="text-[9px] font-medium text-slate-400">({item.weight})</span>
-                    <span className="text-[9px] font-bold px-1 rounded bg-slate-200/80 text-slate-600">
-                      DERIVED
-                    </span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2.5">
+                    <ItemIcon size={18} className="text-[#0A1F44]" />
+                    <span className="text-sm sm:text-base font-bold text-[#0A1F44]">{item.title}</span>
+                    <span className="text-xs font-semibold text-slate-500">({item.weight})</span>
                   </div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className={`text-xs font-black ${catLevel.textColor}`}>
+                  <div className="flex items-baseline space-x-2">
+                    <span className={`text-2xl sm:text-3xl font-black ${catLevel.textColor}`}>
                       {item.data.score}
                     </span>
-                    <span className="text-[10px] text-slate-400">/100</span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${catLevel.pillClass}`}>
+                    <span className="text-xs font-bold text-slate-400">/100</span>
+                    <span className={`text-xs font-extrabold uppercase px-2 py-0.5 rounded border ${catLevel.pillClass}`}>
                       {item.data.level}
                     </span>
                   </div>
                 </div>
 
                 {/* Progress track */}
-                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden mt-2.5">
                   <div
-                    className={`h-2 rounded-full transition-all duration-500 ${catLevel.barColor}`}
+                    className={`h-2.5 rounded-full transition-all duration-500 ${catLevel.barColor}`}
                     style={{ width: `${Math.min(100, Math.max(0, item.data.score))}%` }}
                   />
                 </div>
@@ -251,26 +241,26 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
           })}
         </div>
 
-        {/* Primary Recommended Response Card */}
+        {/* Primary Recommended Response Card (Matching Dashboard sizing & styling) */}
         {primaryRecommendation && (
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-200">
-              <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
+          <div className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-5 shadow-xs relative overflow-hidden space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#E2E8F0]">
+              <div className="flex items-center flex-wrap gap-2.5">
+                <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded bg-blue-100 text-blue-900 border border-blue-300">
                   {lang === 'HI' ? 'प्राथमिक प्रतिक्रिया' : 'PRIMARY RECOMMENDED RESPONSE'}
                 </span>
-                <span className="text-xs font-black text-[#0A1F44]">
+                <span className="text-base sm:text-lg font-black text-[#0A1F44] tracking-wide">
                   {primaryRecommendation.action}
                 </span>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-bold text-slate-500">
+              <div className="flex items-center space-x-2.5">
+                <span className="text-xs sm:text-sm font-bold text-slate-600">
                   {primaryRecommendation.affectedLocation}
                 </span>
-                <span className="text-slate-300">•</span>
+                <span className="text-slate-300 font-bold">•</span>
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                  className={`text-xs font-extrabold uppercase px-2.5 py-1 rounded border shadow-xs ${
                     primaryRecommendation.status === 'EXECUTED IN SIMULATION'
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : 'bg-amber-100 text-amber-800 border-amber-300'
@@ -281,39 +271,39 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
               </div>
             </div>
 
-            <p className="text-xs text-slate-700 font-medium">
+            <p className="text-sm sm:text-base text-[#0F2942] font-semibold leading-relaxed bg-white p-3.5 rounded-lg border border-slate-200">
               "{primaryRecommendation.reason}"
             </p>
 
-            <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500">
-              <div className="flex items-center space-x-1.5">
-                <span className="font-semibold text-slate-600">Responsible Module:</span>
-                <span className="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+            <div className="flex items-center justify-between flex-wrap gap-2 pt-1 text-xs text-slate-600">
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-slate-700">Responsible Module:</span>
+                <span className="font-bold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                   {primaryRecommendation.responsibleModule}
                 </span>
               </div>
-              <span className="text-[10px] font-medium text-slate-400">
+              <span className="text-xs font-medium text-slate-500">
                 Rule-Based Dynamic Support
               </span>
             </div>
 
             {/* Secondary Recommendations if available */}
             {secondaryRecommendations.length > 0 && (
-              <div className="mt-3 pt-2.5 border-t border-slate-200/80 space-y-1.5">
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <div className="pt-3 border-t border-[#E2E8F0] space-y-2">
+                <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                   Secondary Interventions:
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {secondaryRecommendations.map((sec, idx) => (
                     <div
                       key={idx}
-                      className="text-xs bg-white px-2.5 py-1 rounded border border-slate-200 flex items-center space-x-1.5"
+                      className="text-xs sm:text-sm bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs flex items-center space-x-2"
                     >
-                      <ArrowRight size={11} className="text-slate-400" />
-                      <span className="font-bold text-slate-700">{sec.action}</span>
-                      <span className="text-slate-400">|</span>
-                      <span className="text-slate-500 text-[11px]">{sec.responsibleModule}</span>
-                      <span className="text-[9px] px-1 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                      <ArrowRight size={13} className="text-slate-500" />
+                      <span className="font-bold text-slate-800">{sec.action}</span>
+                      <span className="text-slate-300">|</span>
+                      <span className="text-slate-600 text-xs font-medium">{sec.responsibleModule}</span>
+                      <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                         {sec.status === 'EXECUTED IN SIMULATION' ? 'EXECUTED' : 'ADVISORY'}
                       </span>
                     </div>
@@ -326,102 +316,21 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
 
         {/* Top Contributing Factors */}
         <div>
-          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
-            <Info size={13} className="text-slate-400" />
+          <div className="text-xs sm:text-sm font-bold text-[#475569] uppercase tracking-wider mb-2.5 flex items-center space-x-2">
+            <Info size={16} className="text-slate-500" />
             <span>{lang === 'HI' ? 'प्रमुख योगदान कारक' : 'TOP CONTRIBUTING FACTORS'}</span>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {contributingFactors.slice(0, 3).map((factor, idx) => (
               <div
                 key={idx}
-                className="flex items-start space-x-2 text-xs text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100"
+                className="flex items-start space-x-3 text-sm sm:text-base text-[#0F2942] font-semibold bg-[#F8FAFC] p-3.5 sm:p-4 rounded-xl border border-[#CBD5E1] shadow-xs"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
-                <span className="font-medium">{factor}</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 mt-1.5 shrink-0" />
+                <span className="leading-snug">{factor}</span>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Operations Event Log (Latest 3 with expandable history) */}
-        <div className="border-t border-slate-100 pt-4">
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center space-x-2">
-              <Clock size={14} className="text-slate-500" />
-              <span className="text-xs font-bold text-[#0A1F44]">
-                {lang === 'HI' ? 'संचालन घटना लॉग' : 'Operations Event Log'}
-              </span>
-              <span className="text-[10px] font-semibold text-slate-400">
-                ({recentEvents.length} recorded, max 10)
-              </span>
-            </div>
-
-            {recentEvents.length > 3 && (
-              <button
-                type="button"
-                onClick={() => setShowAllEvents(!showAllEvents)}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1 cursor-pointer"
-              >
-                <span>{showAllEvents ? 'Show latest 3' : `View all (${recentEvents.length})`}</span>
-                {showAllEvents ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-            )}
-          </div>
-
-          {recentEvents.length === 0 ? (
-            <div className="text-xs text-slate-400 italic p-2 bg-slate-50 rounded border border-slate-100">
-              No state transition events logged yet. Nominal baseline active.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {visibleEvents.map((evt, idx) => {
-                const prevConf = LEVEL_CONFIG[evt.previousLevel] || LEVEL_CONFIG.STABLE;
-                const newConf = LEVEL_CONFIG[evt.newLevel] || LEVEL_CONFIG.STABLE;
-                return (
-                  <div
-                    key={evt.id || idx}
-                    className="p-2.5 rounded-lg border border-slate-200 bg-white text-xs space-y-1"
-                  >
-                    <div className="flex items-center justify-between flex-wrap gap-1 text-[11px]">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="font-mono font-bold text-slate-600">
-                          T+{evt.simulationTime}s
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className={`px-1.5 py-0.2 rounded font-bold border ${prevConf.pillClass}`}>
-                          {evt.previousLevel}
-                        </span>
-                        <ArrowRight size={11} className="text-slate-400" />
-                        <span className={`px-1.5 py-0.2 rounded font-bold border ${newConf.pillClass}`}>
-                          {evt.newLevel}
-                        </span>
-                        {evt.isEmergency && (
-                          <span className="bg-red-100 text-red-700 px-1 rounded font-bold text-[9px] border border-red-300">
-                            EMERGENCY
-                          </span>
-                        )}
-                        {evt.hasSpillover && (
-                          <span className="bg-amber-100 text-amber-700 px-1 rounded font-bold text-[9px] border border-amber-300">
-                            SPILLOVER
-                          </span>
-                        )}
-                      </div>
-                      <span className="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 text-[10px]">
-                        {evt.recommendedAction}
-                      </span>
-                    </div>
-
-                    <div className="text-slate-600 text-[11px]">
-                      <span className="font-semibold text-slate-700">Cause:</span> {evt.majorCause}
-                      {evt.affectedLocation && (
-                        <span className="text-slate-400 ml-1">({evt.affectedLocation})</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Expandable "How calculated?" section */}
@@ -429,42 +338,42 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
           <button
             type="button"
             onClick={() => setShowHowCalculated(!showHowCalculated)}
-            className="w-full flex items-center justify-between text-xs font-bold text-slate-600 hover:text-[#0A1F44] p-1.5 rounded hover:bg-slate-50 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600 hover:text-[#0A1F44] p-1.5 rounded hover:bg-slate-50 transition-colors cursor-pointer"
           >
             <div className="flex items-center space-x-1.5">
-              <Info size={14} className="text-indigo-600" />
+              <Info size={15} className="text-indigo-600" />
               <span>How calculated? (Formula, Weights & Metrics)</span>
             </div>
             {showHowCalculated ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
           {showHowCalculated && (
-            <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-3.5">
+            <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm space-y-3.5">
               {/* Formula & Weights */}
               <div>
                 <div className="font-bold text-[#0A1F44] mb-1">
                   1. Overall Pressure Index Formula:
                 </div>
-                <div className="p-2.5 bg-white font-mono rounded border border-slate-200 text-slate-800 text-[11px] overflow-x-auto">
+                <div className="p-2.5 bg-white font-medium rounded border border-slate-200 text-slate-800 text-xs sm:text-sm overflow-x-auto">
                   overallPressureIndex = (road × 0.35) + (intersection × 0.25) + (curbHub × 0.25) + (freightSystem × 0.15)
                 </div>
               </div>
 
               {/* Thresholds */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[11px]">
-                <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs sm:text-sm">
+                <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
                   <div>STABLE</div>
                   <div className="text-slate-500 font-normal">0 – 39</div>
                 </div>
-                <div className="p-2 rounded bg-blue-50 border border-blue-200 text-blue-800 font-bold">
+                <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 font-bold">
                   <div>ELEVATED</div>
                   <div className="text-slate-500 font-normal">40 – 64</div>
                 </div>
-                <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-800 font-bold">
+                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-bold">
                   <div>HIGH</div>
                   <div className="text-slate-500 font-normal">65 – 84</div>
                 </div>
-                <div className="p-2 rounded bg-rose-50 border border-rose-200 text-rose-800 font-bold">
+                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 font-bold">
                   <div>CRITICAL</div>
                   <div className="text-slate-500 font-normal">85 – 100</div>
                 </div>
@@ -474,56 +383,56 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
               <div>
                 <div className="font-bold text-[#0A1F44] mb-1.5 flex items-center justify-between">
                   <span>2. Current Live Source Metrics:</span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
                     LIVE SIMULATION
                   </span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs sm:text-sm">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Queued PCU</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.roadNetwork?.sourceMetrics?.totalQueuedPCU ?? 0}
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Stopped Cars</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.roadNetwork?.sourceMetrics?.totalStoppedCars ?? 0}
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Max Passenger Wait</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.roadNetwork?.sourceMetrics?.maxPassengerWaitSec ?? 0}s
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Corridor In-Transit</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.roadNetwork?.sourceMetrics?.totalInTransit ?? 0} veh
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Occupied Bays</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.curbHub?.sourceMetrics?.occupiedBays ?? 0} / {categories.curbHub?.sourceMetrics?.totalBays ?? 0}
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Curb Saturation</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.curbHub?.sourceMetrics?.maxCurbSaturation ?? 0}%
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Staged Freight</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.freightSystem?.sourceMetrics?.stagedCount ?? 0} veh
                     </div>
                   </div>
-                  <div className="p-2 bg-white rounded border border-slate-200">
+                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
                     <div className="text-slate-400 font-medium">Scheduled Slots</div>
-                    <div className="font-bold text-slate-800">
+                    <div className="font-bold text-slate-800 text-sm sm:text-base">
                       {categories.freightSystem?.sourceMetrics?.pendingSlots ?? 0} active
                     </div>
                   </div>
@@ -531,9 +440,9 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
               </div>
 
               {/* Data Provenance & Honesty Note */}
-              <div className="p-2.5 bg-blue-50/60 rounded border border-blue-200 text-blue-900 text-[11px] space-y-1">
+              <div className="p-3 bg-blue-50/60 rounded-lg border border-blue-200 text-blue-900 text-xs sm:text-sm space-y-1">
                 <div className="font-bold flex items-center space-x-1.5">
-                  <CheckCircle2 size={13} className="text-blue-600" />
+                  <CheckCircle2 size={15} className="text-blue-600" />
                   <span>Transparent Rule-Based Provenance</span>
                 </div>
                 <p className="text-blue-800">

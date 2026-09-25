@@ -11,44 +11,44 @@ export default function CorridorProgressionView({ corridorData, activeVehicles =
   const commercialVehicles = (activeVehicles || []).filter(v => v.isCommercial);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-[#0A1F44] text-[#F5A623] flex items-center justify-center">
-            <MapPin className="w-4 h-4" />
+    <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3.5 mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-[#0A1F44] text-[#F5A623] flex items-center justify-center font-bold shadow-xs">
+            <MapPin className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-black text-[#0A1F44] text-sm">
+            <h3 className="text-base sm:text-lg font-bold text-[#0A1F44]">
               {lang === 'HI' ? 'कॉरिडोर माल ढुलाई प्रगति' : 'Modeled Corridor Progression (H1 → J1 → J2 → J3 → J4 → H2)'}
             </h3>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs sm:text-sm text-[#475569] mt-0.5">
               {corridor.name} (13.4 km Arterial Freight Corridor)
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+        <div className="flex items-center space-x-2.5">
+          <span className="text-xs font-black px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-xs">
             {commercialVehicles.length} {lang === 'HI' ? 'सक्रिय माल वाहन' : 'Active Freight'}
           </span>
-          <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
             {strategy === 'adaptive' ? 'Green Wave Synced' : 'Static IRC-67 Cycle'}
           </span>
         </div>
       </div>
 
       {/* Corridor Visual Progression Chain */}
-      <div className="relative py-3 overflow-x-auto">
-        <div className="min-w-[650px] flex items-center justify-between gap-2">
+      <div className="relative py-2 overflow-x-auto">
+        <div className="min-w-[920px] flex items-stretch justify-between gap-3">
           {/* H1: Dadar Depot Origin */}
-          <div className="flex-1 bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-center">
-            <div className="text-[10px] font-bold text-amber-800 uppercase">Origin Hub (H1)</div>
-            <div className="text-xs font-black text-slate-800 mt-0.5">Dadar Depot</div>
-            <div className="text-[10px] text-slate-500">HUB_DDR_01</div>
+          <div className="flex-1 min-w-[130px] bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-center flex flex-col justify-center shadow-xs">
+            <div className="text-xs font-black text-amber-800 uppercase tracking-wider">Origin Hub (H1)</div>
+            <div className="text-sm sm:text-base font-black text-[#0F2942] mt-1">Dadar Depot</div>
+            <div className="text-xs font-semibold text-slate-500 mt-0.5">HUB_DDR_01</div>
           </div>
 
-          <div className="flex items-center text-slate-400">
-            <ArrowRight className="w-4 h-4" />
+          <div className="flex items-center text-slate-400 px-1 shrink-0">
+            <ArrowRight className="w-5 h-5" />
           </div>
 
           {corridor.junctionIds.map((jId, idx) => {
@@ -61,36 +61,47 @@ export default function CorridorProgressionView({ corridorData, activeVehicles =
             return (
               <React.Fragment key={jId}>
                 {/* Node Box */}
-                <div className={`flex-1 ${isLive ? 'bg-blue-50 border-blue-300 shadow-xs' : 'bg-slate-50 border-slate-200'} border rounded-lg p-2.5 text-center`}>
-                  <div className="flex items-center justify-center space-x-1 mb-0.5">
-                    <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-blue-600 animate-pulse' : ''}`} style={!isLive ? { backgroundColor: classification.color } : {}} />
-                    <span className={`text-[10px] font-bold uppercase ${isLive ? 'text-blue-800' : 'text-slate-500'}`}>
-                      {jId} {isLive && '(Active)'}
-                    </span>
+                <div className={`flex-1 min-w-[140px] ${isLive ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-400/20 shadow-xs' : 'bg-slate-50 border-slate-200'} border rounded-xl p-3.5 text-center flex flex-col justify-between shadow-xs`}>
+                  <div>
+                    <div className="flex items-center justify-center space-x-1.5 mb-1">
+                      <span className={`w-2.5 h-2.5 rounded-full ${isLive ? 'bg-blue-600 animate-pulse' : ''}`} style={!isLive ? { backgroundColor: classification.color } : {}} />
+                      <span className={`text-xs font-black uppercase ${isLive ? 'text-blue-900' : 'text-slate-600'}`}>
+                        {jId} {isLive && '(Active)'}
+                      </span>
+                    </div>
+                    <div className="text-sm sm:text-base font-black text-[#0F2942] leading-snug">{junctionName}</div>
                   </div>
-                  <div className="text-xs font-black text-slate-800">{junctionName}</div>
-                  {isLive ? (
-                    <div className="text-[9px] text-blue-700 font-bold bg-blue-100 px-1 py-0.5 rounded mt-1 inline-block">LIVE SIMULATION</div>
-                  ) : (
-                    <div className="text-[9px] text-slate-500 font-bold bg-slate-200 px-1 py-0.5 rounded mt-1 inline-block">MODELED CORRIDOR BASELINE</div>
-                  )}
-                  <div className="text-[10px] mt-1 font-semibold" style={{ color: classification.color }}>
+
+                  <div className="my-2">
+                    {isLive ? (
+                      <div className="text-xs text-blue-800 font-extrabold bg-blue-100/90 border border-blue-200 px-2.5 py-1 rounded-md inline-block">
+                        LIVE SIMULATION
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-600 font-bold bg-slate-200/80 border border-slate-300 px-2.5 py-1 rounded-md inline-block">
+                        MODELED BASELINE
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-xs sm:text-sm font-black" style={{ color: classification.color }}>
                     {classification.label} • {Math.round(jState?.junction?.totalPcu || 0)} PCU
                   </div>
                 </div>
 
                 {/* Link Arrow */}
                 {idx < corridor.junctionIds.length - 1 && (
-                  <div className="flex items-center text-slate-400 text-[10px] font-bold flex-col justify-center px-1">
-                    <div className="text-[9px] text-slate-400">{outgoing?.linkDistanceKm || '-'} km <span className="font-normal">(CONFIGURED)</span></div>
-                    <ArrowRight className="w-4 h-4 my-0.5" />
+                  <div className="flex items-center text-slate-400 flex-col justify-center px-1 min-w-[70px] shrink-0">
+                    <div className="text-xs font-bold text-slate-500 text-center whitespace-nowrap">
+                      {outgoing?.linkDistanceKm || '-'} km
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-slate-400 my-1" />
                     {outgoing?.travelTimeSec ? (
-                      <div className="text-[9px] text-purple-600 font-mono text-center">
+                      <div className="text-xs sm:text-sm text-purple-800 font-black text-center whitespace-nowrap">
                         {Math.round(outgoing.travelTimeSec / 60)}m ETA
-                        <div className="text-[8px] font-normal leading-tight">(DERIVED FROM MODEL)</div>
                       </div>
                     ) : (
-                      <div className="text-[9px] text-slate-400">N/A</div>
+                      <div className="text-xs text-slate-400">N/A</div>
                     )}
                   </div>
                 )}
@@ -98,25 +109,27 @@ export default function CorridorProgressionView({ corridorData, activeVehicles =
             );
           })}
 
-          <div className="flex items-center text-slate-400">
-            <ArrowRight className="w-4 h-4" />
+          <div className="flex items-center text-slate-400 px-1 shrink-0">
+            <ArrowRight className="w-5 h-5" />
           </div>
 
           {/* H2: BKC Hub Terminal */}
-          <div className="flex-1 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-center">
-            <div className="text-[10px] font-bold text-emerald-800 uppercase">Terminal Hub (H2)</div>
-            <div className="text-xs font-black text-slate-800 mt-0.5">BKC Freight Hub</div>
-            <div className="text-[10px] text-slate-500">HUB_BKC_01</div>
+          <div className="flex-1 min-w-[130px] bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 text-center flex flex-col justify-center shadow-xs">
+            <div className="text-xs font-black text-emerald-800 uppercase tracking-wider">Terminal Hub (H2)</div>
+            <div className="text-sm sm:text-base font-black text-[#0F2942] mt-1">BKC Freight Hub</div>
+            <div className="text-xs font-semibold text-slate-500 mt-0.5">HUB_BKC_01</div>
           </div>
         </div>
       </div>
 
       {/* Corridor Technical Note on Micro vs Macro Simulation */}
-      <div className="mt-2 p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
-        <span>
-          <strong>Operational Model:</strong> Micro-level vehicle kinematics simulated at active node (BKC $J_3$); corridor-level $J_1 \to J_4$ propagation dynamically coordinated via <code>CorridorCoordinator.js</code>.
+      <div className="mt-3.5 p-3.5 sm:p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
+        <span className="leading-relaxed">
+          <strong className="font-bold text-[#0A1F44]">Operational Model:</strong> Micro-level vehicle kinematics simulated at active node (BKC J₃); corridor-level J₁ → J₄ propagation dynamically coordinated via <span className="font-bold text-[#0A1F44]">CorridorCoordinator.js</span>.
         </span>
-        <span className="font-bold text-slate-700">BKC Arterial Corridor</span>
+        <span className="font-bold text-[#0A1F44] shrink-0 bg-white px-2.5 py-1 rounded-md border border-slate-200 text-xs shadow-2xs">
+          BKC Arterial Corridor
+        </span>
       </div>
     </div>
   );
