@@ -102,19 +102,19 @@ export default function FreightGreenWavePanel({ activeDecision, telemetry, strat
   const isDownstreamSafe = downstreamPct < 80;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+    <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-[#0A1F44] text-[#F5A623] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#0A1F44] text-[#F5A623] flex items-center justify-center font-bold">
             <Waves className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-black text-[#0A1F44] text-sm">
+            <h3 className="font-bold text-[#0A1F44] text-sm">
               {lang === 'HI' ? 'माल ढुलाई ग्रीन वेव समन्वयक' : 'Freight Green-Wave Coordinator'}
             </h3>
-            <p className="text-[11px] text-slate-500">
-              Evaluating Vehicle: <strong className="text-slate-800 font-mono">{vehicleId}</strong> ({vehicleType})
+            <p className="text-xs text-[#475569]">
+              Evaluating Vehicle: <strong className="text-slate-800 font-bold">{vehicleId}</strong> ({vehicleType})
             </p>
           </div>
         </div>
@@ -123,64 +123,64 @@ export default function FreightGreenWavePanel({ activeDecision, telemetry, strat
       </div>
 
       {/* Primary Timing Grid */}
-      <div className="grid grid-cols-3 gap-2 mb-3 text-center">
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <div className="text-[10px] text-slate-500 font-bold uppercase">Approach</div>
-          <div className="text-sm font-black text-slate-800">{approach} corridor</div>
+      <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 shadow-xs">
+          <div className="text-xs text-[#475569] font-bold uppercase tracking-wider">Approach</div>
+          <div className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">{approach} corridor</div>
         </div>
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <div className="text-[10px] text-slate-500 font-bold uppercase">ETA to Stop Line</div>
-          <div className="text-sm font-black text-purple-700">{etaSeconds !== undefined ? `${etaSeconds}s` : '—'}</div>
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 shadow-xs">
+          <div className="text-xs text-[#475569] font-bold uppercase tracking-wider">ETA to Stop Line</div>
+          <div className="text-xl sm:text-2xl font-black text-purple-700 mt-1">{etaSeconds !== undefined ? `${etaSeconds}s` : '—'}</div>
         </div>
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <div className="text-[10px] text-slate-500 font-bold uppercase">Current Green Window</div>
-          <div className="text-sm font-black text-emerald-700">{remainingGreenSec !== undefined ? `${remainingGreenSec}s` : '—'}</div>
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 shadow-xs">
+          <div className="text-xs text-[#475569] font-bold uppercase tracking-wider">Current Green Window</div>
+          <div className="text-xl sm:text-2xl font-black text-emerald-700 mt-1">{remainingGreenSec !== undefined ? `${remainingGreenSec}s` : '—'}</div>
         </div>
       </div>
 
       {/* Guardrails Verification Checklist */}
-      <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 mb-3 space-y-1.5">
-        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center space-x-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+      <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#CBD5E1] mb-4 space-y-2.5 shadow-xs">
+        <div className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+          <ShieldCheck className="w-4 h-4 text-blue-600" />
           <span>Active Guardrails Check</span>
         </div>
 
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-xs sm:text-sm">
           <span className="text-slate-600 font-medium">Downstream Spillback Protection:</span>
-          <span className={`font-bold flex items-center space-x-1 ${isDownstreamSafe ? 'text-emerald-700' : 'text-amber-700'}`}>
-            {isDownstreamSafe ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+          <span className={`font-bold flex items-center space-x-1.5 ${isDownstreamSafe ? 'text-emerald-700' : 'text-amber-700'}`}>
+            {isDownstreamSafe ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
             <span>{downstreamPct}% saturation (Limit: 80%)</span>
           </span>
         </div>
 
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-xs sm:text-sm">
           <span className="text-slate-600 font-medium">Passenger Starvation Ceiling:</span>
-          <span className="font-bold text-emerald-700 flex items-center space-x-1">
-            <CheckCircle2 className="w-3.5 h-3.5" />
+          <span className="font-bold text-emerald-700 flex items-center space-x-1.5">
+            <CheckCircle2 className="w-4 h-4" />
             <span>Pass (Ceiling: 45s)</span>
           </span>
         </div>
 
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-xs sm:text-sm">
           <span className="text-slate-600 font-medium">Emergency Corridor Dominance:</span>
-          <span className={`font-bold flex items-center space-x-1 ${guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? 'text-red-700' : 'text-emerald-700'}`}>
-            {guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? <XCircle className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+          <span className={`font-bold flex items-center space-x-1.5 ${guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? 'text-red-700' : 'text-emerald-700'}`}>
+            {guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
             <span>{guardrailTriggered === 'EMERGENCY_OVERRIDE' || activeDecision.decision === 'BLOCKED' ? 'Blocked (Emergency Active)' : 'Clear (No Emergency Active)'}</span>
           </span>
         </div>
       </div>
 
       {/* Explainable Decision Reason Box */}
-      <div className="bg-blue-50/60 border border-blue-200 rounded-lg p-3">
-        <div className="flex items-center justify-between mb-0.5">
-          <div className="text-[10px] font-extrabold uppercase text-blue-900 tracking-wider">
+      <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="text-xs font-black uppercase text-blue-900 tracking-wider">
             {lang === 'HI' ? 'निर्णय का कारण (Explainability Receipt)' : 'Operational Decision Receipt'}
           </div>
-          <span className="text-[9px] font-bold text-slate-500 uppercase bg-white/80 px-1.5 py-0.5 rounded border border-blue-100">
+          <span className="text-[10px] font-bold text-slate-500 uppercase bg-white px-2 py-0.5 rounded border border-blue-200">
             Advisory Recommendation
           </span>
         </div>
-        <p className="text-xs text-blue-950 font-medium leading-relaxed">
+        <p className="text-sm text-blue-950 font-semibold leading-relaxed">
           {isFixed
             ? 'Fixed-time signal plan active (MoRTH IRC-67 static cycle). Coordinated freight extension recommendation bypassed.'
             : reason || 'Freight progression evaluated deterministically based on kinematics and downstream clearance.'}

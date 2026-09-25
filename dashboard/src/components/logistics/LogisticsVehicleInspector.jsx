@@ -7,7 +7,7 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
 
   if (!selectedVehicle) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
           <div className="flex items-center space-x-2">
             <Truck className="w-5 h-5 text-[#0A1F44]" />
@@ -45,7 +45,7 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
                     ({v.type === 'freight_truck' ? 'HCV Truck' : 'LCV Van'})
                   </span>
                 </div>
-                <span className="font-mono text-[11px] font-bold text-slate-600">
+                <span className="text-[11px] font-bold text-[#475569]">
                   {v.lane} approach • {v.cargoTonnage || 1.2}t
                 </span>
               </button>
@@ -79,7 +79,7 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
                   <span className="font-bold text-slate-800">{d.vehicleId}</span>
                   <span className="text-[10px] text-slate-500">({d.hubId})</span>
                 </div>
-                <span className="font-mono text-[10px] font-extrabold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded">
                   COMPLETED ({d.completionTime}s)
                 </span>
               </button>
@@ -120,7 +120,7 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
     : 'bg-blue-100 text-blue-800 border-blue-300';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+    <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
         <div className="flex items-center space-x-2.5">
           <div className={`p-2 rounded-lg ${isTruck ? 'bg-amber-100 text-amber-900' : isVan ? 'bg-blue-100 text-blue-900' : 'bg-slate-100 text-slate-800'}`}>
@@ -128,15 +128,15 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-black text-[#0A1F44] text-sm">{selectedVehicle.id}</h3>
+              <h3 className="font-bold text-[#0A1F44] text-sm">{selectedVehicle.id}</h3>
               <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
                 isTruck ? 'bg-amber-500 text-white' : isVan ? 'bg-blue-600 text-white' : 'bg-slate-700 text-white'
               }`}>
                 {isTruck ? 'Freight Truck (HCV)' : isVan ? 'Delivery Van (LCV)' : selectedVehicle.type}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
-              {lang === 'HI' ? 'दृष्टिकोण:' : 'Approach:'} <strong className="text-slate-700">{selectedVehicle.lane}</strong> • {lang === 'HI' ? 'गंतव्य:' : 'Dest:'} <strong className="text-slate-700">{selectedVehicle.destinationHubId || 'HUB_DDR_01'}</strong>
+            <p className="text-xs text-[#475569]">
+              {lang === 'HI' ? 'दृष्टिकोण:' : 'Approach:'} <strong className="text-slate-700 font-bold">{selectedVehicle.lane}</strong> • {lang === 'HI' ? 'गंतव्य:' : 'Dest:'} <strong className="text-slate-700 font-bold">{selectedVehicle.destinationHubId || 'HUB_DDR_01'}</strong>
             </p>
           </div>
         </div>
@@ -152,72 +152,72 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
       </div>
 
       {/* Primary Grid Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-500 uppercase">
-            <Gauge className="w-3.5 h-3.5 text-blue-600" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3.5">
+        <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#CBD5E1] shadow-xs">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-[#475569] uppercase tracking-wider">
+            <Gauge className="w-4 h-4 text-blue-600" />
             <span>Speed</span>
           </div>
-          <div className="text-sm font-black text-slate-800 mt-0.5">{speedKmph} <span className="text-[10px] font-normal text-slate-500">km/h</span></div>
+          <div className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">{speedKmph} <span className="text-xs font-bold text-slate-500">km/h</span></div>
         </div>
 
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-500 uppercase">
-            <Compass className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#CBD5E1] shadow-xs">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-[#475569] uppercase tracking-wider">
+            <Compass className="w-4 h-4 text-emerald-600" />
             <span>Stop Line</span>
           </div>
-          <div className="text-sm font-black text-slate-800 mt-0.5">{distanceM} <span className="text-[10px] font-normal text-slate-500">m</span></div>
+          <div className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">{distanceM} <span className="text-xs font-bold text-slate-500">m</span></div>
         </div>
 
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-          <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-500 uppercase">
-            <Clock className="w-3.5 h-3.5 text-purple-600" />
+        <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#CBD5E1] shadow-xs">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-[#475569] uppercase tracking-wider">
+            <Clock className="w-4 h-4 text-purple-600" />
             <span>Est. ETA</span>
           </div>
-          <div className="text-sm font-black text-slate-800 mt-0.5">{etaSec} <span className="text-[10px] font-normal text-slate-500">s</span></div>
+          <div className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">{etaSec} <span className="text-xs font-bold text-slate-500">s</span></div>
         </div>
 
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 relative">
-          <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-500 uppercase">
-            <Scale className="w-3.5 h-3.5 text-amber-600" />
+        <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#CBD5E1] shadow-xs relative">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-[#475569] uppercase tracking-wider">
+            <Scale className="w-4 h-4 text-amber-600" />
             <span>Cargo</span>
           </div>
-          <div className="text-sm font-black text-slate-800 mt-0.5">{selectedVehicle.cargoTonnage || (isTruck ? 8.5 : 1.2)} <span className="text-[10px] font-normal text-slate-500">t</span></div>
-          <div className="text-[8px] font-extrabold text-amber-800 bg-amber-50 px-1 py-0.5 rounded uppercase mt-1 inline-block">
-            SIMULATED FREIGHT LOAD
+          <div className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">{selectedVehicle.cargoTonnage || (isTruck ? 8.5 : 1.2)} <span className="text-xs font-bold text-slate-500">t</span></div>
+          <div className="text-[9px] font-extrabold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase mt-1 inline-block">
+            SIMULATED LOAD
           </div>
         </div>
       </div>
 
       {/* Secondary Status Rows */}
-      <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 text-xs space-y-2">
+      <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs sm:text-sm space-y-2.5">
         <div className="flex items-center justify-between">
-          <span className="text-slate-500 font-medium">PCU Equivalent:</span>
-          <span className="font-bold text-slate-800">{selectedVehicle.pcuEquivalent || (isTruck ? 2.5 : 1.5)} PCU</span>
+          <span className="text-slate-600 font-semibold">PCU Equivalent:</span>
+          <span className="font-bold text-slate-900">{selectedVehicle.pcuEquivalent || (isTruck ? 2.5 : 1.5)} PCU</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-slate-500 font-medium">Delivery Status:</span>
-          <span className={`font-bold px-2 py-0.5 rounded border ${statusBadgeColor}`}>
+          <span className="text-slate-600 font-semibold">Delivery Status:</span>
+          <span className={`font-bold px-2.5 py-0.5 rounded border ${statusBadgeColor}`}>
             {selectedVehicle.deliveryStatus || 'EN_ROUTE'}
           </span>
         </div>
         {selectedVehicle.completionTime !== undefined && (
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-medium">Completion Time:</span>
-            <span className="font-bold text-slate-800">{selectedVehicle.completionTime}s</span>
+            <span className="text-slate-600 font-semibold">Completion Time:</span>
+            <span className="font-bold text-slate-900">{selectedVehicle.completionTime}s</span>
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-slate-500 font-medium">Green-Wave Priority:</span>
-          <span className="flex items-center space-x-1 text-slate-800 font-bold">
+          <span className="text-slate-600 font-semibold">Green-Wave Priority:</span>
+          <span className="flex items-center space-x-1.5 text-slate-900 font-bold">
             {selectedVehicle.isCommercial ? (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 inline" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" />
                 <span>ELIGIBLE</span>
               </>
             ) : (
               <>
-                <XCircle className="w-3.5 h-3.5 text-slate-400 inline" />
+                <XCircle className="w-4 h-4 text-slate-400 inline" />
                 <span>NON-COMMERCIAL</span>
               </>
             )}

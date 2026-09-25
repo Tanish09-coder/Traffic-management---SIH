@@ -97,16 +97,16 @@ export default function FreightSlotManagerPanel({
   const isScenarioInjection = activeScenario === 'hub_congestion';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+    <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
         <div className="flex items-center space-x-2.5">
-          <div className="p-2 rounded-lg bg-indigo-50 text-indigo-700">
-            <CalendarClock className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-[#0A1F44] text-[#F5A623] flex items-center justify-center font-bold">
+            <CalendarClock className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-black text-[#0A1F44] text-sm">
+              <h3 className="font-bold text-[#0A1F44] text-sm">
                 {lang === 'HI' ? 'स्मार्ट फ्रेट स्लॉट नियंत्रण' : 'Freight Arrival Slot Control'}
               </h3>
               {isScenarioInjection && (
@@ -115,145 +115,146 @@ export default function FreightSlotManagerPanel({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-[#475569]">
               {lang === 'HI'
                 ? 'पूर्वानुमानित हब शेड्यूलिंग और अपस्ट्रीम होल्डिंग'
                 : 'Predictive hub-entry scheduling and upstream staging'}
             </p>
           </div>
         </div>
-
-        <span className="text-[9px] font-extrabold text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded uppercase">
-          DERIVED
-        </span>
       </div>
 
-      {/* 3 Small Metric Counters (Compact, Non-KPI Strip) */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
-          <div className="text-[10px] font-bold text-slate-500 uppercase">
+      {/* 3 Metric Counters */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 text-center shadow-xs">
+          <div className="text-xs font-bold text-[#475569] uppercase tracking-wider">
             {lang === 'HI' ? 'वर्तमान में आयोजित' : 'Currently Staged'}
           </div>
-          <div className="text-base font-black text-amber-700 mt-0.5">
+          <div className="text-3xl font-black text-amber-700 mt-1">
             {stagedVehicles.length}
           </div>
-          <span className="text-[8px] font-bold text-slate-400">VEHICLES</span>
+          <span className="text-xs font-bold text-slate-500">VEHICLES</span>
         </div>
 
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
-          <div className="text-[10px] font-bold text-slate-500 uppercase">
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 text-center shadow-xs">
+          <div className="text-xs font-bold text-[#475569] uppercase tracking-wider">
             {lang === 'HI' ? 'सक्रिय स्लॉट' : 'Assigned Slots'}
           </div>
-          <div className="text-base font-black text-blue-700 mt-0.5">
+          <div className="text-3xl font-black text-blue-700 mt-1">
             {activeSlots.length}
           </div>
-          <span className="text-[8px] font-bold text-slate-400">ACTIVE</span>
+          <span className="text-xs font-bold text-slate-500">ACTIVE</span>
         </div>
 
-        <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
-          <div className="text-[10px] font-bold text-slate-500 uppercase">
+        <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 text-center shadow-xs">
+          <div className="text-xs font-bold text-[#475569] uppercase tracking-wider">
             {lang === 'HI' ? 'जारी किए गए वाहन' : 'Released Freight'}
           </div>
-          <div className="text-base font-black text-emerald-700 mt-0.5">
+          <div className="text-3xl font-black text-emerald-700 mt-1">
             {totalReleased}
           </div>
-          <span className="text-[8px] font-bold text-slate-400">DISPATCHED</span>
+          <span className="text-xs font-bold text-slate-500">DISPATCHED</span>
         </div>
       </div>
 
       {/* Main Selected Vehicle Telemetry Card */}
-      <div className="bg-slate-50 rounded-lg p-3 border border-slate-200/80 mb-3 space-y-2.5">
+      <div className="bg-[#F8FAFC] rounded-xl p-4 border border-[#CBD5E1] mb-4 space-y-3 shadow-xs">
         {/* Selected Vehicle Header & Decision */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Truck className="w-4 h-4 text-slate-700" />
-            <span className="font-extrabold text-xs text-slate-900">
-              {displayedRecord?.vehicleId || selectedVehicle?.id || 'No Active Freight Selected'}
-            </span>
-            {displayedRecord?.vehicleType && (
-              <span className="text-[10px] text-slate-500">
-                ({displayedRecord.vehicleType === 'freight_truck' ? 'HCV Truck' : 'LCV Van'})
-              </span>
-            )}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-bold">
+              <Truck className="w-4 h-4 text-slate-800" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-black text-sm sm:text-base text-[#0A1F44]">
+                  {displayedRecord?.vehicleId || selectedVehicle?.id || 'No Active Freight Selected'}
+                </span>
+                {displayedRecord?.vehicleType && (
+                  <span className="text-xs font-semibold text-slate-500">
+                    ({displayedRecord.vehicleType === 'freight_truck' ? 'HCV Truck' : 'LCV Van'})
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className={`flex items-center space-x-1 text-[11px] font-black px-2 py-0.5 rounded border ${decisionBadgeClass}`}>
-            <DecisionIcon className="w-3.5 h-3.5" />
+          <div className={`flex items-center space-x-1.5 text-xs font-black px-3 py-1 rounded-lg border shadow-xs ${decisionBadgeClass}`}>
+            <DecisionIcon className="w-4 h-4" />
             <span>{decisionLabel}</span>
           </div>
         </div>
 
         {/* Reason Banner */}
-        <div className="p-2 bg-white rounded border border-slate-200 text-xs">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+        <div className="p-3 bg-white rounded-lg border border-slate-200">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             {lang === 'HI' ? 'कारण एवं स्थिति:' : 'Scheduling Decision & Rationale:'}
           </div>
-          <p className="text-slate-700 font-medium text-[11px] leading-snug">
-            {displayedRecord?.reason || 'Corridor entry normal. Destination hub operational.'}
+          <p className="text-sm text-[#0F2942] font-semibold leading-relaxed">
+            "{displayedRecord?.reason || 'Corridor entry normal. Destination hub operational.'}"
           </p>
         </div>
 
         {/* Grid Attributes */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-white p-2 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 font-semibold block">Origin Junction</span>
-            <span className="font-extrabold text-slate-800 text-[11px]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+          <div className="bg-white p-3 rounded-lg border border-slate-200">
+            <span className="text-xs text-slate-500 font-bold block">Origin Junction</span>
+            <span className="font-black text-slate-900 text-sm block mt-1">
               {displayedRecord?.originJunctionId || 'J1 (Upstream Corridor)'}
             </span>
           </div>
 
-          <div className="bg-white p-2 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 font-semibold block">Destination Hub</span>
-            <span className="font-extrabold text-slate-800 text-[11px]">
+          <div className="bg-white p-3 rounded-lg border border-slate-200">
+            <span className="text-xs text-slate-500 font-bold block">Destination Hub</span>
+            <span className="font-black text-slate-900 text-sm block mt-1">
               {targetHubId} {targetHub ? `(${targetHub.name?.split(' ')[0]})` : ''}
             </span>
           </div>
 
-          <div className="bg-white p-2 rounded border border-slate-100">
+          <div className="bg-white p-3 rounded-lg border border-slate-200">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-semibold">Est. Travel Time</span>
-              <span className="text-[8px] font-extrabold text-slate-500 bg-slate-100 px-1 rounded">MODELED</span>
+              <span className="text-xs text-slate-500 font-bold">Est. Travel Time</span>
+              <span className="text-[9px] font-extrabold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">MODELED</span>
             </div>
-            <span className="font-extrabold text-slate-800 text-[11px] block mt-0.5">
+            <span className="font-black text-slate-900 text-sm block mt-1">
               {travelTimeSec}s ({Math.round(travelTimeSec / 60)} min)
             </span>
           </div>
 
-          <div className="bg-white p-2 rounded border border-slate-100">
+          <div className="bg-white p-3 rounded-lg border border-slate-200">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-semibold">Bay Availability</span>
-              <span className="text-[8px] font-extrabold text-emerald-700 bg-emerald-50 px-1 rounded">LIVE SIMULATION</span>
+              <span className="text-xs text-slate-500 font-bold">Bay Availability</span>
+              <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">LIVE SIMULATION</span>
             </div>
-            <span className="font-extrabold text-slate-800 text-[11px] block mt-0.5">
+            <span className="font-black text-slate-900 text-sm block mt-1">
               {availableBays} of {totalBays} Bays Free
             </span>
           </div>
 
-          <div className="bg-white p-2 rounded border border-slate-100">
+          <div className="bg-white p-3 rounded-lg border border-slate-200">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-semibold">Curb Saturation</span>
-              <span className="text-[8px] font-extrabold text-blue-700 bg-blue-50 px-1 rounded">LIVE SIMULATION</span>
+              <span className="text-xs text-slate-500 font-bold">Curb Saturation</span>
+              <span className="text-[9px] font-extrabold text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">LIVE SIMULATION</span>
             </div>
-            <span className="font-extrabold text-slate-800 text-[11px] block mt-0.5">
+            <span className="font-black text-slate-900 text-sm block mt-1">
               {curbSat}% ({targetHub?.queueLength || 0} queued)
             </span>
           </div>
 
-          <div className="bg-white p-2 rounded border border-slate-100">
+          <div className="bg-white p-3 rounded-lg border border-slate-200">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-semibold">Arrival Window</span>
-              <span className="text-[8px] font-extrabold text-indigo-700 bg-indigo-50 px-1 rounded">DERIVED</span>
+              <span className="text-xs text-slate-500 font-bold">Arrival Window</span>
             </div>
-            <span className="font-extrabold text-indigo-900 text-[11px] block mt-0.5">
+            <span className="font-black text-indigo-900 text-sm block mt-1">
               {slotWindow}
             </span>
           </div>
         </div>
 
         {/* Current Holding Location */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-xs">
-          <span className="text-[11px] text-slate-500 font-medium">Current Location:</span>
-          <span className="font-extrabold text-[11px] text-slate-800 bg-slate-200/70 px-2 py-0.5 rounded">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-xs sm:text-sm">
+          <span className="text-slate-600 font-bold">Current Location:</span>
+          <span className="font-extrabold text-slate-900 bg-slate-200 px-2.5 py-1 rounded-md">
             {holdingLocation}
           </span>
         </div>
@@ -261,24 +262,24 @@ export default function FreightSlotManagerPanel({
 
       {/* Staged Vehicle Queue List if any vehicles are waiting */}
       {stagedVehicles.length > 0 && (
-        <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2.5">
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase">
+        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+          <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wider">
             <span>Staged Freight Vehicles ({stagedVehicles.length})</span>
-            <span className="text-amber-700 font-extrabold">HELD UPSTREAM</span>
+            <span className="text-amber-800 font-extrabold">HELD UPSTREAM</span>
           </div>
-          <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
+          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
             {stagedVehicles.map(veh => (
               <button
                 key={veh.vehicleId}
                 onClick={() => onSelectVehicle && onSelectVehicle(veh.vehicle || { id: veh.vehicleId, isCommercial: true, ...veh })}
-                className="w-full text-left flex items-center justify-between p-1.5 rounded bg-amber-50/70 hover:bg-amber-100 border border-amber-200/60 transition text-xs cursor-pointer"
+                className="w-full text-left flex items-center justify-between p-2 rounded-lg bg-amber-50/70 hover:bg-amber-100 border border-amber-200 transition text-xs sm:text-sm font-semibold cursor-pointer"
               >
                 <div className="flex items-center space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                  <span className="font-bold text-slate-800">{veh.vehicleId}</span>
-                  <span className="text-[10px] text-slate-500">(@ {veh.originJunctionId} → {veh.destinationHubId})</span>
+                  <span className="w-2 h-2 rounded-full bg-amber-600" />
+                  <span className="font-bold text-slate-900">{veh.vehicleId}</span>
+                  <span className="text-xs text-slate-500">(@ {veh.originJunctionId} → {veh.destinationHubId})</span>
                 </div>
-                <span className="text-[10px] font-extrabold text-amber-800 px-1.5 py-0.5 bg-white rounded border border-amber-200">
+                <span className="text-[10px] font-extrabold text-amber-900 px-2 py-0.5 bg-white rounded border border-amber-300">
                   {veh.decision === 'DEFER_EMERGENCY' ? 'EMERGENCY DEFERRED' : (veh.status === 'SLOT_PENDING' ? 'SLOT PENDING' : 'HELD')}
                 </span>
               </button>
@@ -288,20 +289,20 @@ export default function FreightSlotManagerPanel({
       )}
 
       {/* Derived Counter: Curb Entries Prevented */}
-      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+      <div className="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between">
         <div>
-          <span className="text-[10px] font-bold text-slate-500 uppercase block">
+          <span className="text-xs sm:text-sm font-bold text-slate-600 uppercase block">
             {lang === 'HI' ? 'रोके गए कर्ब प्रवेश' : 'Curb Entries Prevented'}
           </span>
-          <span className="text-[8px] font-extrabold text-slate-400 uppercase">
-            DERIVED SIMULATION COUNTER
+          <span className="text-[10px] font-bold text-slate-400 uppercase">
+            Upstream Staging Metric
           </span>
         </div>
         <div className="text-right">
-          <span className="text-sm font-black text-slate-900">
+          <span className="text-xl sm:text-2xl font-black text-[#0A1F44]">
             {curbPrevented}
           </span>
-          <span className="text-[10px] text-slate-400 font-medium ml-1">
+          <span className="text-xs font-semibold text-slate-500 ml-1">
             vehicles held
           </span>
         </div>

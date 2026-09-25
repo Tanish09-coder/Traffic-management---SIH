@@ -5,10 +5,8 @@ import MainLayout from './layout/MainLayout';
 import Dashboard from './pages/Dashboard';
 import TrafficIntelligence from './pages/TrafficIntelligence';
 import Analytics from './pages/Analytics';
-import CityCorridorPage from './pages/CityCorridorPage';
 import About from './pages/About';
 import LogisticsSimulationPage from './pages/LogisticsSimulationPage';
-import { TrafficProvider } from './context/TrafficContext';
 import SoundToggle from './components/SoundToggle';
 import './index.css';
 
@@ -21,11 +19,6 @@ function App() {
         <MainLayout currentPage={currentPage} onNavigate={setCurrentPage}>
           {currentPage === 'dashboard' && <Dashboard onNavigate={setCurrentPage} />}
           {currentPage === 'logistics-simulation' && <LogisticsSimulationPage onNavigate={setCurrentPage} />}
-          {currentPage === 'city-corridor' && (
-            <TrafficProvider>
-              <CityCorridorPage onNavigate={setCurrentPage} />
-            </TrafficProvider>
-          )}
           {currentPage === 'traffic-intelligence' && <TrafficIntelligence onNavigate={setCurrentPage} />}
           {currentPage === 'analytics' && <Analytics onNavigate={setCurrentPage} />}
           {currentPage === 'about' && <About onNavigate={setCurrentPage} />}

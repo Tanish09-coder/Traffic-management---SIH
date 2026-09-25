@@ -976,7 +976,9 @@ export const SimulationProvider = ({ children }) => {
         emergencyActive: vState.emergencyActive,
         emergencyDirection: vState.emergencyDirection,
         avgWaitTime: vState.avg_wait_time,
-        throughput: freshMetrics.throughput
+        throughput: freshMetrics.throughput,
+        corridorFreight: corridorFreight,
+        freightTelemetry: freightCoordinator.getTelemetry()
       });
 
       setState(mergedState);

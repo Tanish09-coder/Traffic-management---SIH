@@ -36,18 +36,18 @@ export default function LogisticsIntersectionVisualizer({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
+    <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
       {/* Visualizer Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-[#0A1F44] text-[#F5A623] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[#0A1F44] text-[#F5A623] flex items-center justify-center font-bold">
             <Video className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-black text-[#0A1F44] text-sm">
+            <h3 className="font-bold text-[#0A1F44] text-sm">
               {lang === 'HI' ? 'लाइव लॉजिस्टिक्स जंक्शन दृश्य (BKC Jn 03)' : 'Live Logistics Intersection View (BKC Jn 03)'}
             </h3>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-xs text-[#475569]">
               Interactive Top-Down Telemetry • Click any vehicle to inspect
             </p>
           </div>
@@ -82,8 +82,8 @@ export default function LogisticsIntersectionVisualizer({
       {/* Canvas Footer Legend */}
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
         <div className="flex items-center space-x-2">
-          <span className="font-bold text-slate-700">Active Signals:</span>
-          <span className={`font-mono font-bold px-1.5 py-0.5 rounded ${
+          <span className="font-bold text-[#475569]">Active Signals:</span>
+          <span className={`font-bold px-2 py-0.5 rounded text-xs ${
             phase === 'GREEN' ? 'bg-emerald-100 text-emerald-800' : phase === 'YELLOW' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
           }`}>
             {signal} {phase}

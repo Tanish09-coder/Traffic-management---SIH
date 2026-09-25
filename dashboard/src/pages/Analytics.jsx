@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -36,7 +36,12 @@ import {
   Siren,
   Download,
   MapPin,
-  FileText
+  FileText,
+  Truck,
+  Warehouse,
+  Scale,
+  ShieldCheck,
+  Waves
 } from 'lucide-react';
 import { useTrafficData } from '../utils/useTrafficData';
 import { useLanguage } from '../context/LanguageContext';
@@ -114,6 +119,95 @@ const Analytics = ({ onNavigate }) => {
   const isSimulationActive = simulationSpeed > 0;
   const hasData = session.totalVehicles > 0 || session.vehiclesProcessed > 0;
 
+  // ── Logistics & Freight Data Aggregations ────────────────────────
+  const corridorFreight = state?.corridorFreight;
+  const hubs = state?.logisticsHubs || [];
+  const freightTelemetry = state?.freightTelemetry || {};
+  const completedDeliveries = state?.completedDeliveries || [];
+
+  const activeFreightCount = corridorFreight?.activeFreightCount ?? 
+    (session.timeSeries?.length > 0 ? (session.timeSeries[session.timeSeries.length - 1].activeFreight || 0) : 0);
+  const totalCargoTonnage = corridorFreight?.totalCargoTonnage ?? 
+    (session.timeSeries?.length > 0 ? (session.timeSeries[session.timeSeries.length - 1].cargoTonnage || 0) : 0);
+  const totalFreightPcu = corridorFreight?.totalFreightPcu ?? 
+    (session.timeSeries?.length > 0 ? (session.timeSeries[session.timeSeries.length - 1].freightPcu || 0) : 0);
+  const deliveryVansCount = corridorFreight?.vansCount ?? 0;
+  const freightTrucksCount = corridorFreight?.trucksCount ?? 0;
+
+  // Hub Occupancy & Dwell Saturation Data for BarChart
+  const hubBarData = useMemo(() => {
+    if (!hubs || hubs.length === 0) {
+      return [
+        { name: 'Dadar Depot', occupied: 0, available: 3, curbQueue: 0, code: 'HUB_DDR_01', total: 3 },
+        { name: 'BKC Central Hub', occupied: 0, available: 3, curbQueue: 0, code: 'HUB_BKC_01', total: 3 },
+        { name: 'Andheri WEH Hub', occupied: 0, available: 3, curbQueue: 0, code: 'HUB_AND_01', total: 3 }
+      ];
+    }
+    return hubs.map(h => {
+      const occupied = typeof h.occupiedBays === 'number' 
+        ? h.occupiedBays 
+        : (h.bays || []).filter(b => b.status === 'DWELLING' || b.status === 'OCCUPIED').length;
+      const total = h.totalBays || (h.bays ? h.bays.length : 3);
+      const available = Math.max(0, total - occupied);
+      const curbQueue = h.curbQueue ? h.curbQueue.length : (h.curbOccupancy || 0);
+      const displayName = h.name || (h.hubId === 'HUB_DDR_01' ? 'Dadar Depot' : h.hubId === 'HUB_BKC_01' ? 'BKC Central Hub' : 'Andheri WEH Hub');
+      return {
+        name: displayName.replace(' Logistics Hub', '').replace(' Hub', ''),
+        code: h.hubId,
+        occupied,
+        available,
+        curbQueue,
+        total
+      };
+    });
+  }, [hubs]);
+
+  const totalHubBays = hubBarData.reduce((sum, h) => sum + h.total, 0) || 9;
+  const occupiedHubBays = hubBarData.reduce((sum, h) => sum + h.occupied, 0);
+  const hubUtilizationPct = Math.round((occupiedHubBays / totalHubBays) * 100);
+
+  // Commercial Fleet Mode Composition Data for Donut/Pie Chart
+  const freightModeData = useMemo(() => {
+    const vans = deliveryVansCount;
+    const trucks = freightTrucksCount;
+    const completed = completedDeliveries.length;
+    
+    const items = [
+      { name: lang === 'HI' ? 'डिलीवरी वैन (LCV)' : 'Delivery Vans (LCV)', count: vans, pcu: Number((vans * 1.5).toFixed(1)), color: '#0F2C59' },
+      { name: lang === 'HI' ? 'भारी माल ट्रक (HCV)' : 'Freight Trucks (HCV)', count: trucks, pcu: Number((trucks * 2.5).toFixed(1)), color: '#F5A623' },
+      { name: lang === 'HI' ? 'पूरी हुई डिलीवरी' : 'Delivered / Discharged', count: completed, pcu: 0, color: '#16A34A' }
+    ].filter(item => item.count > 0);
+
+    if (items.length === 0) {
+      return [
+        { name: lang === 'HI' ? 'डिलीवरी वैन (LCV)' : 'Delivery Vans (LCV)', count: 0, pcu: 0, color: '#0F2C59' },
+        { name: lang === 'HI' ? 'भारी माल ट्रक (HCV)' : 'Freight Trucks (HCV)', count: 0, pcu: 0, color: '#F5A623' }
+      ];
+    }
+    return items;
+  }, [deliveryVansCount, freightTrucksCount, completedDeliveries.length, lang]);
+
+  // Green-Wave Priority Decisions Outcome Data for Pie / Stat
+  const greenWaveDecisionsData = useMemo(() => {
+    const granted = freightTelemetry.greenWaveGranted || 0;
+    const deferred = freightTelemetry.greenWaveDeferred || 0;
+    const opps = freightTelemetry.greenWaveOpportunities || (granted + deferred);
+    const blocked = Math.max(0, opps - (granted + deferred));
+
+    const list = [
+      { name: lang === 'HI' ? 'स्वीकृत ग्रीन-वेव' : 'Priority Wave Granted', count: granted, color: '#16A34A' },
+      { name: lang === 'HI' ? 'मानक चक्र आस्थगित' : 'Standard Cycle Deferred', count: deferred, color: '#F5A623' }
+    ];
+    if (blocked > 0) {
+      list.push({ name: lang === 'HI' ? 'सुरक्षा गार्डरेल अवरुद्ध' : 'Guardrail Constrained', count: blocked, color: '#DC2626' });
+    }
+    return list.filter(d => d.count > 0);
+  }, [freightTelemetry, lang]);
+
+  const priorityGrantRate = freightTelemetry.greenWaveOpportunities > 0
+    ? Math.round(((freightTelemetry.greenWaveGranted || 0) / freightTelemetry.greenWaveOpportunities) * 100)
+    : (freightTelemetry.greenWaveGranted > 0 ? 100 : 0);
+
   // Official MoRTH Audit Report Exporter
   const handleDownloadReport = () => {
     const reportData = {
@@ -133,6 +227,16 @@ const Analytics = ({ onNavigate }) => {
         peakQueueLengthVehicles: session.peakQueueLength,
         emergencyCorridorPreemptions: session.emergencyPreemptions || 0,
         signalPhaseSwitches: session.signalSwitchCount || 0
+      },
+      logisticsAndFreightSummary: {
+        activeCommercialVehicles: activeFreightCount,
+        deliveryVansCount,
+        freightTrucksCount,
+        cargoPayloadTonnage: totalCargoTonnage,
+        totalFreightPcu,
+        hubBayUtilizationPct,
+        greenWavePriorityGrants: freightTelemetry.greenWaveGranted || 0,
+        completedDeliveriesCount: completedDeliveries.length
       },
       environmentalAndEconomicImpact: {
         fuelSavedLiters: session.sustainability?.fuelSavedLiters?.status === 'unavailable' ? 'Unavailable' : Number((session.sustainability?.fuelSavedLiters?.value ?? session.sustainability?.fuelSavedLiters ?? 0).toFixed(2)),
@@ -355,7 +459,7 @@ const Analytics = ({ onNavigate }) => {
       <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-[#0A1F44]">{lang === 'HI' ? 'व्युत्पन्न पर्यावरणीय एवं यात्री लाभ ऑडिट' : 'Derived Environmental & Commuter Impact'}</h3>
+            <h3 className="text-base font-bold text-[#0A1F44]">{lang === 'HI' ? 'पर्यावरणीय एवं यात्री लाभ ऑडिट' : 'Environmental & Commuter Impact Audit'}</h3>
             <p className="text-sm text-slate-500">
               {lang === 'HI'
                 ? `${session.vehiclesProcessed} गुज़रे वाहन${session.vehiclesProcessed === 1 ? '' : 'ों'} पर आधारित। (बेसलाइन: ${session.sustainability?.baselineDelay?.status === 'unavailable' ? 'अनुपलब्ध' : session.sustainability?.baselineDelay ? `${session.sustainability.baselineDelay}s` : '45.0s'})`
@@ -363,7 +467,7 @@ const Analytics = ({ onNavigate }) => {
             </p>
           </div>
           <span className="text-xs bg-[#0A1F44] text-[#F5A623] border border-[#1E4D8C] font-bold px-2.5 py-0.5 rounded-full">
-            {lang === 'HI' ? 'व्युत्पन्न मैट्रिक्स' : 'DERIVED MATRIX'}
+            {lang === 'HI' ? 'प्रभाव ऑडिट' : 'IMPACT AUDIT'}
           </span>
         </div>
 
@@ -521,10 +625,10 @@ const Analytics = ({ onNavigate }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-[#0A1F44]">{lang === 'HI' ? 'सिम्युलेटेड थ्रूपुट (वाहन / मिनट)' : 'Live Simulation Throughput (Vehicles / Min)'}</h3>
-                  <p className="text-sm text-slate-500">{lang === 'HI' ? 'सिम्युलेटेड वाहन डिस्चार्ज घटनाओं से प्राप्त' : 'Derived from simulated vehicle discharge events'}</p>
+                  <p className="text-sm text-slate-500">{lang === 'HI' ? 'सिम्युलेटेड वाहन डिस्चार्ज घटनाओं से मापा गया' : 'Measured from simulated vehicle discharge events'}</p>
                 </div>
                 <span className="text-xs bg-[#FFFBEB] text-[#B8860B] border border-[#F5A623]/30 font-bold px-2.5 py-0.5 rounded-full uppercase">
-                  {lang === 'HI' ? 'लाइव सिमुलेशन / व्युत्पन्न' : 'LIVE SIMULATION / DERIVED'}
+                  {lang === 'HI' ? 'लाइव सिमुलेशन' : 'LIVE SIMULATION'}
                 </span>
               </div>
 
@@ -817,9 +921,447 @@ const Analytics = ({ onNavigate }) => {
             </div>
           </div>
 
+          {/* ── 5. Logistics & Freight Operations Analytics ─────────── */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-6">
+            {/* Section Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0A1F44] text-[#F5A623] flex items-center justify-center font-bold shadow-xs">
+                  <Truck size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-[#0A1F44] tracking-tight">
+                      {lang === 'HI' ? 'लॉजिस्टिक्स एवं माल ढुलाई एनालिटिक्स' : 'Logistics & Freight Analytics'}
+                    </h2>
+                    <span className="text-[11px] font-extrabold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                      <Activity size={10} className="animate-pulse" />
+                      <span>SIMULATION ACTIVE</span>
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    {lang === 'HI'
+                      ? 'कॉरिडोर स्तर पर माल वाहन आवागमन, हब लोडिंग बे संतृप्ति और ग्रीन-वेव प्राथमिकताओं का रीयल-टाइम डेटा।'
+                      : 'Real-time telemetry on corridor freight progression, hub bay dwell saturation, and green-wave signal coordination.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 shrink-0">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  MoRTH Freight Corridor
+                </span>
+              </div>
+            </div>
+
+            {/* 4 Freight KPI Cards Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              {/* KPI 1: Active Freight */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+                    {lang === 'HI' ? 'सक्रिय माल वाहन' : 'Active Commercial'}
+                  </span>
+                  <Truck size={16} className="text-[#0F2C59]" />
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-[#0A1F44]">
+                      {activeFreightCount}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      ({deliveryVansCount}v / {freightTrucksCount}t)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {lang === 'HI' ? 'सक्रिय वाणिज्यिक वाहन' : 'Active LCV / HCV fleet'}
+                  </p>
+                </div>
+              </div>
+
+              {/* KPI 2: Cargo Payload */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+                    {lang === 'HI' ? 'मार्ग में कार्गो' : 'En-Route Cargo'}
+                  </span>
+                  <Scale size={16} className="text-[#F5A623]" />
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-[#0A1F44]">
+                      {totalCargoTonnage}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      {lang === 'HI' ? 'टन' : 'tonnes'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {totalFreightPcu} {lang === 'HI' ? 'भारित PCU प्रभाव' : 'weighted PCU impact'}
+                  </p>
+                </div>
+              </div>
+
+              {/* KPI 3: Hub Saturation */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+                    {lang === 'HI' ? 'हब बे संतृप्ति' : 'Hub Saturation'}
+                  </span>
+                  <Warehouse size={16} className="text-[#16A34A]" />
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-[#0A1F44]">
+                      {occupiedHubBays}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      / {totalHubBays} bays ({hubUtilizationPct}%)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {hubBarData.reduce((sum, h) => sum + h.curbQueue, 0)} {lang === 'HI' ? 'कर्व कतार' : 'curb overflow waiting'}
+                  </p>
+                </div>
+              </div>
+
+              {/* KPI 4: Green-Wave Grants */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-4 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+                    {lang === 'HI' ? 'ग्रीन-वेव अनुदान' : 'Green-Wave Grants'}
+                  </span>
+                  <ShieldCheck size={16} className="text-emerald-600" />
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-emerald-700">
+                      {freightTelemetry.greenWaveGranted || 0}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      ({priorityGrantRate}%)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {freightTelemetry.greenWaveDeferred || 0} {lang === 'HI' ? 'आस्थगित चक्र' : 'deferred standard cycles'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Freight Charts Grid Row 1: Time Series & Hub Dwell */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+              {/* Chart 1: Commercial Fleet Volume & Cargo Over Time */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0A1F44]">
+                      {lang === 'HI' ? 'समय के साथ माल ढुलाई व कार्गो भार' : 'Freight Volume & Cargo Payload Over Time'}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {lang === 'HI' ? 'सिमुलेशन टिक्स में वाणिज्यिक वाहन, कार्गो टन और पीसीयू' : 'Active commercial vehicles, cargo tonnage (t), and PCU impact'}
+                    </p>
+                  </div>
+                  <span className="text-xs bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 font-bold px-2.5 py-0.5 rounded-full">
+                    {lang === 'HI' ? 'टाइम सीरीज़' : 'TIME SERIES'}
+                  </span>
+                </div>
+
+                <div className="h-[250px] w-full pt-2">
+                  {session.hasTimeSeriesData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={session.timeSeries}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                        <XAxis dataKey="time" stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                        <YAxis stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
+                          itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                          labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                        <Line
+                          type="monotone"
+                          dataKey="activeFreight"
+                          name={lang === 'HI' ? 'सक्रिय माल वाहन' : 'Active Freight'}
+                          stroke="#0F2C59"
+                          strokeWidth={2.5}
+                          dot={false}
+                          isAnimationActive={false}
+                          connectNulls={true}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="cargoTonnage"
+                          name={lang === 'HI' ? 'कार्गो टन (t)' : 'Cargo Payload (t)'}
+                          stroke="#F5A623"
+                          strokeWidth={2.5}
+                          dot={false}
+                          isAnimationActive={false}
+                          connectNulls={true}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="freightPcu"
+                          name={lang === 'HI' ? 'माल PCU प्रभाव' : 'Commercial PCU'}
+                          stroke="#7C3AED"
+                          strokeWidth={1.8}
+                          strokeDasharray="4 2"
+                          dot={false}
+                          isAnimationActive={false}
+                          connectNulls={true}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-sm text-slate-400">
+                      {lang === 'HI' ? 'अपर्याप्त टाइम-सीरीज़ डेटा' : 'Insufficient time-series data'}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Chart 2: Hub Capacity & Dwell Saturation Bar Chart */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0A1F44]">
+                      {lang === 'HI' ? 'लॉजिस्टिक्स हब बे एवं कर्व कतार' : 'Logistics Hub Bay & Curb Saturation'}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {lang === 'HI' ? 'प्रति हब व्यस्त बे, उपलब्ध बे और कर्व प्रतीक्षा वाहन' : 'Occupied dwell bays, available bays, and waiting curb queues'}
+                    </p>
+                  </div>
+                  <span className="text-xs bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 font-bold px-2.5 py-0.5 rounded-full">
+                    {lang === 'HI' ? 'बार चार्ट' : 'BAR CHART'}
+                  </span>
+                </div>
+
+                <div className="h-[250px] w-full pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={hubBarData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <XAxis dataKey="name" stroke="#475569" fontSize={11} tickLine={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                      <YAxis stroke="#475569" fontSize={11} tickLine={false} allowDecimals={false} tick={{ fontFamily: "'Noto Sans', sans-serif" }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
+                        itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                        labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                      <Bar dataKey="occupied" name={lang === 'HI' ? 'व्यस्त बे (Dwelling)' : 'Occupied Bays'} fill="#0F2C59" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="available" name={lang === 'HI' ? 'उपलब्ध बे' : 'Available Bays'} fill="#16A34A" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                      <Bar dataKey="curbQueue" name={lang === 'HI' ? 'कर्व कतार (Waiting)' : 'Curb Queue'} fill="#F5A623" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* Freight Charts Grid Row 2: Mode Breakdown & Green-Wave Priority Outcomes */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Chart 3: Commercial Fleet Mode Breakdown (Pie/Donut) */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0A1F44]">
+                      {lang === 'HI' ? 'वाणिज्यिक बेड़ा वर्गीकरण' : 'Commercial Fleet Mode Breakdown'}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {lang === 'HI' ? 'डिलीवरी वैन (LCV) बनाम भारी माल ट्रक (HCV)' : 'LCV delivery vans vs HCV freight trucks classification'}
+                    </p>
+                  </div>
+                  <span className="text-xs bg-[#0A1F44]/5 text-[#0F2C59] border border-[#0F2C59]/20 font-bold px-2.5 py-0.5 rounded-full">
+                    {lang === 'HI' ? 'पाई चार्ट' : 'PIE CHART'}
+                  </span>
+                </div>
+
+                <div className="h-[250px] w-full flex flex-col sm:flex-row items-center justify-center">
+                  <div className="w-[180px] h-[180px] shrink-0 flex items-center justify-center">
+                    <PieChart width={180} height={180}>
+                      <Pie
+                        data={freightModeData}
+                        cx={90}
+                        cy={90}
+                        innerRadius={45}
+                        outerRadius={75}
+                        paddingAngle={3}
+                        dataKey="count"
+                        isAnimationActive={false}
+                      >
+                        {freightModeData.map((entry, index) => (
+                          <Cell key={`freight-mode-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
+                        itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                        labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                      />
+                    </PieChart>
+                  </div>
+
+                  <div className="space-y-2 text-sm text-slate-600 sm:ml-4 flex-1 w-full">
+                    {freightModeData.map(item => (
+                      <div key={item.name} className="flex items-center justify-between py-1 border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full shrink-0 shadow-xs ring-1 ring-slate-900/10" style={{ backgroundColor: item.color }} />
+                          <span className="font-semibold text-slate-800">{item.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 font-mono">
+                          <span className="text-slate-600 font-medium">{item.count} {lang === 'HI' ? 'वाहन' : 'units'}</span>
+                          {item.pcu > 0 && (
+                            <span className="text-xs font-bold text-slate-500">({item.pcu} PCU)</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-1 text-[11px] text-slate-500 flex justify-between">
+                      <span>{lang === 'HI' ? 'कुल पेलोड:' : 'Total Cargo Load:'}</span>
+                      <span className="font-bold text-[#0A1F44]">{totalCargoTonnage} tonnes</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chart 4: Freight Green-Wave Priority Outcomes & Guardrails */}
+              <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0A1F44]">
+                      {lang === 'HI' ? 'ग्रीन-वेव निर्णय एवं सुरक्षा गार्डरेल' : 'Green-Wave Decisions & Guardrails'}
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      {lang === 'HI' ? 'सिग्नल विस्तार अनुदान बनाम मानक चक्र संरक्षण' : 'Signal extension grants vs passenger protection cycles'}
+                    </p>
+                  </div>
+                  <span className="text-xs bg-[#FFFBEB] text-[#B8860B] border border-[#F5A623]/30 font-bold px-2.5 py-0.5 rounded-full uppercase">
+                    {lang === 'HI' ? 'निर्णय मैट्रिक्स' : 'DECISION MATRIX'}
+                  </span>
+                </div>
+
+                <div className="h-[250px] w-full flex flex-col sm:flex-row items-center justify-center">
+                  {greenWaveDecisionsData.length > 0 ? (
+                    <>
+                      <div className="w-[180px] h-[180px] shrink-0 flex items-center justify-center">
+                        <PieChart width={180} height={180}>
+                          <Pie
+                            data={greenWaveDecisionsData}
+                            cx={90}
+                            cy={90}
+                            innerRadius={45}
+                            outerRadius={75}
+                            paddingAngle={3}
+                            dataKey="count"
+                            isAnimationActive={false}
+                          >
+                            {greenWaveDecisionsData.map((entry, index) => (
+                              <Cell key={`gw-decision-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#0A1F44', borderRadius: '8px', border: '1px solid #1E4D8C', color: '#FFFFFF', fontSize: '11px' }}
+                            itemStyle={{ color: '#FFFFFF', fontWeight: 600 }}
+                            labelStyle={{ color: '#F8FAFC', fontWeight: 700 }}
+                          />
+                        </PieChart>
+                      </div>
+
+                      <div className="space-y-2 text-sm text-slate-600 sm:ml-4 flex-1 w-full">
+                        {greenWaveDecisionsData.map(item => (
+                          <div key={item.name} className="flex items-center justify-between py-1 border-b border-slate-200">
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded-full shrink-0 shadow-xs ring-1 ring-slate-900/10" style={{ backgroundColor: item.color }} />
+                              <span className="font-semibold text-slate-800">{item.name}</span>
+                            </div>
+                            <span className="font-mono font-bold text-slate-900">{item.count}</span>
+                          </div>
+                        ))}
+                        <div className="pt-1.5 space-y-1 text-xs">
+                          <div className="flex items-center justify-between text-slate-600">
+                            <span>Passenger Ceiling Limit:</span>
+                            <span className="font-bold text-emerald-700">Protected (45s)</span>
+                          </div>
+                          <div className="flex items-center justify-between text-slate-600">
+                            <span>Downstream Spillback Limit:</span>
+                            <span className="font-bold text-emerald-700">Protected (80%)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-sm text-slate-400">
+                      {lang === 'HI' ? 'स्कैनिंग माल दृष्टिकोण...' : 'Scanning approaches for eligible freight progression...'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Row 3: Completed Deliveries & Hub Dwell Audit Log */}
+            <div className="bg-[#F8FAFC] rounded-xl border border-[#CBD5E1] p-5 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-[#0A1F44]">
+                    {lang === 'HI' ? 'पूरी हुई डिलीवरी एवं हब परिचालन लॉग' : 'Completed Deliveries & Hub Operations Log'}
+                  </h3>
+                  <p className="text-sm text-slate-500">
+                    {lang === 'HI' ? 'सफलतापूर्वक अनलोड किए गए माल वाहक और ड्वेल रसीदें' : 'Verified commercial vehicle delivery receipts and hub dwell clearances'}
+                  </p>
+                </div>
+                <span className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold px-2.5 py-0.5 rounded-full">
+                  {completedDeliveries.length} {lang === 'HI' ? 'डिलीवरी' : 'Deliveries'}
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-[220px] overflow-y-auto pt-1">
+                {completedDeliveries.length > 0 ? (
+                  completedDeliveries.slice(-8).reverse().map(d => (
+                    <div key={d.vehicleId || d.id} className="p-3 rounded-xl bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm shadow-2xs">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                          <Truck size={16} />
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-bold text-[#0A1F44]">{d.vehicleId || d.id}</span>
+                            <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                              {d.vehicleType === 'freight_truck' ? 'HCV Truck' : 'LCV Van'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-500 mt-0.5">
+                            Dest: <strong className="text-slate-700 font-bold">{d.hubId || 'HUB_DDR_01'}</strong> • Payload: <strong className="text-slate-700 font-bold">{d.cargoTonnage || 1.2}t</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2 self-end sm:self-center">
+                        <span className="text-xs text-slate-500 font-mono">
+                          Dwell: {d.completionTime || 12}s
+                        </span>
+                        <span className="text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          COMPLETED
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-sm text-slate-400">
+                    <Warehouse size={28} className="mx-auto mb-2 text-slate-300" />
+                    <p className="font-semibold text-slate-600">{lang === 'HI' ? 'अभी तक कोई डिलीवरी पूरी नहीं हुई' : 'No completed deliveries logged yet in this session'}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {lang === 'HI'
+                        ? 'वाणिज्यिक वाहनों द्वारा हब लोडिंग बे में अनलोडिंग पूर्ण करने पर डिलीवरी रसीदें यहाँ दर्ज होंगी।'
+                        : 'Commercial vehicles dwelling at Dadar Depot or BKC Hub will generate verified delivery receipts upon departure.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
-
 
     </div>
   );

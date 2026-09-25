@@ -78,6 +78,7 @@ export class AnalyticsManager {
     this.lastSnapshotTime = 0;
     this.tickCounter = 0;
     this.recentDepartures = [];
+    this.lastFreight = { activeFreightCount: 0, totalCargoTonnage: 0, totalFreightPcu: 0, vansCount: 0, trucksCount: 0 };
   }
 
   /**
@@ -110,7 +111,7 @@ export class AnalyticsManager {
    * Main observer method called on each simulation tick.
    * Consumes explicit arrival and departure events exactly once using simulation time.
    */
-  recordTick(data, metrics, simulationSpeed = 1) {
+  recordTick(data, metrics, _simulationSpeed = 1) {
     if (!data) return;
 
     let dt = 1.0;
@@ -268,6 +269,10 @@ export class AnalyticsManager {
         ? Number((this.totalWaitTimeSum / this.completedWaitTimes.length).toFixed(1))
         : null;
 
+      if (data.corridorFreight) {
+        this.lastFreight = data.corridorFreight;
+      }
+
       this.timeSeries = [
         ...this.timeSeries.slice(-89), // Keep up to 90 seconds (1.5 min) of chronological telemetry
         {
@@ -284,7 +289,12 @@ export class AnalyticsManager {
           queueW: queues.W || 0,
           signal: currentSignal,
           phase: phase,
-          isEmergency: isEmergencyActive
+          isEmergency: isEmergencyActive,
+          activeFreight: data.corridorFreight?.activeFreightCount ?? (this.lastFreight?.activeFreightCount || 0),
+          cargoTonnage: data.corridorFreight?.totalCargoTonnage ?? (this.lastFreight?.totalCargoTonnage || 0),
+          freightPcu: data.corridorFreight?.totalFreightPcu ?? (this.lastFreight?.totalFreightPcu || 0),
+          vansCount: data.corridorFreight?.vansCount ?? (this.lastFreight?.vansCount || 0),
+          trucksCount: data.corridorFreight?.trucksCount ?? (this.lastFreight?.trucksCount || 0)
         }
       ];
     }
@@ -329,6 +339,8 @@ export class AnalyticsManager {
           bike: 'Two-Wheeler / Bike',
           bus: 'Heavy Bus',
           truck: 'Heavy Truck',
+          delivery_van: 'Delivery Van (LCV)',
+          freight_truck: 'Freight Truck (HCV)',
           ambulance: 'Ambulance',
           firetruck: 'Fire Engine',
           police: 'Police Patrol'
@@ -338,9 +350,11 @@ export class AnalyticsManager {
           bike: '#16A34A',
           bus: '#F5A623',
           truck: '#475569',
+          delivery_van: '#1E4D8C',
+          freight_truck: '#D97706',
           ambulance: '#DC2626',
           firetruck: '#DC2626',
-          police: '#1E4D8C'
+          police: '#0A1F44'
         };
         return {
           name: labels[type] || type,
