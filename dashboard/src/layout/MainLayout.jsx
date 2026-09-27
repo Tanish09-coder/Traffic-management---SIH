@@ -174,7 +174,13 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                   className="flex items-center space-x-2 px-3.5 py-2 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] hover:bg-slate-100 text-xs font-bold text-[#0A1F44] transition shadow-xs cursor-pointer"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="truncate max-w-[190px]">{selectedZone}</span>
+                  <span className="truncate max-w-[190px]">
+                    {lang === 'HI' && selectedZone.includes('Mumbai BKC')
+                      ? 'मुंबई बीकेसी कॉरिडोर — Jn 04'
+                      : lang === 'HI' && selectedZone.includes('Pune Shivaji')
+                        ? 'पुणे शिवाजी नगर — Node 02'
+                        : selectedZone}
+                  </span>
                   <ChevronDown size={14} className="text-slate-500" />
                 </button>
 
@@ -183,26 +189,33 @@ const MainLayout = ({ children, currentPage = 'dashboard', onNavigate }) => {
                     <div className="px-3.5 py-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                       {lang === 'HI' ? 'सक्रिय स्मार्ट सिटी कॉरिडोर' : 'Active Smart City Corridors'}
                     </div>
-                    {zones.map((zone) => (
-                      <button
-                        key={zone}
-                        onClick={() => {
-                          if (switchZone) {
-                            switchZone(zone);
-                          }
-                          setIsZoneMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors flex items-center justify-between cursor-pointer ${
-                          selectedZone === zone ? 'bg-[#0F2C59]/10 text-[#0F2C59] font-bold' : 'text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <MapPin size={12} className={selectedZone === zone ? 'text-[#FF671F]' : 'text-slate-400'} />
-                          <span>{zone}</span>
-                        </div>
-                        {selectedZone === zone && <CheckCircle2 size={14} className="text-[#0F2C59]" />}
-                      </button>
-                    ))}
+                    {zones.map((zone) => {
+                      const zoneLabel = lang === 'HI' && zone.includes('Mumbai BKC')
+                        ? 'मुंबई बीकेसी कॉरिडोर — Jn 04'
+                        : lang === 'HI' && zone.includes('Pune Shivaji')
+                          ? 'पुणे शिवाजी नगर — Node 02'
+                          : zone;
+                      return (
+                        <button
+                          key={zone}
+                          onClick={() => {
+                            if (switchZone) {
+                              switchZone(zone);
+                            }
+                            setIsZoneMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-3.5 py-2.5 text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                            selectedZone === zone ? 'bg-[#0F2C59]/10 text-[#0F2C59] font-bold' : 'text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <MapPin size={12} className={selectedZone === zone ? 'text-[#FF671F]' : 'text-slate-400'} />
+                            <span>{zoneLabel}</span>
+                          </div>
+                          {selectedZone === zone && <CheckCircle2 size={14} className="text-[#0F2C59]" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

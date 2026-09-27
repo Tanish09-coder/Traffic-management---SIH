@@ -203,7 +203,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
                 </h3>
                 <span className="text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
                   <Activity size={10} className="animate-pulse" />
-                  <span>SIMULATION ACTIVE</span>
+                  <span>{lang === 'HI' ? 'सिमुलेशन सक्रिय' : 'SIMULATION ACTIVE'}</span>
                 </span>
               </div>
               <p className="text-xs text-[#475569] mt-0.5">
@@ -260,7 +260,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               className="px-3 py-1 rounded bg-white text-slate-800 text-xs font-bold shadow-xs hover:bg-slate-50 transition flex items-center space-x-1 cursor-pointer"
             >
               {isPaused ? <Play size={14} className="text-emerald-600" /> : <Pause size={14} className="text-amber-600" />}
-              <span>{isPaused ? 'Resume' : 'Pause'}</span>
+              <span>{isPaused ? (lang === 'HI' ? 'जारी रखें' : 'Resume') : (lang === 'HI' ? 'विराम' : 'Pause')}</span>
             </button>
             <button
               onClick={() => {
@@ -269,16 +269,16 @@ export default function LogisticsSimulationPage({ onNavigate }) {
                 setIsPaused(false);
               }}
               className="px-2.5 py-1 rounded text-slate-600 hover:text-[#0A1F44] text-xs font-bold transition flex items-center space-x-1 cursor-pointer"
-              title="Reset Simulation"
+              title={lang === 'HI' ? 'सिमुलेशन रीसेट करें' : 'Reset Simulation'}
             >
               <RotateCcw size={14} />
-              <span>Reset</span>
+              <span>{lang === 'HI' ? 'रीसेट' : 'Reset'}</span>
             </button>
           </div>
 
           {/* Speed Selector */}
           <div className="flex items-center space-x-1 bg-[#E2E8F0] p-1 rounded-md text-xs font-bold">
-            <span className="text-[10px] text-[#475569] px-1 uppercase tracking-wider">Speed:</span>
+            <span className="text-[10px] text-[#475569] px-1 uppercase tracking-wider">{lang === 'HI' ? 'गति:' : 'Speed:'}</span>
             {[0.5, 1.0, 2.0, 4.0].map(s => (
               <button
                 key={s}
@@ -299,11 +299,11 @@ export default function LogisticsSimulationPage({ onNavigate }) {
 
           {/* Freight Demand Multiplier */}
           <div className="flex items-center space-x-1 bg-[#E2E8F0] p-1 rounded-md text-xs font-bold">
-            <span className="text-[10px] text-[#475569] px-1 uppercase tracking-wider">Freight Rate:</span>
+            <span className="text-[10px] text-[#475569] px-1 uppercase tracking-wider">{lang === 'HI' ? 'माल दर:' : 'Freight Rate:'}</span>
             {[
-              { label: 'Low (0.5x)', val: 0.5 },
-              { label: 'Normal (1.0x)', val: 1.0 },
-              { label: 'Peak (1.8x)', val: 1.8 }
+              { label: lang === 'HI' ? 'निम्न (0.5x)' : 'Low (0.5x)', val: 0.5 },
+              { label: lang === 'HI' ? 'सामान्य (1.0x)' : 'Normal (1.0x)', val: 1.0 },
+              { label: lang === 'HI' ? 'शीर्ष (1.8x)' : 'Peak (1.8x)', val: 1.8 }
             ].map(d => (
               <button
                 key={d.val}
@@ -328,11 +328,11 @@ export default function LogisticsSimulationPage({ onNavigate }) {
             onChange={(e) => handleScenarioChange(e.target.value)}
             className="bg-white border border-[#CBD5E1] text-[#0A1F44] text-xs font-bold rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs"
           >
-            <option value="normal">1. Normal Mixed Traffic</option>
-            <option value="peak_freight">2. Peak Freight Corridor Flow</option>
-            <option value="hub_congestion">3. Logistics Hub Dwell Saturation</option>
-            <option value="spillback_throttling">4. Downstream Spillback Throttling</option>
-            <option value="emergency_conflict">5. Emergency vs Freight Priority</option>
+            <option value="normal">{lang === 'HI' ? '1. सामान्य मिश्रित यातायात' : '1. Normal Mixed Traffic'}</option>
+            <option value="peak_freight">{lang === 'HI' ? '2. शीर्ष माल ढुलाई गलियारा' : '2. Peak Freight Corridor Flow'}</option>
+            <option value="hub_congestion">{lang === 'HI' ? '3. लॉजिस्टिक्स हब संतृप्ति' : '3. Logistics Hub Dwell Saturation'}</option>
+            <option value="spillback_throttling">{lang === 'HI' ? '4. डाउनस्ट्रीम बैकप्रेशर नियंत्रण' : '4. Downstream Spillback Throttling'}</option>
+            <option value="emergency_conflict">{lang === 'HI' ? '5. आपातकालीन बनाम माल प्राथमिकता' : '5. Emergency vs Freight Priority'}</option>
           </select>
         </div>
       </div>
@@ -355,10 +355,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               ({deliveryVansCount}v / {freightTrucksCount}t)
             </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border bg-blue-50 text-blue-700 border-blue-200">
-              LIVE SIMULATION
-            </span>
+          <div className="mt-2 text-[11px] text-slate-500">
             <span className="truncate">{lang === 'HI' ? 'सक्रिय वाणिज्यिक वाहन' : 'Active commercial vehicles en-route'}</span>
           </div>
         </div>
@@ -379,10 +376,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               {lang === 'HI' ? 'टन' : 'tonnes'}
             </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">
-              SIMULATED LOAD
-            </span>
+          <div className="mt-2 text-[11px] text-slate-500">
             <span className="truncate">{lang === 'HI' ? 'कुल माल पेलोड भार' : 'Commercial payload weight'}</span>
           </div>
         </div>
@@ -403,10 +397,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               / {hubs.reduce((acc, h) => acc + (h.totalBays || (h.bays ? h.bays.length : 3)), 0)} {lang === 'HI' ? 'सक्रिय' : 'active'}
             </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border bg-emerald-50 text-emerald-700 border-emerald-200">
-              LIVE SIMULATION
-            </span>
+          <div className="mt-2 text-[11px] text-slate-500">
             <span className="truncate">{lang === 'HI' ? 'हब संतृप्ति निगरानी' : 'Hub dwell saturation monitor'}</span>
           </div>
         </div>
@@ -427,8 +418,8 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               PCUs
             </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="truncate font-semibold">{lang === 'HI' ? 'गतिशील भारित पीसीयू प्रभाव' : 'Weighted corridor approach impact'}</span>
+          <div className="mt-2 text-[11px] text-slate-500">
+            <span className="truncate">{lang === 'HI' ? 'गतिशील भारित पीसीयू प्रभाव' : 'Weighted corridor approach impact'}</span>
           </div>
         </div>
 
@@ -448,10 +439,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               ({freightTelemetry.greenWaveOpportunities > 0 ? `${Math.round(((freightTelemetry.greenWaveGranted || 0) / freightTelemetry.greenWaveOpportunities) * 100)}%` : '—'})
             </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border bg-emerald-50 text-emerald-700 border-emerald-200">
-              LIVE SIMULATION
-            </span>
+          <div className="mt-2 text-[11px] text-slate-500">
             <span className="truncate">{lang === 'HI' ? 'गलियारा प्राथमिकता निकासी' : 'Corridor priority clearance'}</span>
           </div>
         </div>
@@ -472,10 +460,7 @@ export default function LogisticsSimulationPage({ onNavigate }) {
               ({lang === 'HI' ? 'बेसलाइन' : 'Baseline'})
             </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border bg-slate-100 text-slate-500 border-slate-200">
-              UNAVAILABLE
-            </span>
+          <div className="mt-2 text-[11px] text-slate-500">
             <span className="truncate">{lang === 'HI' ? 'लाइव लॉजिस्टिक्स बेसलाइन' : 'Live logistics baseline'}</span>
           </div>
         </div>

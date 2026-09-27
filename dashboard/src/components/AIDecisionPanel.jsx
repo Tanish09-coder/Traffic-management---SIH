@@ -213,8 +213,10 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black font-mono text-[#0F2942]">
-              {signal || 'E'}
+            <span className="text-2xl sm:text-3xl font-black font-mono text-[#0F2942]">
+              {lang === 'HI'
+                ? (signal === 'N' ? 'उत्तर (N)' : signal === 'S' ? 'दक्षिण (S)' : signal === 'E' ? 'पूर्व (E)' : signal === 'W' ? 'पश्चिम (W)' : signal)
+                : (signal || 'E')}
             </span>
             <span
               className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border"
@@ -266,8 +268,10 @@ export const AIDecisionPanel = ({ showAllocationDetails = true, ...props }) => {
             <ArrowRight size={16} className="text-purple-600" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black font-mono text-[#0F2942]">
-              {pending_signal || signal || 'E'}
+            <span className="text-2xl sm:text-3xl font-black font-mono text-[#0F2942]">
+              {lang === 'HI'
+                ? ((pending_signal || signal) === 'N' ? 'उत्तर (N)' : (pending_signal || signal) === 'S' ? 'दक्षिण (S)' : (pending_signal || signal) === 'E' ? 'पूर्व (E)' : (pending_signal || signal) === 'W' ? 'पश्चिम (W)' : (pending_signal || signal))
+                : (pending_signal || signal || 'E')}
             </span>
             <span className="text-xs font-bold text-purple-700">
               ({pending_green_duration || 36}s)
