@@ -507,16 +507,6 @@ const Analytics = ({ onNavigate }) => {
               <p className="text-[10px] text-amber-800/80">{lang === 'HI' ? 'खुदरा ईंधन + यात्री समय का मूल्य' : 'Retail fuel + commuter time value'}</p>
             </div>
           </div>
-          
-          <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-500 space-y-1">
-            <p className="font-semibold text-slate-700">{lang === 'HI' ? 'ऑडिट नोट:' : 'Audit Note:'}</p>
-            <ul className="list-disc pl-4 space-y-0.5">
-              <li>{lang === 'HI' ? 'बेसलाइन विलंब एक कॉन्फ़िगर किए गए संदर्भ (45.0s) के रूप में अनुकरण किया गया है।' : 'Baseline delay is simulated as a configured reference parameter (45.0s).'}</li>
-              <li>{lang === 'HI' ? 'ईंधन और CO₂ बचत अनुमानित मैक्रोस्कोपिक स्थिरांक का उपयोग करते हैं।' : 'Fuel and CO₂ savings use configured macroscopic assumptions (0.00028 L/s, 2.31 kg/L).'}</li>
-              <li>{lang === 'HI' ? 'आर्थिक मूल्य अनुमानित यात्री और ईंधन लागत का उपयोग करते हैं।' : 'Economic values use assumed commuter and fuel costs (₹200/hr, ₹105/L).'}</li>
-              <li>{lang === 'HI' ? 'ये कॉन्फ़िगर करने योग्य सिमुलेशन पैरामीटर हैं, वास्तविक दुनिया के मापन नहीं।' : 'These are CONFIGURABLE SIMULATION PARAMETERS and not real-world measurements.'}</li>
-            </ul>
-          </div>
           </>
         ) : (
           <div className="py-8 text-center text-sm text-slate-400 bg-slate-50 rounded-xl border border-slate-200">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, CloudRain, CloudFog, Minimize, Maximize, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import Car from './car';
 import TrafficLight from './TrafficLight';
 import PedestrianLight from './PedestrianLight';
@@ -18,6 +19,8 @@ const SimulationCanvas = ({
   onSelectVehicle,
   selectedVehicleId
 }) => {
+  const { lang } = useLanguage();
+
   return (
     <div
       ref={intersectionRef}
@@ -62,19 +65,19 @@ const SimulationCanvas = ({
         {/* Direction Arrows Painted on Road Lanes matching screenshot */}
         <div className={`absolute left-1/2 text-white/90 font-extrabold tracking-wider z-10 select-none ${isFullscreen ? 'top-6 transform -translate-x-1/2 text-sm' : 'top-3.5 transform -translate-x-1/2 text-[11px]'
           }`}>
-          N ↑
+          {lang === 'HI' ? 'उत्तर ↑' : 'N ↑'}
         </div>
         <div className={`absolute left-1/2 text-white/90 font-extrabold tracking-wider z-10 select-none ${isFullscreen ? 'bottom-6 transform -translate-x-1/2 text-sm' : 'bottom-3.5 transform -translate-x-1/2 text-[11px]'
           }`}>
-          S ↓
+          {lang === 'HI' ? 'दक्षिण ↓' : 'S ↓'}
         </div>
         <div className={`absolute top-1/2 text-white/90 font-extrabold tracking-wider z-10 select-none ${isFullscreen ? 'left-8 transform -translate-y-1/2 text-sm' : 'left-5 transform -translate-y-1/2 text-[11px]'
           }`}>
-          W ←
+          {lang === 'HI' ? 'पश्चिम ←' : 'W ←'}
         </div>
         <div className={`absolute top-1/2 text-white/90 font-extrabold tracking-wider z-10 select-none ${isFullscreen ? 'right-8 transform -translate-y-1/2 text-sm' : 'right-5 transform -translate-y-1/2 text-[11px]'
           }`}>
-          E →
+          {lang === 'HI' ? 'पूर्व →' : 'E →'}
         </div>
 
         {/* Zebra Crosswalks */}
@@ -306,21 +309,26 @@ const SimulationCanvas = ({
 
       {/* Queue counts per lane */}
       {state?.queues &&
-        Object.entries(state.queues).map(([lane, count]) => (
-          <div
-            key={lane}
-            className={`absolute text-[11px] font-bold text-white bg-[#1E293B]/90 px-2 py-0.5 rounded-md shadow-xs z-30 ${lane === 'N'
-              ? 'top-2 left-1/2 transform -translate-x-1/2'
-              : lane === 'S'
-                ? 'bottom-2 left-1/2 transform -translate-x-1/2'
-                : lane === 'E'
-                  ? 'right-2 top-1/2 transform -translate-y-1/2'
-                  : 'left-2 top-1/2 transform -translate-y-1/2'
-              }`}
-          >
-            {lane}: {count}
-          </div>
-        ))}
+        Object.entries(state.queues).map(([lane, count]) => {
+          const laneName = lang === 'HI'
+            ? (lane === 'N' ? 'उत्तर' : lane === 'S' ? 'दक्षिण' : lane === 'E' ? 'पूर्व' : 'पश्चिम')
+            : lane;
+          return (
+            <div
+              key={lane}
+              className={`absolute text-[11px] font-bold text-white bg-[#1E293B]/90 px-2 py-0.5 rounded-md shadow-xs z-30 ${lane === 'N'
+                ? 'top-2 left-1/2 transform -translate-x-1/2'
+                : lane === 'S'
+                  ? 'bottom-2 left-1/2 transform -translate-x-1/2'
+                  : lane === 'E'
+                    ? 'right-2 top-1/2 transform -translate-y-1/2'
+                    : 'left-2 top-1/2 transform -translate-y-1/2'
+                }`}
+            >
+              {laneName}: {count}
+            </div>
+          );
+        })}
 
       {/* Fullscreen Floating Controls */}
       {isFullscreen && (

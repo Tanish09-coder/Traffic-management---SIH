@@ -93,7 +93,7 @@ export default function FreightGreenWavePanel({ activeDecision, telemetry, strat
     return (
       <span className="bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-1 rounded-md font-black text-xs flex items-center space-x-1">
         <AlertTriangle className="w-3.5 h-3.5" />
-        <span>DEFER ({guardrailTriggered || 'STANDARD CYCLE'})</span>
+        <span>DEFER</span>
       </span>
     );
   };

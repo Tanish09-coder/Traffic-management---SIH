@@ -82,8 +82,6 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
     simContext?.state?.urbanResourcePressure ||
     null;
 
-  const [showHowCalculated, setShowHowCalculated] = useState(false);
-
   if (!pressureData || pressureData.overallLevel === 'UNAVAILABLE') {
     return (
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
@@ -275,23 +273,11 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
               "{primaryRecommendation.reason}"
             </p>
 
-            <div className="flex items-center justify-between flex-wrap gap-2 pt-1 text-xs text-slate-600">
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-slate-700">Responsible Module:</span>
-                <span className="font-bold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                  {primaryRecommendation.responsibleModule}
-                </span>
-              </div>
-              <span className="text-xs font-medium text-slate-500">
-                Rule-Based Dynamic Support
-              </span>
-            </div>
-
             {/* Secondary Recommendations if available */}
             {secondaryRecommendations.length > 0 && (
               <div className="pt-3 border-t border-[#E2E8F0] space-y-2">
                 <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                  Secondary Interventions:
+                  {lang === 'HI' ? 'द्वितीयक हस्तक्षेप:' : 'Secondary Interventions:'}
                 </div>
                 <div className="flex flex-wrap gap-2.5">
                   {secondaryRecommendations.map((sec, idx) => (
@@ -301,10 +287,8 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
                     >
                       <ArrowRight size={13} className="text-slate-500" />
                       <span className="font-bold text-slate-800">{sec.action}</span>
-                      <span className="text-slate-300">|</span>
-                      <span className="text-slate-600 text-xs font-medium">{sec.responsibleModule}</span>
                       <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                        {sec.status === 'EXECUTED IN SIMULATION' ? 'EXECUTED' : 'ADVISORY'}
+                        {sec.status === 'EXECUTED IN SIMULATION' ? (lang === 'HI' ? 'निष्पादित' : 'EXECUTED') : (lang === 'HI' ? 'परामर्श' : 'ADVISORY')}
                       </span>
                     </div>
                   ))}
@@ -331,126 +315,6 @@ export default function UrbanResourcePressurePanel({ pressure = null }) {
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Expandable "How calculated?" section */}
-        <div className="border-t border-slate-100 pt-3">
-          <button
-            type="button"
-            onClick={() => setShowHowCalculated(!showHowCalculated)}
-            className="w-full flex items-center justify-between text-xs sm:text-sm font-bold text-slate-600 hover:text-[#0A1F44] p-1.5 rounded hover:bg-slate-50 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center space-x-1.5">
-              <Info size={15} className="text-indigo-600" />
-              <span>How calculated? (Formula, Weights & Metrics)</span>
-            </div>
-            {showHowCalculated ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
-
-          {showHowCalculated && (
-            <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm space-y-3.5">
-              {/* Formula & Weights */}
-              <div>
-                <div className="font-bold text-[#0A1F44] mb-1">
-                  1. Overall Pressure Index Formula:
-                </div>
-                <div className="p-2.5 bg-white font-medium rounded border border-slate-200 text-slate-800 text-xs sm:text-sm overflow-x-auto">
-                  overallPressureIndex = (road × 0.35) + (intersection × 0.25) + (curbHub × 0.25) + (freightSystem × 0.15)
-                </div>
-              </div>
-
-              {/* Thresholds */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs sm:text-sm">
-                <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
-                  <div>STABLE</div>
-                  <div className="text-slate-500 font-normal">0 – 39</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 font-bold">
-                  <div>ELEVATED</div>
-                  <div className="text-slate-500 font-normal">40 – 64</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-bold">
-                  <div>HIGH</div>
-                  <div className="text-slate-500 font-normal">65 – 84</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 font-bold">
-                  <div>CRITICAL</div>
-                  <div className="text-slate-500 font-normal">85 – 100</div>
-                </div>
-              </div>
-
-              {/* Source Metrics Provenance Table */}
-              <div>
-                <div className="font-bold text-[#0A1F44] mb-1.5 flex items-center justify-between">
-                  <span>2. Current Live Source Metrics:</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    LIVE SIMULATION
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs sm:text-sm">
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Queued PCU</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.roadNetwork?.sourceMetrics?.totalQueuedPCU ?? 0}
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Stopped Cars</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.roadNetwork?.sourceMetrics?.totalStoppedCars ?? 0}
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Max Passenger Wait</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.roadNetwork?.sourceMetrics?.maxPassengerWaitSec ?? 0}s
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Corridor In-Transit</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.roadNetwork?.sourceMetrics?.totalInTransit ?? 0} veh
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Occupied Bays</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.curbHub?.sourceMetrics?.occupiedBays ?? 0} / {categories.curbHub?.sourceMetrics?.totalBays ?? 0}
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Curb Saturation</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.curbHub?.sourceMetrics?.maxCurbSaturation ?? 0}%
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Staged Freight</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.freightSystem?.sourceMetrics?.stagedCount ?? 0} veh
-                    </div>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                    <div className="text-slate-400 font-medium">Scheduled Slots</div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base">
-                      {categories.freightSystem?.sourceMetrics?.pendingSlots ?? 0} active
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Data Provenance & Honesty Note */}
-              <div className="p-3 bg-blue-50/60 rounded-lg border border-blue-200 text-blue-900 text-xs sm:text-sm space-y-1">
-                <div className="font-bold flex items-center space-x-1.5">
-                  <CheckCircle2 size={15} className="text-blue-600" />
-                  <span>Transparent Rule-Based Provenance</span>
-                </div>
-                <p className="text-blue-800">
-                  Pressure scores are derived from live simulation state and clearly identified modeled corridor assumptions.
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -58,20 +58,20 @@ export default function FreightSlotManagerPanel({
   const decisionKey = displayedRecord?.decision || 'PROCEED_NOW';
 
   let decisionBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
-  let decisionLabel = 'PROCEED NOW';
+  let decisionLabel = lang === 'HI' ? 'तुरंत आगे बढ़ें' : 'PROCEED NOW';
   let DecisionIcon = CheckCircle2;
 
   if (decisionKey === 'SLOT_ASSIGNED') {
     decisionBadgeClass = 'bg-blue-100 text-blue-800 border-blue-300';
-    decisionLabel = 'SLOT ASSIGNED';
+    decisionLabel = lang === 'HI' ? 'स्लॉट आवंटित' : 'SLOT ASSIGNED';
     DecisionIcon = CalendarClock;
   } else if (decisionKey === 'HOLD_AT_ORIGIN') {
     decisionBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
-    decisionLabel = 'HOLD AT ORIGIN';
+    decisionLabel = lang === 'HI' ? 'मूल स्थान पर रोकें' : 'HOLD AT ORIGIN';
     DecisionIcon = Anchor;
   } else if (decisionKey === 'DEFER_EMERGENCY') {
     decisionBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300';
-    decisionLabel = 'DEFER – EMERGENCY';
+    decisionLabel = lang === 'HI' ? 'आपातकालीन प्राथमिकता स्थगित' : 'DEFER – EMERGENCY';
     DecisionIcon = ShieldAlert;
   }
 
@@ -82,14 +82,14 @@ export default function FreightSlotManagerPanel({
 
   const slotWindow = displayedRecord?.assignedSlotStartSec
     ? `${formatSimTime(displayedRecord.assignedSlotStartSec)} – ${formatSimTime(displayedRecord.assignedSlotEndSec)}`
-    : 'Immediate / Open Window';
+    : (lang === 'HI' ? 'तत्काल / खुला विंडो' : 'Immediate / Open Window');
 
   // Holding location calculation
-  let holdingLocation = 'Upstream Staging (J1)';
+  let holdingLocation = lang === 'HI' ? 'अपस्ट्रीम स्टेजिंग (J1)' : 'Upstream Staging (J1)';
   if (displayedRecord?.status === 'RELEASED' || decisionKey === 'PROCEED_NOW') {
-    holdingLocation = 'Released to Corridor Link';
+    holdingLocation = lang === 'HI' ? 'कॉरिडोर लिंक पर जारी' : 'Released to Corridor Link';
   } else if (displayedRecord?.originJunctionId) {
-    holdingLocation = `Staging Area @ Junction ${displayedRecord.originJunctionId}`;
+    holdingLocation = lang === 'HI' ? `स्टेजिंग क्षेत्र @ जंक्शन ${displayedRecord.originJunctionId}` : `Staging Area @ Junction ${displayedRecord.originJunctionId}`;
   } else if (selectedVehicle?.location) {
     holdingLocation = selectedVehicle.location;
   }
@@ -111,7 +111,7 @@ export default function FreightSlotManagerPanel({
               </h3>
               {isScenarioInjection && (
                 <span className="text-[9px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded">
-                  SCENARIO INJECTION
+                  {lang === 'HI' ? 'परिदृश्य इंजेक्शन' : 'SCENARIO INJECTION'}
                 </span>
               )}
             </div>
@@ -133,7 +133,7 @@ export default function FreightSlotManagerPanel({
           <div className="text-3xl font-black text-amber-700 mt-1">
             {stagedVehicles.length}
           </div>
-          <span className="text-xs font-bold text-slate-500">VEHICLES</span>
+          <span className="text-xs font-bold text-slate-500">{lang === 'HI' ? 'वाहन' : 'VEHICLES'}</span>
         </div>
 
         <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 text-center shadow-xs">
@@ -143,7 +143,7 @@ export default function FreightSlotManagerPanel({
           <div className="text-3xl font-black text-blue-700 mt-1">
             {activeSlots.length}
           </div>
-          <span className="text-xs font-bold text-slate-500">ACTIVE</span>
+          <span className="text-xs font-bold text-slate-500">{lang === 'HI' ? 'सक्रिय' : 'ACTIVE'}</span>
         </div>
 
         <div className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3.5 text-center shadow-xs">
@@ -153,7 +153,7 @@ export default function FreightSlotManagerPanel({
           <div className="text-3xl font-black text-emerald-700 mt-1">
             {totalReleased}
           </div>
-          <span className="text-xs font-bold text-slate-500">DISPATCHED</span>
+          <span className="text-xs font-bold text-slate-500">{lang === 'HI' ? 'प्रेषित' : 'DISPATCHED'}</span>
         </div>
       </div>
 

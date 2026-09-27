@@ -122,15 +122,6 @@ export default function CorridorProgressionView({ corridorData, activeVehicles =
         </div>
       </div>
 
-      {/* Corridor Technical Note on Micro vs Macro Simulation */}
-      <div className="mt-3.5 p-3.5 sm:p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
-        <span className="leading-relaxed">
-          <strong className="font-bold text-[#0A1F44]">Operational Model:</strong> Micro-level vehicle kinematics simulated at active node (BKC J₃); corridor-level J₁ → J₄ propagation dynamically coordinated via <span className="font-bold text-[#0A1F44]">CorridorCoordinator.js</span>.
-        </span>
-        <span className="font-bold text-[#0A1F44] shrink-0 bg-white px-2.5 py-1 rounded-md border border-slate-200 text-xs shadow-2xs">
-          BKC Arterial Corridor
-        </span>
-      </div>
     </div>
   );
 }

@@ -183,9 +183,6 @@ export default function LogisticsVehicleInspector({ selectedVehicle, activeFreig
             <span>Cargo</span>
           </div>
           <div className="text-xl sm:text-2xl font-black text-[#0F2942] mt-1">{selectedVehicle.cargoTonnage || (isTruck ? 8.5 : 1.2)} <span className="text-xs font-bold text-slate-500">t</span></div>
-          <div className="text-[9px] font-extrabold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 uppercase mt-1 inline-block">
-            SIMULATED LOAD
-          </div>
         </div>
       </div>
 

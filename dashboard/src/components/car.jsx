@@ -489,7 +489,7 @@ const Car = ({ id, lane, position, type, isFullscreen = false, onClick = null, i
       }}
       className={`flex items-center justify-center z-20 ${
         onClick ? 'pointer-events-auto cursor-pointer hover:scale-125 transition-transform' : 'pointer-events-none'
-      } ${isSelected ? 'ring-2 ring-[#F5A623] ring-offset-1 rounded-sm' : ''}`}
+      }`}
     >
       {renderShape({ colorIndex: vehicle.colorIndex })}
     </motion.div>
