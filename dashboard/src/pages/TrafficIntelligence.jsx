@@ -424,38 +424,15 @@ const TrafficIntelligence = ({ onNavigate }) => {
       };
     }
 
-    // Multi-frame temporal continuity (ByteTrack persistence buffer):
-    // Preserves active queue tracks within ±0.4s window so dropped detections / shadows don't cause flicker
-    const combinedDetections = [];
-    const seenMap = new Set();
-
-    if (closestFrame.detections) {
-      closestFrame.detections.forEach(det => {
-        const key = det.trackId !== null && det.trackId !== undefined ? det.trackId : JSON.stringify(det.bbox);
-        seenMap.add(key);
-        combinedDetections.push(det);
-      });
-    }
-
-    for (let i = 0; i < frames.length; i++) {
-      const diff = Math.abs(frames[i].videoTimeSec - currentTimeSec);
-      if (diff <= 0.4 && frames[i] !== closestFrame) {
-        (frames[i].detections || []).forEach(det => {
-          const key = det.trackId !== null && det.trackId !== undefined ? det.trackId : JSON.stringify(det.bbox);
-          if (!seenMap.has(key)) {
-            seenMap.add(key);
-            combinedDetections.push(det);
-          }
-        });
-      }
-    }
+    // Use exact frame detections for clean, real-time optical accuracy without ghost box accumulation
+    const frameDetections = closestFrame.detections || [];
 
     const assignedTracks = { N: [], E: [], S: [], W: [] };
     const seenTrackIds = new Set();
     const approachDirs = ['N', 'E', 'S', 'W'];
 
-    // Process every detected vehicle in this frame (with persistence)
-    combinedDetections.forEach((det, idx) => {
+    // Process every detected vehicle in this frame
+    frameDetections.forEach((det, idx) => {
       if (!det.bbox || det.bbox.length < 4) return;
       const [bx1, by1, bx2, by2] = det.bbox;
       // Anchor: bottom-center of bounding box (represents vehicle's road position)
@@ -504,7 +481,7 @@ const TrafficIntelligence = ({ onNavigate }) => {
     return {
       liveApproachCounts: counts,
       totalVisibleQueue: hasAnyConfigured ? total : null,
-      currentFrameDetections: combinedDetections,
+      currentFrameDetections: frameDetections,
       assignedTracksByApproach: assignedTracks
     };
   }, [analysisResults, currentTimeSec, approachZones]);
